@@ -85,7 +85,7 @@ module.exports = function (req, res) {
           const fileExtensions = [...new Set(transformedArray.map(segment => segment.file_extension))]
           const fileExtensionObjects = await Promise.all(fileExtensions.map(ext => fileFormatDao.findOrCreate({ value: ext }, { transaction })))
 
-          const existingSegments = (await streamSegmentDao.findByStreamAndStarts(streamId, transformedArray.map(s => s.start), {
+          const existingSegments = (await streamSegmentDao.findByStreamAndStarts(streamId, transformedArray.map(s => s.start.toISOString()), {
             transaction,
             fields: ['id', 'stream_id', 'start', 'sample_count']
           })).map(s => s.toJSON())
@@ -93,7 +93,7 @@ module.exports = function (req, res) {
             await streamSegmentDao.updateByStreamAndStarts(streamId, existingSegments, { availability: 1 }, { transaction })
           }
           const dataToCreate = transformedArray
-            .filter((s) => { return !existingSegments.map(e => e.start).includes(s.start) })
+            .filter((s) => { return !existingSegments.map(e => e.start.toISOString()).includes(s.start.toISOString()) })
             .map((s) => {
               const fileExtensionId = fileExtensionObjects.find(obj => obj.value === s.file_extension).id
               return {
