@@ -42,7 +42,9 @@ function onMessagePing (pingObj, messageId) {
       return guardianCommand.processAndCompressCommandJson(pingObj)
     })
     .then((pingObj) => {
-      iotdaProcess.forward(pingObj)
+      if (iotdaProcess.isEnabled === true) {
+        iotdaProcess.forward(pingObj)
+      }
       return { guardian_guid: pingObj.json.guardian.guid, obj: pingObj.rtrn.obj, gzip: pingObj.rtrn.gzip }
     })
 }

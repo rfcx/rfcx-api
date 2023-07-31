@@ -2,16 +2,13 @@ const crypto = require('crypto')
 const iotdaApp = require('../../../mqtt/iotda')
 const moment = require('moment')
 
+const isEnabled = `${process.env.IOTDA_ENABLED}` === 'true'
+
 const availableProject = ['3dvrocmagfiw']
 function parse (pingObj) {
   const battery = strArrToJSArr(pingObj.json.battery, '|', '*')
   const lastIndex = battery.length - 1
   const time = moment(parseInt(battery[lastIndex][0])).utc()
-  const month = (time.month() < 10) ? `0${time.month() + 1}` : time.month() + 1
-  const day = (time.date() < 10) ? `0${time.date()}` : time.date()
-  const hour = (time.hours() < 10) ? `0${time.hours()}` : time.hours()
-  const minute = (time.minute() < 10) ? `0${time.minute()}` : time.minute()
-  const second = (time.second() < 10) ? `0${time.second()}` : time.second()
 
   const percentage = parseInt(battery[lastIndex][1])
   const temp = parseInt(battery[lastIndex][2])
@@ -23,7 +20,7 @@ function parse (pingObj) {
           batteryPercentage: percentage,
           batteryTemp: temp
         },
-        event_time: `${time.year()}${month}${day}T${hour}${minute}${second}Z`
+        event_time: `${time.format('YYYYMMDD')}T${time.format('HHmmss')}Z`
       }
     ]
   }
@@ -32,10 +29,7 @@ function parse (pingObj) {
 
 function getIoTDAConnectionOptions (pingObj, now) {
   const guid = pingObj.db.dbGuardian.guid
-  const month = (now.month() < 10) ? `0${now.month() + 1}` : now.month() + 1
-  const day = (now.date() < 10) ? `0${now.date()}` : now.date()
-  const hour = (now.hours() < 10) ? `0${now.hours()}` : now.hours()
-  const key = `${now.year()}${month}${day}${hour}`
+  const key = `${now.format('YYYYMMDDHH')}`
   const clientId = `${guid}_0_0_${key}`
   const password = crypto.createHmac('sha256', key).update('rfcxrfcx').digest('hex')
 
@@ -65,4 +59,4 @@ function strArrToJSArr (str, delimA, delimB) {
   }
 }
 
-module.exports = { forward, parse, getIoTDAConnectionOptions }
+module.exports = { forward, parse, getIoTDAConnectionOptions, isEnabled }
