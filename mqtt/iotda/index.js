@@ -1,9 +1,11 @@
 const mqtt = require('mqtt')
 
+const isEnabled = `${process.env.IOTDA_ENABLED}` === 'true'
+const availableProjects = process.env.IOTDA_PROJECTS != null ? process.env.IOTDA_PROJECTS.split(',') : []
+
 const connectionOptions = {
   clientId: '',
-  // This is test instance
-  host: '7b0410cad2.st1.iotda-device.ap-southeast-2.myhuaweicloud.com',
+  host: process.env.IOTDA_MQTT_HOSTNAME ?? '',
   port: '1883',
   protocol: 'tcp',
   username: '',
@@ -19,11 +21,21 @@ function forwardMessage (device, message) {
   connectionOptions.clientId = device.clientId
   connectionOptions.username = device.username
   connectionOptions.password = device.password
-  const app = mqtt.connect(connectionOptions)
+  let app = mqtt.connect(connectionOptions)
 
-  app.on('error', (err) => console.error('IoTDA MQTT: Error', err))
-  app.on('reconnect', () => console.info('IoTDA MQTT: Reconnected'))
-  app.on('close', () => console.info('IoTDA MQTT: Closed'))
+  app.on('error', (err) => {
+    console.error('IoTDA MQTT: Error', err)
+    app.end()
+  })
+  app.on('reconnect', () => {
+    console.info('IoTDA MQTT: Reconnected')
+    // No need to reconnect to avoid reconnection loop stuck
+    app.end()
+  })
+  app.on('close', () => {
+    console.info('IoTDA MQTT: Closed')
+    app = null
+  })
 
   app.on('connect', function () {
     console.info('IoTDA MQTT: Connected')
@@ -34,4 +46,4 @@ function forwardMessage (device, message) {
   })
 }
 
-module.exports = { forwardMessage }
+module.exports = { forwardMessage, isEnabled, availableProjects }

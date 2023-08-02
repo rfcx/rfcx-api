@@ -2,9 +2,6 @@ const crypto = require('crypto')
 const iotdaApp = require('../../../mqtt/iotda')
 const moment = require('moment')
 
-const isEnabled = `${process.env.IOTDA_ENABLED}` === 'true'
-
-const availableProject = ['3dvrocmagfiw', 'xuvwi67a50ed']
 function parse (pingObj) {
   const battery = strArrToJSArr(pingObj.json.battery, '|', '*')
   const lastIndex = battery.length - 1
@@ -42,7 +39,7 @@ function getIoTDAConnectionOptions (pingObj, now) {
 
 function forward (pingObj) {
   const targetProject = pingObj.db.dbGuardian.project_id
-  if (availableProject.includes(targetProject)) {
+  if (iotdaApp.availableProjects.includes(targetProject)) {
     const mqttMessage = parse(pingObj)
     const device = getIoTDAConnectionOptions(pingObj, moment.utc())
     iotdaApp.forwardMessage(device, mqttMessage)
@@ -59,4 +56,4 @@ function strArrToJSArr (str, delimA, delimB) {
   }
 }
 
-module.exports = { forward, parse, getIoTDAConnectionOptions, isEnabled }
+module.exports = { forward, parse, getIoTDAConnectionOptions }

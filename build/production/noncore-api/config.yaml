@@ -40,3 +40,6 @@ data:
   REST_HOST: "api.rfcx.org"
   REST_HOST_SHORT: "rf.cx"
   USERS_BUCKET: "rfcx-users-production"
+  IOTDA_MQTT_HOSTNAME: "7b0410cad2.st1.iotda-device.ap-southeast-2.myhuaweicloud.com"
+  IOTDA_ENABLED: "false"
+  IOTDA_PROJECTS: "3dvrocmagfiw,xuvwi67a50ed"
