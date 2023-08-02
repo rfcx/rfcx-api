@@ -4,7 +4,7 @@ const moment = require('moment')
 
 const isEnabled = `${process.env.IOTDA_ENABLED}` === 'true'
 
-const availableProject = ['3dvrocmagfiw']
+const availableProject = ['3dvrocmagfiw', 'xuvwi67a50ed']
 function parse (pingObj) {
   const battery = strArrToJSArr(pingObj.json.battery, '|', '*')
   const lastIndex = battery.length - 1
