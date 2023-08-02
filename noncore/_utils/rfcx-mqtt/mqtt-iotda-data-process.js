@@ -1,5 +1,5 @@
 const crypto = require('crypto')
-const iotdaApp = require('../../../mqtt/iotda')
+const iotdaApp = require('../../iotda')
 const moment = require('moment')
 
 function parse (pingObj) {
