@@ -3,7 +3,7 @@ const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
   Classifier.include(),
-  Classification.include()
+  Classification.include({ attributes: ['id', 'value', 'title', 'image'] })
 ]
 
 async function query (filters, options = {}) {

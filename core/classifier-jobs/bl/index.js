@@ -2,7 +2,14 @@ const dao = require('../dao')
 const streamsDao = require('../../streams/dao')
 const { sequelize } = require('../../_models')
 const { hasPermission, PROJECT, READ, CREATE } = require('../../roles/dao')
-const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
+const { ForbiddenError, EmptyResultError, ValidationError } = require('../../../common/error-handling/errors')
+const { CANCELLED, DONE, ERROR, WAITING } = require('../classifier-job-status')
+const detectionsDao = require('../../detections/dao/index')
+const classifierOutputsDao = require('../../classifiers/dao/outputs')
+const { DetectionReview } = require('../../_models')
+
+const ALLOWED_TARGET_STATUSES = [CANCELLED, WAITING]
+const ALLOWED_SOURCE_STATUSES = [CANCELLED, WAITING, ERROR]
 
 /**
  * Create a new classifier job
@@ -55,7 +62,128 @@ async function get (id, options = {}) {
   return job
 }
 
+/**
+ * Update a classifier job
+ * @param {integer} id
+ * @param {ClassifierJob} job
+ * @param {integer} job.status
+ * @param {integer} job.minutesTotal
+ * @param {*} options
+ * @param {number} options.updatableBy Update only if job is updatable by the given user id
+ * @throws EmptyResultError when job not found
+ * @throws ForbiddenError when `updatableBy` user does not have update permission on the job
+ */
+async function update (id, newJob, options = {}) {
+  return sequelize.transaction(async transaction => {
+    // Check the job is updatable
+    const existingJob = await get(id, { transaction })
+    if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
+      throw new ForbiddenError()
+    }
+    // If is not super user or system user
+    if (options.updatableBy && newJob.status !== undefined) {
+      if (!ALLOWED_TARGET_STATUSES.includes(newJob.status)) {
+        throw new ValidationError(`Cannot update status to ${newJob.status}`)
+      }
+      if (!ALLOWED_SOURCE_STATUSES.includes(existingJob.status)) {
+        throw new ValidationError(`Cannot update status of jobs in status ${newJob.status}`)
+      }
+    }
+
+    // Set/clear completedAt
+    if (newJob.status !== undefined) {
+      newJob.completedAt = newJob.status === DONE ? new Date() : null
+    }
+
+    await dao.update(id, newJob, { transaction })
+
+    if (newJob.status === DONE) {
+      await updateSummary(id, { transaction })
+    }
+  })
+}
+
+async function updateSummary (id, options = {}) {
+  const transaction = options.transaction
+  const summary = await calcSummary(id, options)
+  await dao.deleteJobSummary(id, { transaction })
+  await dao.createJobSummary(summary, { transaction })
+}
+
+async function calcSummary (id, options = {}) {
+  const job = await get(id, { ...options, fields: ['query_start', 'query_end', 'classifier_id', 'streams'] })
+
+  const detections = await detectionsDao.query({
+    streams: (job.streams || []).map(s => s.id),
+    start: `${job.queryStart}T00:00:00.000Z`,
+    end: `${job.queryEnd}T23:59:59.999Z`,
+    classifierJobs: [id]
+  }, {
+    user: options.user,
+    fields: ['review_status', 'updated_at'],
+    transaction: options.transaction
+  })
+
+  const classifierOuputs = (await classifierOutputsDao.query({
+    classifiers: [job.classifierId]
+  }, {
+    fields: ['classification'],
+    transaction: options.transaction
+  })).results
+
+  const classificationsSummary = classifierOuputs.reduce((acc, cur) => {
+    acc[cur.classification.value] = {
+      classifierJobId: parseInt(id),
+      classificationId: cur.classification.id,
+      total: 0,
+      rejected: 0,
+      uncertain: 0,
+      confirmed: 0
+    }
+    return acc
+  }, {})
+
+  detections.forEach(d => {
+    const status = DetectionReview.statusMapping[`${d.review_status}`]
+    const value = d.classification.value
+    if (classificationsSummary[value]) {
+      classificationsSummary[value].total++
+      if (classificationsSummary[value][status] !== undefined) {
+        classificationsSummary[value][status]++
+      }
+    }
+  })
+
+  return Object.values(classificationsSummary)
+}
+
+async function getSummary (id, filters = {}, options = {}) {
+  await get(id, options)
+  const summaries = await dao.getJobSummaries(id, filters, options)
+  return summaries.reduce((acc, cur) => {
+    acc.reviewStatus.total += cur.total
+    acc.reviewStatus.confirmed += cur.confirmed
+    acc.reviewStatus.rejected += cur.rejected
+    acc.reviewStatus.uncertain += cur.uncertain
+    acc.classificationsSummary.push({
+      ...cur.classification.toJSON(),
+      total: cur.total
+    })
+    return acc
+  }, {
+    reviewStatus: {
+      total: 0,
+      confirmed: 0,
+      rejected: 0,
+      uncertain: 0
+    },
+    classificationsSummary: []
+  })
+}
+
 module.exports = {
   create,
-  get
+  get,
+  update,
+  getSummary
 }

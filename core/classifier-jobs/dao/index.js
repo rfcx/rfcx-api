@@ -1,9 +1,8 @@
-const { sequelize, ClassifierJob, ClassifierJobStream, Classifier, Stream, Sequelize } = require('../../_models')
+const { ClassifierJob, ClassifierJobStream, Classifier, Classification, ClassifierJobSummary, Stream, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
-const { CANCELLED, DONE, ERROR, WAITING } = require('../classifier-job-status')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
 
 const availableIncludes = [
@@ -11,8 +10,9 @@ const availableIncludes = [
   Stream.include({ as: 'streams', attributes: ['id', 'name'], required: false })
 ]
 
-const ALLOWED_TARGET_STATUSES = [CANCELLED, WAITING]
-const ALLOWED_SOURCE_STATUSES = [CANCELLED, WAITING, ERROR]
+const availableIncludesSummary = [
+  Classification.include({ attributes: ['id', 'value', 'title', 'image'] })
+]
 
 /**
  * Get a list of classifier jobs matching the filters
@@ -139,33 +139,41 @@ async function get (id, options = {}) {
  * @param {integer} job.minutesTotal
  * @param {*} options
  * @param {number} options.updatableBy Update only if job is updatable by the given user id
- * @throws EmptyResultError when job not found
- * @throws ForbiddenError when `updatableBy` user does not have update permission on the job
  */
 async function update (id, newJob, options = {}) {
-  return sequelize.transaction(async transaction => {
-    // Check the job is updatable
-    const existingJob = await get(id, { transaction })
-    if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
-      throw new ForbiddenError()
-    }
-    // If is not super user or system user
-    if (options.updatableBy && newJob.status !== undefined) {
-      if (!ALLOWED_TARGET_STATUSES.includes(newJob.status)) {
-        throw new ValidationError(`Cannot update status to ${newJob.status}`)
-      }
-      if (!ALLOWED_SOURCE_STATUSES.includes(existingJob.status)) {
-        throw new ValidationError(`Cannot update status of jobs in status ${newJob.status}`)
-      }
-    }
+  const transaction = options.transaction
+  return await ClassifierJob.update(newJob, { where: { id }, transaction })
+}
 
-    // Set/clear completedAt
-    if (newJob.status !== undefined) {
-      newJob.completedAt = newJob.status === DONE ? new Date() : null
-    }
-
-    await ClassifierJob.update(newJob, { where: { id }, transaction })
+async function getJobSummaries (classifierJobId, filters, options = {}) {
+  const transaction = options.transaction
+  if (!classifierJobId) {
+    throw new Error('Classifier job id must be set to get job summary')
+  }
+  const where = { classifierJobId }
+  if (filters.classifierId) {
+    where.classifierId = filters.classifierId
+  }
+  return await ClassifierJobSummary.findAll({
+    where,
+    attributes: ClassifierJobSummary.attributes.lite,
+    include: availableIncludesSummary,
+    transaction
   })
+}
+
+async function createJobSummary (classificationData, options = {}) {
+  const transaction = options.transaction
+  return await ClassifierJobSummary.bulkCreate(classificationData, { transaction })
+}
+
+async function deleteJobSummary (classifierJobId, options = {}) {
+  if (!classifierJobId) {
+    throw new Error('Classifier job id must be set for job summary delete')
+  }
+  const transaction = options.transaction
+  const where = { classifierJobId }
+  return await ClassifierJobSummary.destroy({ where }, { transaction })
 }
 
 module.exports = {
@@ -174,5 +182,8 @@ module.exports = {
   createJobStreams,
   deleteJobStreams,
   get,
-  update
+  update,
+  getJobSummaries,
+  createJobSummary,
+  deleteJobSummary
 }

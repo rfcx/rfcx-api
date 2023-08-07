@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const { update } = require('./dao')
+const { update } = require('./bl')
 const Converter = require('../../common/converter')
 const { RUNNING } = require('./classifier-job-status')
 const { ValidationError } = require('../../common/error-handling/errors')

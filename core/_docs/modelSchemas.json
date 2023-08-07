@@ -53,6 +53,10 @@
   "ClassificationLite": {
     "type": "object",
     "properties": {
+      "id": {
+        "type": "number",
+        "example": 10
+      },
       "value": {
         "type": "string",
         "description": "Unique short name",

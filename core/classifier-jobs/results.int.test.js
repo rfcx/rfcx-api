@@ -7,13 +7,15 @@ const { WAITING, DONE } = require('./classifier-job-status')
 const CLASSIFICATION_1 = { id: 232, value: 'chainsaw', title: 'Chainsaw', typeId: 1, source_id: 1 }
 const CLASSIFICATION_2 = { id: 233, value: 'vehicle', title: 'Vehicle', typeId: 1, source_id: 1 }
 const CLASSIFICATION_3 = { id: 234, value: 'gunshot', title: 'Gunshot', typeId: 1, source_id: 1 }
-const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2, CLASSIFICATION_3]
+const CLASSIFICATION_4 = { id: 235, value: 'aircraft', title: 'Aircraft', typeId: 1, source_id: 1 }
+const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2, CLASSIFICATION_3, CLASSIFICATION_4]
 
 const CLASSIFIER_1 = { id: 151, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
-const CLASSIFIER_OUTPUT_1 = { id: 100, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_1.id, outputClassName: 'chainsaw_custom', ignoreThreshold: 0.5 }
-const CLASSIFIER_OUTPUT_2 = { id: 101, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_2.id, outputClassName: 'chainsaw_custom', ignoreThreshold: 0.5 }
-const CLASSIFIER_OUTPUT_3 = { id: 102, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_3.id, outputClassName: 'chainsaw_custom', ignoreThreshold: 0.5 }
-const CLASSIFIER_OUTPUTS = [CLASSIFIER_OUTPUT_1, CLASSIFIER_OUTPUT_2, CLASSIFIER_OUTPUT_3]
+const CLASSIFIER_OUTPUT_1 = { id: 100, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_1.id, outputClassName: `${CLASSIFICATION_1.value}_custom`, ignoreThreshold: 0.5 }
+const CLASSIFIER_OUTPUT_2 = { id: 101, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_2.id, outputClassName: `${CLASSIFICATION_2.value}_custom`, ignoreThreshold: 0.5 }
+const CLASSIFIER_OUTPUT_3 = { id: 102, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_3.id, outputClassName: `${CLASSIFICATION_3.value}_custom`, ignoreThreshold: 0.5 }
+const CLASSIFIER_OUTPUT_4 = { id: 104, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_4.id, outputClassName: `${CLASSIFICATION_4.value}_custom`, ignoreThreshold: 0.5 }
+const CLASSIFIER_OUTPUTS = [CLASSIFIER_OUTPUT_1, CLASSIFIER_OUTPUT_2, CLASSIFIER_OUTPUT_3, CLASSIFIER_OUTPUT_4]
 
 const PROJECT_1 = { id: 'testprojec01', name: 'Test project', createdById: seedValues.otherUserId }
 const PROJECT_2 = { id: 'testprojec02', name: 'Test project 2', createdById: seedValues.otherUserId }
@@ -90,20 +92,7 @@ describe('GET /classifier-jobs/{id}/results', () => {
 
   test('returns forbidden error', async () => {
     const response = await request(app).get(`/${JOB_5.id}/results`)
-
     expect(response.statusCode).toBe(403)
-  })
-
-  test('returns validation error if fields is not correct', async () => {
-    const response = await request(app).get(`/${JOB_1.id}/results`).query({ fields: ['some'] })
-
-    expect(response.statusCode).toBe(400)
-  })
-
-  test('returns validation error if fields includes not correct value', async () => {
-    const response = await request(app).get(`/${JOB_1.id}/results`).query({ fields: ['review_status', 'some'] })
-
-    expect(response.statusCode).toBe(400)
   })
 
   test('returns empty error', async () => {
@@ -112,77 +101,42 @@ describe('GET /classifier-jobs/{id}/results', () => {
     expect(response.statusCode).toBe(404)
   })
 
-  test('returns only review status by default', async () => {
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:00.000Z`, end: `${JOB_1.queryStart}T00:00:01.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:01.000Z`, end: `${JOB_1.queryStart}T00:00:02.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: -1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:02.000Z`, end: `${JOB_1.queryStart}T00:00:03.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: null } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 0 } })
+  test('returns valid data', async () => {
+    await models.ClassifierJobSummary.bulkCreate([
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 0 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_2.id, total: 1, confirmed: 0, rejected: 1, uncertain: 0 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_3.id, total: 1, confirmed: 0, rejected: 0, uncertain: 1 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
+      { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
+    ])
 
-    const response = await request(app).get(`/${JOB_1.id}/results`)
-
-    const result = response.body
-    expect(response.statusCode).toBe(200)
-    expect(result.reviewStatus.total).toBe(4)
-    expect(result.reviewStatus.confirmed).toBe(1)
-    expect(result.reviewStatus.rejected).toBe(1)
-    expect(result.reviewStatus.uncertain).toBe(1)
-  })
-
-  test('returns full data', async () => {
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:00.000Z`, end: `${JOB_1.queryStart}T00:00:01.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:01.000Z`, end: `${JOB_1.queryStart}T00:00:02.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: -1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:02.000Z`, end: `${JOB_1.queryStart}T00:00:03.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: null } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 0 } })
-
-    const response = await request(app).get(`/${JOB_1.id}/results`).query({ fields: ['review_status', 'classifications_summary'] })
+    const response = await request(app).get(`/${JOB_1.id}/results`).query()
 
     const result = response.body
     expect(response.statusCode).toBe(200)
-    expect(result.reviewStatus.total).toBe(4)
+    expect(result.reviewStatus.total).toBe(3)
     expect(result.reviewStatus.confirmed).toBe(1)
     expect(result.reviewStatus.rejected).toBe(1)
     expect(result.reviewStatus.uncertain).toBe(1)
     const output1 = result.classificationsSummary.find(o => CLASSIFICATION_1.value === o.value)
+    expect(output1.id).toBe(CLASSIFICATION_1.id)
     expect(output1.value).toBe(CLASSIFICATION_1.value)
     expect(output1.label).toBe(CLASSIFICATION_1.label)
     expect(output1.total).toBe(1)
     const output2 = result.classificationsSummary.find(o => CLASSIFICATION_2.value === o.value)
+    expect(output2.id).toBe(CLASSIFICATION_2.id)
     expect(output2.value).toBe(CLASSIFICATION_2.value)
     expect(output2.label).toBe(CLASSIFICATION_2.label)
-    expect(output2.total).toBe(0)
+    expect(output2.total).toBe(1)
     const output3 = result.classificationsSummary.find(o => CLASSIFICATION_3.value === o.value)
+    expect(output3.id).toBe(CLASSIFICATION_3.id)
     expect(output3.value).toBe(CLASSIFICATION_3.value)
     expect(output3.label).toBe(CLASSIFICATION_3.label)
-    expect(output3.total).toBe(0)
-  })
-
-  test('does not return data from deleted streams', async () => {
-    const STREAM_2 = (await models.Stream.findOrCreate({ where: { id: 'stream000002', name: 'Test stream 2', createdById: seedValues.otherUserId, projectId: PROJECT_1.id, deletedAt: '2022-01-01 00:00:00' } }))[0]
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:00.000Z`, end: `${JOB_1.queryStart}T00:00:01.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:01.000Z`, end: `${JOB_1.queryStart}T00:00:02.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: -1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:02.000Z`, end: `${JOB_1.queryStart}T00:00:03.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: null } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 0 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_2.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 1 } })
-
-    const response = await request(app).get(`/${JOB_1.id}/results`).query({ fields: ['review_status', 'classifications_summary'] })
-
-    const result = response.body
-    expect(response.statusCode).toBe(200)
-    expect(result.reviewStatus.total).toBe(4)
-    expect(result.reviewStatus.confirmed).toBe(1)
-    expect(result.reviewStatus.rejected).toBe(1)
-    expect(result.reviewStatus.uncertain).toBe(1)
-    const output1 = result.classificationsSummary.find(o => CLASSIFICATION_1.value === o.value)
-    expect(output1.value).toBe(CLASSIFICATION_1.value)
-    expect(output1.label).toBe(CLASSIFICATION_1.label)
-    expect(output1.total).toBe(1)
-    const output2 = result.classificationsSummary.find(o => CLASSIFICATION_2.value === o.value)
-    expect(output2.value).toBe(CLASSIFICATION_2.value)
-    expect(output2.label).toBe(CLASSIFICATION_2.label)
-    expect(output2.total).toBe(0)
-    const output3 = result.classificationsSummary.find(o => CLASSIFICATION_3.value === o.value)
-    expect(output3.value).toBe(CLASSIFICATION_3.value)
-    expect(output3.label).toBe(CLASSIFICATION_3.label)
-    expect(output3.total).toBe(0)
+    expect(output3.total).toBe(1)
+    const output4 = result.classificationsSummary.find(o => CLASSIFICATION_4.value === o.value)
+    expect(output4.id).toBe(CLASSIFICATION_4.id)
+    expect(output4.value).toBe(CLASSIFICATION_4.value)
+    expect(output4.label).toBe(CLASSIFICATION_4.label)
+    expect(output4.total).toBe(0)
   })
 })

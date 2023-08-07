@@ -13,6 +13,7 @@ const models = {
   ClassifierEventStrategy: require('./classifiers/classifier-event-strategy')(sequelize, Sequelize),
   ClassifierJob: require('./classifiers/classifier-job')(sequelize, Sequelize),
   ClassifierJobStream: require('./classifiers/classifier-job-stream')(sequelize, Sequelize),
+  ClassifierJobSummary: require('./classifiers/classifier-job-summary')(sequelize, Sequelize),
   ClassifierOutput: require('./classifiers/classifier-output')(sequelize, Sequelize),
   ClassifierProcessedSegment: require('./classifiers/classifier-processed-segments')(sequelize, Sequelize),
   Classifier: require('./classifiers/classifier')(sequelize, Sequelize),
