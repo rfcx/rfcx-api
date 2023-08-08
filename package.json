@@ -30,7 +30,7 @@
     "rms:noncore": "npm run reset:noncore && npm run migrate:noncore && npm run seed:noncore",
     "lint": "eslint \"**/*.js\"",
     "lint-fix": "eslint --fix \"**/*.js\"",
-    "test:unit": "jest --config ./test/jest.unit.config.js",
+    "test:unit": "jest --forceExit --config ./test/jest.unit.config.js",
     "test:int": "jest --runInBand --forceExit --config ./test/jest.int.config.js",
     "test": "npm run test:unit && npm run test:int"
   },
