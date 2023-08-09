@@ -1,4 +1,4 @@
-const { ClassifierJob, ClassifierJobStream, Classifier, Classification, ClassifierJobSummary, Stream, Sequelize } = require('../../_models')
+const { ClassifierJob, ClassifierJobStream, Classifier, Classification, ClassifierJobSummary, Stream, User, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -8,6 +8,11 @@ const { toCamelObject } = require('../../_utils/formatters/string-cases')
 const availableIncludes = [
   Classifier.include({ attributes: ['id', 'name'] }),
   Stream.include({ as: 'streams', attributes: ['id', 'name'], required: false })
+]
+
+const availableIncludesGet = [
+  ...availableIncludes,
+  User.include({ required: false, as: 'last_reviewed_by' })
 ]
 
 const availableIncludesSummary = [
@@ -115,7 +120,7 @@ async function deleteJobStreams (classifierJobId, streamIds, options = {}) {
  */
 async function get (id, options = {}) {
   const attributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
-  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
+  const include = options.fields && options.fields.length > 0 ? availableIncludesGet.filter(i => options.fields.includes(i.as)) : availableIncludesGet
   const transaction = options.transaction || null
   let job = await ClassifierJob.findOne({ where: { id }, attributes, include, transaction })
   if (!job) {
@@ -145,14 +150,19 @@ async function update (id, newJob, options = {}) {
   return await ClassifierJob.update(newJob, { where: { id }, transaction })
 }
 
+async function createJobSummary (classificationData, options = {}) {
+  const transaction = options.transaction
+  return await ClassifierJobSummary.bulkCreate(classificationData, { transaction })
+}
+
 async function getJobSummaries (classifierJobId, filters, options = {}) {
   const transaction = options.transaction
   if (!classifierJobId) {
     throw new Error('Classifier job id must be set to get job summary')
   }
   const where = { classifierJobId }
-  if (filters.classifierId) {
-    where.classifierId = filters.classifierId
+  if (filters.classificationId) {
+    where.classificationId = filters.classificationId
   }
   return await ClassifierJobSummary.findAll({
     where,
@@ -162,9 +172,19 @@ async function getJobSummaries (classifierJobId, filters, options = {}) {
   })
 }
 
-async function createJobSummary (classificationData, options = {}) {
+async function updateJobSummary (classifierJobId, classificationId, data, options = {}) {
   const transaction = options.transaction
-  return await ClassifierJobSummary.bulkCreate(classificationData, { transaction })
+  const where = { classifierJobId, classificationId }
+  const update = {};
+  ['total', 'confirmed', 'rejected', 'uncertain'].forEach(s => {
+    if (data[s] !== undefined) {
+      update[s] = data[s]
+    }
+  })
+  return await ClassifierJobSummary.update(data, {
+    where,
+    transaction
+  })
 }
 
 async function deleteJobSummary (classifierJobId, options = {}) {
@@ -183,7 +203,8 @@ module.exports = {
   deleteJobStreams,
   get,
   update,
-  getJobSummaries,
   createJobSummary,
+  getJobSummaries,
+  updateJobSummary,
   deleteJobSummary
 }

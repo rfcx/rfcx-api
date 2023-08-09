@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const { getSummary } = require('./bl')
+const { getSummary } = require('./bl/results')
 
 /**
  * @swagger

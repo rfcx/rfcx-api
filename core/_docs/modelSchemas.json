@@ -455,10 +455,6 @@
       "email": {
         "type": "string",
         "example": "john@doe.com"
-      },
-      "picture": {
-        "type": "string",
-        "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
       }
     }
   },
@@ -1222,6 +1218,9 @@
         "items": {
           "$ref": "#/components/schemas/ClassificationSummary"
         }
+      },
+      "lastReviewedBy": {
+        "$ref": "#/components/schemas/UserLite"
       }
     }
   }

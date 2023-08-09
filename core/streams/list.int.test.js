@@ -1,7 +1,7 @@
 const routes = require('.')
 const models = require('../_models')
 const Sequelize = require('sequelize')
-const { expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 const app = expressApp()
@@ -29,6 +29,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
+  await truncateNonBase(models)
   await models.sequelize.close()
 })
 

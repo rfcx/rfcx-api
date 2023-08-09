@@ -30,7 +30,7 @@ const STREAM_4 = { id: 'rrr0stream04', name: 'Test stream 4', projectId: PROJECT
 const STREAM_5 = { id: 'rrr0stream05', name: 'Test stream 5', projectId: PROJECT_4.id, createdById: PROJECT_1.createdById }
 const STREAMS = [STREAM_1, STREAM_2, STREAM_3, STREAM_4, STREAM_5]
 
-const JOB_1 = { id: 9001, classifierId: CLASSIFIER_1.id, projectId: STREAM_1.projectId, status: WAITING, queryStreams: `${STREAM_1.name}, ${STREAM_2.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_1 = { id: 9001, classifierId: CLASSIFIER_1.id, projectId: STREAM_1.projectId, status: WAITING, queryStreams: `${STREAM_1.name}, ${STREAM_2.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null, last_reviewed_by_id: seedValues.otherUserId }
 const JOB_2 = { id: 9002, classifierId: CLASSIFIER_1.id, projectId: STREAM_1.projectId, status: WAITING, queryStreams: `${STREAM_1.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '11,13', minutesTotal: 4, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-10-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_3 = { id: 9003, classifierId: CLASSIFIER_1.id, projectId: STREAM_3.projectId, status: DONE, queryStreams: `${STREAM_3.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_4 = { id: 9004, classifierId: CLASSIFIER_1.id, projectId: STREAM_4.projectId, status: DONE, queryStreams: `${STREAM_4.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.primaryUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
@@ -55,7 +55,6 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  await truncateNonBase(models)
   await models.sequelize.close()
 })
 
@@ -118,6 +117,10 @@ describe('GET /classifier-jobs/{id}/results', () => {
     expect(result.reviewStatus.confirmed).toBe(1)
     expect(result.reviewStatus.rejected).toBe(1)
     expect(result.reviewStatus.uncertain).toBe(1)
+    expect(result.lastReviewedBy).toBeDefined()
+    expect(result.lastReviewedBy.firstname).toBe(seedValues.otherUserFirstname)
+    expect(result.lastReviewedBy.lastname).toBe(seedValues.otherUserLastname)
+    expect(result.lastReviewedBy.email).toBe(seedValues.otherUserEmail)
     const output1 = result.classificationsSummary.find(o => CLASSIFICATION_1.value === o.value)
     expect(output1.id).toBe(CLASSIFICATION_1.id)
     expect(output1.value).toBe(CLASSIFICATION_1.value)
@@ -138,5 +141,9 @@ describe('GET /classifier-jobs/{id}/results', () => {
     expect(output4.value).toBe(CLASSIFICATION_4.value)
     expect(output4.label).toBe(CLASSIFICATION_4.label)
     expect(output4.total).toBe(0)
+
+    const response2 = await request(app).get(`/${JOB_2.id}/results`).query()
+    const result2 = response2.body
+    expect(result2.lastReviewedBy).toBeNull()
   })
 })

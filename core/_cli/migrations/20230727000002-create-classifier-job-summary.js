@@ -43,7 +43,7 @@ module.exports = {
         default: 0
       }
     }).then(() => {
-      return queryInterface.sequelize.query('CREATE INDEX "classifier_job_summaries_classifier_job_id_classifier_id" ON classifier_job_summaries using btree (classifier_job_id, classification_id);')
+      return queryInterface.sequelize.query('CREATE UNIQUE INDEX "classifier_job_summaries_classifier_job_id_classifier_id" ON classifier_job_summaries using btree (classifier_job_id, classification_id);')
     })
   },
   down: (queryInterface, Sequelize) => {

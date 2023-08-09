@@ -12,10 +12,6 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await truncateNonBase(models)
-  await models.Classification.destroy({ where: { value: 'chainsaw' } })
-  await models.Classifier.destroy({ where: { externalId: 'cccddd' } })
-  await models.Stream.destroy({ where: { id: 'abc' } })
   await models.sequelize.close()
 })
 

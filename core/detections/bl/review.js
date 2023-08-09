@@ -4,21 +4,26 @@ const { ForbiddenError, EmptyResultError } = require('../../../common/error-hand
 const { query } = require('../dao/index')
 const { update } = require('../dao/update')
 const reviewsDao = require('../dao/review')
+const classifierJobDao = require('../../classifier-jobs/dao')
 
 async function createOrUpdate (options) {
-  const { streamId, start, userId, classification, classifier } = options
+  const { streamId, start, userId, classification, classifier, classifierJob } = options
 
   if (userId && !(await hasPermission(UPDATE, userId, streamId, STREAM))) {
     throw new ForbiddenError('You do not have permission to review detections in this stream.')
   }
-  const detections = await query({
+  const where = {
     start,
     end: start,
     streams: [streamId],
     classifications: [classification],
     classifiers: [classifier],
     minConfidence: 0
-  }, { fields: ['id'] })
+  }
+  if (classifierJob) {
+    where.classifierJobs = [classifierJob]
+  }
+  const detections = await query(where, { fields: ['id', 'classification_id', 'classifier_job_id'] })
   if (!detections.length) {
     throw new EmptyResultError('Detection with given parameters not found')
   }
@@ -34,7 +39,29 @@ async function createOrUpdate (options) {
       }
       await refreshDetectionReviewStatus(detection.id, streamId, start, transaction)
     }
+    const classifierJobIds = [...new Set(detections
+      .filter(d => !!d.classifier_job_id)
+      .map(d => { return `${d.classifier_job_id}-${d.classification_id}` })
+    )]
+    if (classifierJobIds.length) {
+      for (const classifierJob of classifierJobIds) {
+        const classifierJobId = classifierJob.split('-')[0]
+        const classificationId = classifierJob.split('-')[1]
+        await refreshClassifierJobSummary(classifierJobId, classificationId, options.status, { transaction })
+        await refreshClassifierLastReviewed(classifierJobId, userId, { transaction })
+      }
+    }
   })
+}
+
+async function refreshClassifierJobSummary (classifierJobId, classificationId, status, options = {}) {
+  const summary = (await classifierJobDao.getJobSummaries(classifierJobId, { classificationId }, options))[0]
+  const newValue = summary[status] + 1
+  await classifierJobDao.updateJobSummary(classifierJobId, classificationId, { [status]: newValue }, options)
+}
+
+async function refreshClassifierLastReviewed (classifierJobId, userId, options = {}) {
+  await classifierJobDao.update(classifierJobId, { last_reviewed_by_id: userId }, options)
 }
 
 async function refreshDetectionReviewStatus (detectionId, streamId, start, transaction) {
