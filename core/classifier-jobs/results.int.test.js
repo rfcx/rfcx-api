@@ -50,8 +50,11 @@ beforeAll(() => {
 })
 
 beforeEach(async () => {
-  await truncateNonBase(models)
   await seedTestData()
+})
+
+afterEach(async () => {
+  await truncateNonBase(models)
 })
 
 afterAll(async () => {
@@ -126,21 +129,33 @@ describe('GET /classifier-jobs/{id}/results', () => {
     expect(output1.value).toBe(CLASSIFICATION_1.value)
     expect(output1.label).toBe(CLASSIFICATION_1.label)
     expect(output1.total).toBe(1)
+    expect(output1.confirmed).toBe(1)
+    expect(output1.rejected).toBe(0)
+    expect(output1.uncertain).toBe(0)
     const output2 = result.classificationsSummary.find(o => CLASSIFICATION_2.value === o.value)
     expect(output2.id).toBe(CLASSIFICATION_2.id)
     expect(output2.value).toBe(CLASSIFICATION_2.value)
     expect(output2.label).toBe(CLASSIFICATION_2.label)
     expect(output2.total).toBe(1)
+    expect(output2.confirmed).toBe(0)
+    expect(output2.rejected).toBe(1)
+    expect(output2.uncertain).toBe(0)
     const output3 = result.classificationsSummary.find(o => CLASSIFICATION_3.value === o.value)
     expect(output3.id).toBe(CLASSIFICATION_3.id)
     expect(output3.value).toBe(CLASSIFICATION_3.value)
     expect(output3.label).toBe(CLASSIFICATION_3.label)
     expect(output3.total).toBe(1)
+    expect(output3.confirmed).toBe(0)
+    expect(output3.rejected).toBe(0)
+    expect(output3.uncertain).toBe(1)
     const output4 = result.classificationsSummary.find(o => CLASSIFICATION_4.value === o.value)
     expect(output4.id).toBe(CLASSIFICATION_4.id)
     expect(output4.value).toBe(CLASSIFICATION_4.value)
     expect(output4.label).toBe(CLASSIFICATION_4.label)
     expect(output4.total).toBe(0)
+    expect(output4.confirmed).toBe(0)
+    expect(output4.rejected).toBe(0)
+    expect(output4.uncertain).toBe(0)
 
     const response2 = await request(app).get(`/${JOB_2.id}/results`).query()
     const result2 = response2.body

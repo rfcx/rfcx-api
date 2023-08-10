@@ -1,6 +1,5 @@
 const routes = require('.')
 const models = require('../_models')
-const Sequelize = require('sequelize')
 const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
@@ -13,19 +12,7 @@ beforeAll(async () => {
 })
 
 afterEach(async () => {
-  await models.UserStreamRole.destroy({ where: {}, force: true })
-  await models.Stream.destroy({
-    where: {
-      id: {
-        [Sequelize.Op.in]: ['j123s', 'guard1', 'guard2', 'guard3', 'x456y', 'public1', 'public2', 'private2', 'p123p', 'o789o', 'AB01', 'AB02', 'AB03', 'pq1', 'pq2', 'ab1', 'ab2', 'ab3', 's1', 's2', 's3', 's4', 'o123o']
-      }
-    },
-    force: true
-  })
-  await models.UserProjectRole.destroy({ where: {}, force: true })
-  await models.Project.destroy({ where: {}, force: true })
-  await models.UserOrganizationRole.destroy({ where: {}, force: true })
-  await models.Organization.destroy({ where: {}, force: true })
+  await truncateNonBase(models)
 })
 
 afterAll(async () => {

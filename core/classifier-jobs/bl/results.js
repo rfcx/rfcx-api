@@ -68,7 +68,10 @@ async function getSummary (classifierJobId, filters = {}, options = {}) {
     acc.reviewStatus.uncertain += cur.uncertain
     acc.classificationsSummary.push({
       ...cur.classification.toJSON(),
-      total: cur.total
+      total: cur.total,
+      confirmed: cur.confirmed,
+      rejected: cur.rejected,
+      uncertain: cur.uncertain
     })
     return acc
   }, {

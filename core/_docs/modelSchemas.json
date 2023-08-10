@@ -1203,6 +1203,18 @@
           "total": {
             "type": "integer",
             "example": 2
+          },
+          "confirmed": {
+            "type": "integer",
+            "example": 1
+          },
+          "rejected": {
+            "type": "integer",
+            "example": 1
+          },
+          "uncertain": {
+            "type": "integer",
+            "example": 0
           }
         }
       }
