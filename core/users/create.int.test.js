@@ -14,7 +14,6 @@ app.use('/', router)
 
 beforeAll(async () => {
   muteConsole(['warn', 'error'])
-  await truncateNonBase(models)
   await models.sequelize.query('SELECT setval(\'users_id_seq\', (SELECT MAX(id) FROM users) + 1);')
 })
 

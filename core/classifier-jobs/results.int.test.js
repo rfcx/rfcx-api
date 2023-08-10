@@ -23,6 +23,12 @@ const PROJECT_3 = { id: 'testprojec03', name: 'Test project 3', createdById: see
 const PROJECT_4 = { id: 'testprojec04', name: 'Test project 4', createdById: seedValues.anotherUserId }
 const PROJECTS = [PROJECT_1, PROJECT_2, PROJECT_3, PROJECT_4]
 
+const ROLE_1 = { user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember }
+const ROLE_2 = { user_id: seedValues.primaryUserId, project_id: PROJECT_2.id, role_id: seedValues.roleGuest }
+const ROLE_3 = { user_id: seedValues.primaryUserId, project_id: PROJECT_3.id, role_id: seedValues.roleAdmin }
+const ROLE_4 = { user_id: seedValues.anotherUserId, project_id: PROJECT_4.id, role_id: seedValues.roleAdmin }
+const ROLES = [ROLE_1, ROLE_2, ROLE_3, ROLE_4]
+
 const STREAM_1 = { id: 'rrr0stream01', name: 'Test stream', projectId: PROJECT_1.id, createdById: PROJECT_1.createdById }
 const STREAM_2 = { id: 'rrr0stream02', name: 'Test stream 2', projectId: PROJECT_1.id, createdById: PROJECT_1.createdById }
 const STREAM_3 = { id: 'rrr0stream03', name: 'Test stream 3', projectId: PROJECT_2.id, createdById: PROJECT_1.createdById }
@@ -62,30 +68,14 @@ afterAll(async () => {
 })
 
 async function seedTestData () {
-  for (const classification of CLASSIFICATIONS) {
-    await models.Classification.findOrCreate({ where: classification })
-  }
-  await models.Classifier.findOrCreate({ where: CLASSIFIER_1 })
-  for (const output of CLASSIFIER_OUTPUTS) {
-    await models.ClassifierOutput.findOrCreate({ where: output })
-  }
-  for (const project of PROJECTS) {
-    await models.Project.findOrCreate({ where: project })
-  }
-  for (const stream of STREAMS) {
-    await models.Stream.findOrCreate({ where: stream })
-  }
-  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember } })
-  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_2.id, role_id: seedValues.roleGuest } })
-  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_3.id, role_id: seedValues.roleAdmin } })
-  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.anotherUserId, project_id: PROJECT_4.id, role_id: seedValues.roleAdmin } })
-
-  for (const job of JOBS) {
-    await models.ClassifierJob.findOrCreate({ where: job })
-  }
-  for (const classifierJobStream of CLASSIFIER_JOB_STREAMS) {
-    await models.ClassifierJobStream.findOrCreate({ where: classifierJobStream })
-  }
+  await models.Classification.bulkCreate(CLASSIFICATIONS)
+  await models.Classifier.create(CLASSIFIER_1)
+  await models.ClassifierOutput.bulkCreate(CLASSIFIER_OUTPUTS)
+  await models.Project.bulkCreate(PROJECTS)
+  await models.Stream.bulkCreate(STREAMS)
+  await models.UserProjectRole.bulkCreate(ROLES)
+  await models.ClassifierJob.bulkCreate(JOBS)
+  await models.ClassifierJobStream.bulkCreate(CLASSIFIER_JOB_STREAMS)
 }
 
 describe('GET /classifier-jobs/{id}/results', () => {

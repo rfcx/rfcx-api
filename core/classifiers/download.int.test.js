@@ -18,8 +18,8 @@ afterAll(async () => {
 })
 
 async function commonSetup () {
-  const model1 = (await models.Classifier.findOrCreate({ where: { name: 'chainsaw', externalId: '843cb81d-03b9-07e1-5184-931c95265213', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: 's3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz', isPublic: true } }))[0]
-  const model2 = (await models.Classifier.findOrCreate({ where: { name: 'dogbark', externalId: '843cb81d-03b9-07e1-5184-931c95265214', version: 5, createdById: seedValues.anotherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false } }))[0]
+  const model1 = await models.Classifier.create({ name: 'chainsaw', externalId: '843cb81d-03b9-07e1-5184-931c95265213', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: 's3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz', isPublic: true })
+  const model2 = await models.Classifier.create({ name: 'dogbark', externalId: '843cb81d-03b9-07e1-5184-931c95265214', version: 5, createdById: seedValues.anotherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false })
   return { model1, model2 }
 }
 

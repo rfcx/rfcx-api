@@ -1,7 +1,7 @@
 const request = require('supertest')
 const routes = require('./stream')
 const models = require('../_models')
-const { truncate, expressApp, seedValues, muteConsole, truncateNonBase } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
@@ -9,13 +9,12 @@ app.use('/', routes)
 
 beforeAll(async () => {
   muteConsole()
-  await truncateNonBase(models)
 })
 afterEach(async () => {
-  await truncate({ Stream: models.Stream, UserStreamRole: models.UserStreamRole, Project: models.Project, UserProjectRole: models.UserProjectRole })
+  await truncateNonBase(models)
+  // await truncate({ Stream: models.Stream, UserStreamRole: models.UserStreamRole, Project: models.Project, UserProjectRole: models.UserProjectRole })
 })
 afterAll(async () => {
-  await truncateNonBase(models)
   await models.sequelize.close()
 })
 

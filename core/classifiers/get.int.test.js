@@ -15,10 +15,10 @@ afterAll(async () => {
 })
 
 async function commonSetup () {
-  const classifier1 = (await models.Classifier.findOrCreate({ where: { name: 'chainsaw', externalId: '843cb81d-03b9-07e1-5184-931c95265213', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true } }))[0]
-  const classifier2 = (await models.Classifier.findOrCreate({ where: { name: 'dogbark', externalId: '843cb81d-03b9-07e1-5184-931c95265214', version: 5, createdById: seedValues.anotherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false } }))[0]
-  const classifier3 = (await models.Classifier.findOrCreate({ where: { name: 'pr-parrot', externalId: '843cb81d-03b9-07e1-5184-931c95265215', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true } }))[0]
-  const classifier4 = (await models.Classifier.findOrCreate({ where: { name: 'vehicle', externalId: '843cb81d-03b9-07e1-5184-931c95265216', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false } }))[0]
+  const classifier1 = await models.Classifier.create({ name: 'chainsaw', externalId: '843cb81d-03b9-07e1-5184-931c95265213', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true })
+  const classifier2 = await models.Classifier.create({ name: 'dogbark', externalId: '843cb81d-03b9-07e1-5184-931c95265214', version: 5, createdById: seedValues.anotherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false })
+  const classifier3 = await models.Classifier.create({ name: 'pr-parrot', externalId: '843cb81d-03b9-07e1-5184-931c95265215', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true })
+  const classifier4 = await models.Classifier.create({ name: 'vehicle', externalId: '843cb81d-03b9-07e1-5184-931c95265216', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false })
   return { classifier1, classifier2, classifier3, classifier4 }
 }
 

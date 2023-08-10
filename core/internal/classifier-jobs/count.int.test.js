@@ -17,15 +17,11 @@ const JOB_4 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_3.id, queryStr
 const JOBS = [JOB_1, JOB_2, JOB_3, JOB_4]
 
 async function seedTestData () {
-  await models.Classifier.findOrCreate({ where: CLASSIFIER_1 })
-  for (const project of PROJECTS) {
-    await models.Project.findOrCreate({ where: project })
-  }
-  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember } })
-  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_2.id, role_id: seedValues.roleGuest } })
-  for (const job of JOBS) {
-    await models.ClassifierJob.findOrCreate({ where: job })
-  }
+  await models.Classifier.create(CLASSIFIER_1)
+  await models.Project.bulkCreate(PROJECTS)
+  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
+  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_2.id, role_id: seedValues.roleGuest })
+  await models.ClassifierJob.bulkCreate(JOBS)
 }
 
 beforeEach(async () => {

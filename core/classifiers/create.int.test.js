@@ -12,13 +12,10 @@ const CLASSIFICATION_2 = { id: 2, value: 'vehicle', title: 'vehicle', typeId: 1,
 const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2]
 
 async function commonSetup () {
-  for (const c of CLASSIFICATIONS) {
-    await models.Classification.findOrCreate({ where: c })
-  }
+  await models.Classification.bulkCreate(CLASSIFICATIONS)
 }
 
 beforeAll(async () => {
-  await truncateNonBase(models)
   muteConsole('warn')
 })
 beforeEach(async () => {

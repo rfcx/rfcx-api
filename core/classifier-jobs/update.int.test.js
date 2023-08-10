@@ -24,6 +24,10 @@ const CLASSIFIER_OUTPUTS = [CLASSIFIER_OUTPUT_1, CLASSIFIER_OUTPUT_2, CLASSIFIER
 const PROJECT_1 = { id: 'testprojert1', name: 'Test project', createdById: seedValues.otherUserId }
 const PROJECTS = [PROJECT_1]
 
+const ROLE_1 = { user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember }
+const ROLE_2 = { user_id: seedValues.anotherUserId, project_id: PROJECT_1.id, role_id: seedValues.roleGuest }
+const ROLES = [ROLE_1, ROLE_2]
+
 const STREAM_1 = { id: 'LilSjZJkRK00', name: 'Test stream', start: '2021-01-02T01:00:00.000Z', end: '2021-01-02T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT_1.id }
 const STREAMS = [STREAM_1]
 
@@ -43,20 +47,13 @@ const CLASSIFIER_JOB_STREAMS = [CLASSIFIER_JOB_WAITING_STREAM, CLASSIFIER_JOB_RU
 
 async function seedTestData () {
   await models.Project.bulkCreate(PROJECTS)
-  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
-  await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: PROJECT_1.id, role_id: seedValues.roleGuest })
+  await models.UserProjectRole.bulkCreate(ROLES)
   await models.Stream.bulkCreate(STREAMS)
+  await models.Classification.bulkCreate(CLASSIFICATIONS)
   await models.Classifier.bulkCreate(CLASSIFIERS)
-  for (const classification of CLASSIFICATIONS) {
-    await models.Classification.findOrCreate({ where: classification })
-  }
-  for (const output of CLASSIFIER_OUTPUTS) {
-    await models.ClassifierOutput.findOrCreate({ where: output })
-  }
+  await models.ClassifierOutput.bulkCreate(CLASSIFIER_OUTPUTS)
   await models.ClassifierJob.bulkCreate(JOBS)
-  for (const classifierJobStream of CLASSIFIER_JOB_STREAMS) {
-    await models.ClassifierJobStream.findOrCreate({ where: classifierJobStream })
-  }
+  await models.ClassifierJobStream.bulkCreate(CLASSIFIER_JOB_STREAMS)
 }
 
 beforeAll(async () => {

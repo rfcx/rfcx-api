@@ -26,31 +26,18 @@ const JOB_RUNNING = { id: 123, status: RUNNING, classifierId: CLASSIFIER_1.id, p
 const JOBS = [JOB_RUNNING]
 
 async function seedTestData () {
-  for (const classification of CLASSIFICATIONS) {
-    await models.Classification.findOrCreate({ where: classification })
-  }
-  for (const classifier of CLASSIFIERS) {
-    await models.Classifier.findOrCreate({ where: classifier })
-  }
-  for (const output of CLASSIFIER_OUTPUTS) {
-    await models.ClassifierOutput.findOrCreate({ where: output })
-  }
-  for (const project of PROJECTS) {
-    await models.Project.findOrCreate({ where: project })
-  }
-  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember } })
-  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.anotherUserId, project_id: PROJECT_1.id, role_id: seedValues.roleGuest } })
-  for (const stream of STREAMS) {
-    await models.Stream.findOrCreate({ where: stream })
-  }
-  for (const job of JOBS) {
-    await models.ClassifierJob.findOrCreate({ where: job })
-  }
+  await models.Classification.bulkCreate(CLASSIFICATIONS)
+  await models.Classifier.bulkCreate(CLASSIFIERS)
+  await models.ClassifierOutput.bulkCreate(CLASSIFIER_OUTPUTS)
+  await models.Project.bulkCreate(PROJECTS)
+  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
+  await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: PROJECT_1.id, role_id: seedValues.roleGuest })
+  await models.Stream.bulkCreate(STREAMS)
+  await models.ClassifierJob.bulkCreate(JOBS)
 }
 
 beforeAll(async () => {
   muteConsole('warn')
-  await truncateNonBase(models)
 })
 
 afterEach(async () => {
