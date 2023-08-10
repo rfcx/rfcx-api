@@ -7,7 +7,8 @@ const { toCamelObject } = require('../../_utils/formatters/string-cases')
 
 const availableIncludes = [
   Classifier.include({ attributes: ['id', 'name'] }),
-  Stream.include({ as: 'streams', attributes: ['id', 'name'], required: false })
+  // `through: { attributes: [] }` is required to delete `classifier_job_streams: { ClassifierJobId: id, StreamId: id }` from result
+  Stream.include({ as: 'streams', attributes: ['id', 'name'], required: false, through: { attributes: [] } })
 ]
 
 const availableIncludesGet = [
@@ -60,15 +61,7 @@ async function query (filters, options = {}) {
     offset: options.offset
   })
 
-  data.results = data.results.map((job) => {
-    if (job.streams) {
-      job.streams = job.streams.map(s => {
-        delete s.classifier_job_streams
-        return s
-      })
-    }
-    return toCamelObject(job, 2)
-  })
+  data.results = data.results.map((job) => { return toCamelObject(job, 2) })
 
   return data
 }
@@ -122,18 +115,11 @@ async function get (id, options = {}) {
   const attributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludesGet.filter(i => options.fields.includes(i.as)) : availableIncludesGet
   const transaction = options.transaction || null
-  let job = await ClassifierJob.findOne({ where: { id }, attributes, include, transaction })
+  const job = await ClassifierJob.findOne({ where: { id }, attributes, include, transaction })
   if (!job) {
     throw new EmptyResultError()
   }
-  job = job.toJSON()
-  if (job.streams) {
-    job.streams = job.streams.map(s => {
-      delete s.classifier_job_streams
-      return s
-    })
-  }
-  return toCamelObject(job, 2)
+  return toCamelObject(job.toJSON(), 2)
 }
 
 /**
