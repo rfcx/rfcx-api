@@ -12,7 +12,7 @@ const PROJECT_3 = { id: 'testproj0003', name: 'Test project 3', createdById: see
 const PROJECTS = [PROJECT_1, PROJECT_2, PROJECT_3]
 
 const STREAM_1 = { id: 'LilSjZJkRK40', name: 'Stream 1', projectId: PROJECT_1.id, createdById: seedValues.otherUserId }
-const STREAM_2 = { id: 'LilSjZJkRK41', name: 'Stream 1', projectId: PROJECT_2.id, createdById: seedValues.anotherUserId }
+const STREAM_2 = { id: 'LilSjZJkRK41', name: 'Stream 2', projectId: PROJECT_2.id, createdById: seedValues.anotherUserId }
 const STREAM_3 = { id: 'LilSjZJkRK42', name: 'Stream 3', projectId: PROJECT_3.id, createdById: seedValues.primaryUserId }
 const STREAM_4 = { id: 'LilSjZJkRK43', name: 'Stream 4', projectId: PROJECT_3.id, createdById: seedValues.primaryUserId }
 const STREAM_5 = { id: 'LilSjZJkRK44', name: 'Stream 5', projectId: PROJECT_3.id, createdById: seedValues.primaryUserId }
