@@ -14,13 +14,5 @@ module.exports = (sequelize, DataTypes) => {
     underscored: true,
     timestamps: false
   })
-  ClassifierJobStream.associate = function (models) {
-    ClassifierJobStream.belongsTo(models.ClassifierJob, { as: 'classifier_job', foreignKey: 'classifier_job_id' })
-    ClassifierJobStream.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
-  }
-  // ClassifierJobStream.attributes = {
-  //   full: ['classifier_job_id', 'stream_id'],
-  //   lite: ['classifier_job_id', 'stream_id']
-  // }
   return ClassifierJobStream
 }
