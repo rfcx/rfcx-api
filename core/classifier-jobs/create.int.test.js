@@ -8,23 +8,21 @@ const CLASSIFIERS = [CLASSIFIER_1]
 
 const PROJECT_1 = { id: 'testproj0001', name: 'Test project 1', createdById: seedValues.otherUserId }
 const PROJECT_2 = { id: 'testproj0002', name: 'Test project 2', createdById: seedValues.anotherUserId }
-const PROJECTS = [PROJECT_1, PROJECT_2]
+const PROJECT_3 = { id: 'testproj0003', name: 'Test project 3', createdById: seedValues.primaryUserId }
+const PROJECTS = [PROJECT_1, PROJECT_2, PROJECT_3]
 
 const STREAM_1 = { id: 'LilSjZJkRK40', name: 'Stream 1', projectId: PROJECT_1.id, createdById: seedValues.otherUserId }
 const STREAM_2 = { id: 'LilSjZJkRK41', name: 'Stream 1', projectId: PROJECT_2.id, createdById: seedValues.anotherUserId }
-const STREAMS = [STREAM_1, STREAM_2]
+const STREAM_3 = { id: 'LilSjZJkRK42', name: 'Stream 3', projectId: PROJECT_3.id, createdById: seedValues.primaryUserId }
+const STREAM_4 = { id: 'LilSjZJkRK43', name: 'Stream 4', projectId: PROJECT_3.id, createdById: seedValues.primaryUserId }
+const STREAM_5 = { id: 'LilSjZJkRK44', name: 'Stream 5', projectId: PROJECT_3.id, createdById: seedValues.primaryUserId }
+const STREAMS = [STREAM_1, STREAM_2, STREAM_3, STREAM_4, STREAM_5]
 
 async function seedTestData () {
-  for (const classifier of CLASSIFIERS) {
-    await models.Classifier.findOrCreate({ where: classifier })
-  }
-  for (const project of PROJECTS) {
-    await models.Project.findOrCreate({ where: project })
-  }
-  for (const stream of STREAMS) {
-    await models.Stream.findOrCreate({ where: stream })
-  }
-  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember } })
+  await await models.Classifier.bulkCreate(CLASSIFIERS)
+  await await models.Project.bulkCreate(PROJECTS)
+  await await models.Stream.bulkCreate(STREAMS)
+  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
 }
 
 beforeAll(async () => {
@@ -83,6 +81,35 @@ describe('POST /classifiers-jobs', () => {
     expect(jobStreams.length).toBe(1)
     expect(jobStreams[0].classifierJobId).toBe(jobs[0].id)
     expect(jobStreams[0].streamId).toBe(STREAM_1.id)
+  })
+
+  test('if query_streams is not set, assigns all streams from the projects', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_3.id,
+      query_start: '2021-01-02',
+      query_end: '2021-01-02',
+      query_hours: '1,2'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(201)
+    const jobs = await models.ClassifierJob.findAll()
+    expect(jobs.length).toBe(1)
+    expect(jobs[0].classifierId).toBe(requestBody.classifier_id)
+    expect(jobs[0].projectId).toBe(requestBody.project_id)
+    expect(jobs[0].queryStreams).toBeNull()
+    expect(jobs[0].queryStart).toBe(requestBody.query_start)
+    expect(jobs[0].queryEnd).toBe(requestBody.query_end)
+    expect(jobs[0].queryHours).toBe(requestBody.query_hours)
+    const jobStreams = await models.ClassifierJobStream.findAll()
+    expect(jobStreams.length).toBe(3)
+    expect(jobStreams[0].classifierJobId).toBe(jobs[0].id)
+    expect(jobStreams[0].streamId).toBe(STREAM_3.id)
+    expect(jobStreams[1].classifierJobId).toBe(jobs[0].id)
+    expect(jobStreams[1].streamId).toBe(STREAM_4.id)
+    expect(jobStreams[2].classifierJobId).toBe(jobs[0].id)
+    expect(jobStreams[2].streamId).toBe(STREAM_5.id)
   })
 
   test('can omit optional query_streams', async () => {
