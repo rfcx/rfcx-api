@@ -493,7 +493,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       requestBody.stream_source_file.sha1_checksum = 'rrrrr7bf6c589b4856d5f51691d159366d74266'
       const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
-      expect(response.statusCode).toBe(400)
+      expect(response.statusCode).toBe(403)
       expect(response.body.message).toBe('There is another file with the same timestamp in the stream.')
       const streamSourceFiles = await models.StreamSourceFile.findAll()
       const streamSegments = await models.StreamSegment.findAll()

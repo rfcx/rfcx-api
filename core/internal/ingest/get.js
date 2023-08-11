@@ -4,7 +4,7 @@ const streamSegmentDao = require('../../stream-segments/dao')
 const Converter = require('../../../common/converter')
 const rolesService = require('../../roles/dao')
 const moment = require('moment-timezone')
-const { ForbiddenError, EmptyResultError, ValidationError } = require('../../../common/error-handling/errors')
+const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
 
 /**
  * @swagger
@@ -79,7 +79,7 @@ module.exports = function (req, res) {
           end: params.start.clone().add('1', 'minute')
         }, { fields: ['start'], strict: true })).results
         if (segments.length && moment.utc(segments[0].start).valueOf() === params.start.valueOf()) {
-          throw new ValidationError('There is another file with the same timestamp in the stream.')
+          throw new ForbiddenError('There is another file with the same timestamp in the stream.')
         } else {
           throw new EmptyResultError('Stream source file not found')
         }

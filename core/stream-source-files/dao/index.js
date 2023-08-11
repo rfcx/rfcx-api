@@ -1,5 +1,5 @@
 const moment = require('moment-timezone')
-const { EmptyResultError, ValidationError } = require('../../../common/error-handling/errors')
+const { EmptyResultError, ValidationError, ForbiddenError } = require('../../../common/error-handling/errors')
 const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../_models')
 const { getAccessibleObjectsIDs, STREAM } = require('../../roles/dao')
 const streamSegmentDao = require('../../stream-segments/dao')
@@ -178,7 +178,7 @@ async function checkForDuplicates (streamId, sha1Checksum, minStart, opts = {}) 
         }, { fields: ['start'], strict: true, transaction })).results
         const sameFile = segments.length && moment.utc(segments[0].start).valueOf() === minStart.valueOf()
         if (sameFile) {
-          throw new ValidationError('There is another file with the same timestamp in the stream.')
+          throw new ForbiddenError('There is another file with the same timestamp in the stream.')
         }
       }
       return { isDuplicate: false }
