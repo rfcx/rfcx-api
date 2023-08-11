@@ -170,6 +170,16 @@ async function checkForDuplicates (streamId, sha1Checksum, minStart, opts = {}) 
           throw new ValidationError('This file was already ingested.')
         }
         return { isDuplicate: true, hasUnavailable }
+      } else {
+        const segments = (await streamSegmentDao.query({
+          streamId,
+          start: minStart,
+          end: minStart.clone().add('1', 'minute')
+        }, { fields: ['start'], strict: true, transaction })).results
+        const sameFile = segments.length && moment.utc(segments[0].start).valueOf() === minStart.valueOf()
+        if (sameFile) {
+          throw new ValidationError('There is another file with the same timestamp in the stream.')
+        }
       }
       return { isDuplicate: false }
     })

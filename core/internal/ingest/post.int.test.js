@@ -483,6 +483,23 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       expect(streamSourceFiles.length).toBe(0)
       expect(streamSegments.length).toBe(0)
     })
+
+    test('validation error is returned if user tries to upload another file with existing start', async () => {
+      await commonSetup()
+      const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+      await models.StreamSegment.create({ id: testPayload.stream_segments[0].id, stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+      const requestBody = Object.assign({}, testPayload)
+      requestBody.stream_source_file.filename = 'aaaaaaaaaaaa-2021-04-19T12-11-00.flac'
+      requestBody.stream_source_file.sha1_checksum = 'rrrrr7bf6c589b4856d5f51691d159366d74266'
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+
+      expect(response.statusCode).toBe(400)
+      expect(response.body.message).toBe('There is another file with the same timestamp in the stream.')
+      const streamSourceFiles = await models.StreamSourceFile.findAll()
+      const streamSegments = await models.StreamSegment.findAll()
+      expect(streamSourceFiles.length).toBe(1)
+      expect(streamSegments.length).toBe(1)
+    })
   })
 
   describe('unavailable segments', () => {
