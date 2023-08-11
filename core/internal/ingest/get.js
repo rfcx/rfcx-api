@@ -3,7 +3,8 @@ const streamSourceFileDao = require('../../stream-source-files/dao')
 const streamSegmentDao = require('../../stream-segments/dao')
 const Converter = require('../../../common/converter')
 const rolesService = require('../../roles/dao')
-const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
+const moment = require('moment-timezone')
+const { ForbiddenError, EmptyResultError, ValidationError } = require('../../../common/error-handling/errors')
 
 /**
  * @swagger
@@ -69,19 +70,30 @@ module.exports = function (req, res) {
         fields: params.fields
       }
       const data = await streamSourceFileDao.query(filters, options)
-      if (!data.results.length) {
-        throw new EmptyResultError('Stream source file not found')
-      }
       const streamSourceFile = data.results[0]
-      const segmentsData = await streamSegmentDao.query({
-        streamId: req.params.id,
-        start: params.start.clone().subtract('1', 'minute'),
-        end: params.start.clone().add('1', 'day'),
-        streamSourceFileId: streamSourceFile.id
-      }, { fields: ['start', 'availability'] })
-      streamSourceFile.availability = streamSourceFileDao.calcAvailability(segmentsData.results)
-      streamSourceFile.segments = segmentsData.results
-      return res.json(streamSourceFile)
+      if (!streamSourceFile) {
+        // check if user tries to upload another file with an existing timestamp
+        const segments = (await streamSegmentDao.query({
+          streamId: req.params.id,
+          start: params.start,
+          end: params.start.clone().add('1', 'minute')
+        }, { fields: ['start'], strict: true })).results
+        if (segments.length && moment.utc(segments[0].start).valueOf() === params.start.valueOf()) {
+          throw new ValidationError('There is another file with the same timestamp in the stream.')
+        } else {
+          throw new EmptyResultError('Stream source file not found')
+        }
+      } else {
+        const segments = (await streamSegmentDao.query({
+          streamId: req.params.id,
+          start: params.start.clone().subtract('1', 'minute'),
+          end: params.start.clone().add('1', 'day'),
+          streamSourceFileId: streamSourceFile.id
+        }, { fields: ['start', 'availability'] })).results
+        streamSourceFile.availability = streamSourceFileDao.calcAvailability(segments)
+        streamSourceFile.segments = segments
+        return res.json(streamSourceFile)
+      }
     })
     .catch(httpErrorHandler(req, res, 'Failed getting stream source file'))
 }
