@@ -42,16 +42,14 @@ async function commonSetup () {
   return { battery, sentinelPower }
 }
 
-test('can parse checkin message to iotda message', async () => {
+test('cannot parse checkin message if no timestamp', async () => {
   await commonSetup()
   const checkin = makeCheckin('xyz', 'abc', 'stream-test0', 'project-test')
+  checkin.json.sentinel_power = null
 
   const iotdaMessage = await parse(checkin)
 
-  expect(iotdaMessage.services[0].properties.internalBatteryPercentage).toBe(100)
-  expect(iotdaMessage.services[0].properties.mainBatteryPercentage).toBe(20)
-  expect(iotdaMessage.services[0].properties.systemPower).toBe(100)
-  expect(iotdaMessage.services[0].properties.inputPower).toBe(1)
+  expect(iotdaMessage).toBeNull()
 })
 
 function makeCheckin (guardianId, checkinId, streamId, projectId) {
@@ -66,6 +64,9 @@ function makeCheckin (guardianId, checkinId, streamId, projectId) {
       dbCheckIn: {
         id: checkinId
       }
+    },
+    json: {
+      sentinel_power: 's*1690801091393*3276*240*29*786|i*1690801091393*100*10*256*1|b*1690801091393*3293*-239*78.08*-786'
     }
   }
 }

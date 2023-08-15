@@ -5,6 +5,10 @@ const models = require('../../_models')
 
 async function parse (pingObj) {
   const requiredData = await getRequiredSentinelDataModel(pingObj)
+  if (requiredData === null) {
+    return null
+  }
+
   const time = moment(requiredData.timestamp).utc()
 
   const messageBody = {
@@ -39,21 +43,38 @@ async function forward (pingObj) {
   if (iotdaApp.availableProjects.includes(targetProject)) {
     const mqttMessage = await parse(pingObj)
     const device = getIoTDAConnectionOptions(pingObj, moment.utc())
-    iotdaApp.forwardMessage(device, mqttMessage)
+    if (mqttMessage) {
+      iotdaApp.forwardMessage(device, mqttMessage)
+    }
   }
 }
 
 async function getRequiredSentinelDataModel (pingObj) {
   const guardianId = pingObj.db.dbGuardian.id
-  const sentinelPower = await models.GuardianMetaSentinelPower.findOne({ where: { guardian_id: guardianId }, order: [['created_at', 'DESC']] })
-  const internalBattery = await models.GuardianMetaBattery.findOne({ where: { guardian_id: guardianId }, order: [['created_at', 'DESC']] })
-  const requiredData = {
-    internalBatteryPercentage: internalBattery.battery_percent,
-    mainBatteryPercentage: sentinelPower.battery_state_of_charge,
-    systemPower: sentinelPower.system_power,
-    inputPower: sentinelPower.input_power,
-    timestamp: sentinelPower.measured_at
+  // not precise and can be undefined if sentinel_power is not presence
+  const measuredAt = (pingObj.json.sentinel_power) ? pingObj.json.sentinel_power.split('*')[1] : undefined
+  const startAt = (measuredAt) ? parseInt(measuredAt) : undefined
+  const endAt = (startAt) ? startAt + 300000 : undefined
+
+  // return if cannot get startAt and endAt time
+  if (startAt === undefined && endAt === undefined) {
+    return null
   }
+  const sentinelPower = await models.GuardianMetaSentinelPower.findOne({ where: { guardian_id: guardianId, measured_at: { [models.Sequelize.Op.between]: [startAt, endAt] } }, order: [['created_at', 'DESC']] })
+  const internalBattery = await models.GuardianMetaBattery.findOne({ where: { guardian_id: guardianId, measured_at: { [models.Sequelize.Op.between]: [startAt, endAt] } }, order: [['created_at', 'DESC']] })
+
+  const requiredData = {}
+  if (sentinelPower) {
+    requiredData.mainBatteryPercentage = sentinelPower.battery_state_of_charge
+    requiredData.systemPower = sentinelPower.system_power
+    requiredData.inputPower = sentinelPower.input_power
+    requiredData.timestamp = sentinelPower.measured_at
+  }
+
+  if (internalBattery) {
+    requiredData.internalBatteryPercentage = internalBattery.battery_percent
+  }
+
   return requiredData
 }
 
