@@ -484,6 +484,46 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       expect(streamSegments.length).toBe(0)
     })
 
+    describe('stream bounds update', () => {
+      test('stream start, end and max_sample_rate are set for empty stream', async () => {
+        await commonSetup()
+        await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+
+        const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
+        expect(streamFromDb.maxSampleRate).toBe(testPayload.stream_source_file.sample_rate)
+        expect(streamFromDb.start).toEqual(moment.utc(testPayload.stream_segments[0].start).toDate())
+        expect(streamFromDb.end).toEqual(moment.utc(testPayload.stream_segments[0].end).toDate())
+      })
+
+      test('stream start, end and max_sample_rate are updated if new values are bigger/smaller', async () => {
+        await commonSetup()
+        const stream = await models.Stream.create(
+          { id: 'abcdsaqwery2', name: 'my stream 2', createdById: seedValues.primaryUserId, start: '2021-04-18T12:12:10.000Z', end: '2021-04-18T12:12:20.000Z', maxSampleRate: 24000 }
+        )
+
+        await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+
+        const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
+        expect(streamFromDb.maxSampleRate).toBe(testPayload.stream_source_file.sample_rate)
+        expect(streamFromDb.start).toEqual(moment.utc(testPayload.stream_segments[0].start).toDate())
+        expect(streamFromDb.end).toEqual(moment.utc(testPayload.stream_segments[0].end).toDate())
+      })
+
+      test('stream start, end and max_sample_rate are not updated if new values are not bigger/smaller', async () => {
+        await commonSetup()
+        const stream = await models.Stream.create(
+          { id: 'abcdsaqwery3', name: 'my stream 3', createdById: seedValues.primaryUserId, start: '2020-01-01 00:00:00', end: '2021-05-05 00:00:00', maxSampleRate: 128000 }
+        )
+
+        await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+
+        const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
+        expect(streamFromDb.maxSampleRate).toBe(stream.maxSampleRate)
+        expect(streamFromDb.start).toEqual(moment.utc(stream.start).toDate())
+        expect(streamFromDb.end).toEqual(moment.utc(stream.end).toDate())
+      })
+    })
+
     test('validation error is returned if user tries to upload another file with existing start', async () => {
       await commonSetup()
       const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })

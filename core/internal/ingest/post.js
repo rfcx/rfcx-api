@@ -74,7 +74,7 @@ module.exports = function (req, res) {
           const sfParams = await sfConverter.validate() // validate stream_source_file attributes
           const transformedArray = await segConverter.validate() // validate stream_segment[] attributes
 
-          await streamDao.get(streamId, { transaction })
+          const stream = await streamDao.get(streamId, { transaction })
           // Set missing stream_source_file attributes and create a db row
           sfParams.stream_id = streamId
           streamSourceFileDao.transformMetaAttr(sfParams)
@@ -122,6 +122,14 @@ module.exports = function (req, res) {
           ].sort((a, b) => {
             return a < b
           })
+
+          // Refresh stream max_sample rate, start and end if needed
+          const maxEnd = moment.max(transformedArray.map(s => s.end))
+          await streamDao.refreshStreamBoundVars(stream, {
+            start: minStart.toDate(),
+            end: maxEnd.toDate(),
+            sampleRate: streamSourceFile.sample_rate
+          }, { transaction })
 
           if (arbimonService.isEnabled && createdSegments.length) {
             await arbimonService.createRecordingsFromSegments(sfParams, createdSegments, { transaction })
