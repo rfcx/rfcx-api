@@ -52,9 +52,9 @@ async function forward (pingObj) {
 async function getRequiredSentinelDataModel (pingObj) {
   const guardianId = pingObj.db.dbGuardian.id
   // not precise and can be undefined if sentinel_power is not presence
-  const measuredAt = (pingObj.json.sentinel_power) ? pingObj.json.sentinel_power.split('*')[1] : undefined
-  const startAt = (measuredAt) ? parseInt(measuredAt) : undefined
-  const endAt = (startAt) ? startAt + 300000 : undefined
+  const measuredAt = (pingObj.json.sentinel_power) ? parseInt(pingObj.json.sentinel_power.split('*')[1]) : undefined
+  const startAt = (measuredAt) ? measuredAt - 300000 : undefined
+  const endAt = (measuredAt) ? measuredAt + 300000 : undefined
 
   // return if cannot get startAt and endAt time
   if (startAt === undefined && endAt === undefined) {
