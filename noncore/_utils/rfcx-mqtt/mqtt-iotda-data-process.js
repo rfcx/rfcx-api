@@ -1,7 +1,7 @@
 const crypto = require('crypto')
 const iotdaApp = require('../../iotda')
 const moment = require('moment')
-const models = require('../../_models')
+const { GuardianMetaSentinelPower, GuardianMetaBattery, Sequelize } = require('../../_models')
 
 async function parse (pingObj) {
   const requiredData = await getRequiredSentinelDataModel(pingObj)
@@ -60,8 +60,8 @@ async function getRequiredSentinelDataModel (pingObj) {
   if (startAt === undefined && endAt === undefined) {
     return null
   }
-  const sentinelPower = await models.GuardianMetaSentinelPower.findOne({ where: { guardian_id: guardianId, measured_at: { [models.Sequelize.Op.between]: [startAt, endAt] } }, order: [['created_at', 'DESC']] })
-  const internalBattery = await models.GuardianMetaBattery.findOne({ where: { guardian_id: guardianId, measured_at: { [models.Sequelize.Op.between]: [startAt, endAt] } }, order: [['created_at', 'DESC']] })
+  const sentinelPower = await GuardianMetaSentinelPower.findOne({ where: { guardian_id: guardianId, measured_at: { [Sequelize.Op.between]: [startAt, endAt] } }, order: [['created_at', 'DESC']] })
+  const internalBattery = await GuardianMetaBattery.findOne({ where: { guardian_id: guardianId, measured_at: { [Sequelize.Op.between]: [startAt, endAt] } }, order: [['created_at', 'DESC']] })
 
   const requiredData = {}
   if (sentinelPower) {

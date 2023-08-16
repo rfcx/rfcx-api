@@ -2,9 +2,11 @@ const models = require('../../_models')
 const { parse } = require('./mqtt-iotda-data-process')
 
 jest.mock('../../_models', () => {
+  const actual = jest.requireActual('../../_models')
   let battery = {}
   let sentinel = {}
   return {
+    Sequelize: actual.Sequelize,
     GuardianMetaBattery: {
       findOne: (objects) => Promise.resolve(battery),
       findOrCreate: (objects) => {
@@ -52,7 +54,6 @@ test('can parse checkin message to iotda message', async () => {
   expect(iotdaMessage.services[0].properties.systemPower).toBe(786)
   expect(iotdaMessage.services[0].properties.inputPower).toBe(1)
 })
-
 
 test('cannot parse checkin message if no timestamp', async () => {
   await commonSetup()
