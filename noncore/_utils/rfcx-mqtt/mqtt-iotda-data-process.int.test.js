@@ -42,6 +42,18 @@ async function commonSetup () {
   return { battery, sentinelPower }
 }
 
+test('can parse checkin message to iotda message', async () => {
+  await commonSetup()
+  const checkin = makeCheckin('xyz', 'abc', 'stream-test0', 'project-test')
+
+  const iotdaMessage = await parse(checkin)
+
+  expect(iotdaMessage.services[0].properties.mainBatteryPercentage).toBe(78.08)
+  expect(iotdaMessage.services[0].properties.systemPower).toBe(786)
+  expect(iotdaMessage.services[0].properties.inputPower).toBe(1)
+})
+
+
 test('cannot parse checkin message if no timestamp', async () => {
   await commonSetup()
   const checkin = makeCheckin('xyz', 'abc', 'stream-test0', 'project-test')
