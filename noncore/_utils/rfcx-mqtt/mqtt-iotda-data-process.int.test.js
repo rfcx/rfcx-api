@@ -50,8 +50,9 @@ test('can parse checkin message to iotda message', async () => {
 
   const iotdaMessage = await parse(checkin)
 
-  expect(iotdaMessage.services[0].properties.mainBatteryPercentage).toBe(78.08)
-  expect(iotdaMessage.services[0].properties.systemPower).toBe(786)
+  expect(iotdaMessage.services[0].properties.internalBatteryPercentage).toBe(100)
+  expect(iotdaMessage.services[0].properties.mainBatteryPercentage).toBe(20)
+  expect(iotdaMessage.services[0].properties.systemPower).toBe(100)
   expect(iotdaMessage.services[0].properties.inputPower).toBe(1)
 })
 
