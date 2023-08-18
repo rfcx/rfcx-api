@@ -12,7 +12,7 @@ const availableIncludes = [
 ]
 
 const availableIncludesSummary = [
-  Classification.include({ attributes: ['id', 'value', 'title', 'image'] })
+  Classification.include({ attributes: ['value', 'title', 'image'] })
 ]
 
 /**
