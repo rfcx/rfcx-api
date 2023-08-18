@@ -1,12 +1,12 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const { getSummary } = require('./bl/results')
+const { getSummary } = require('./bl/summary')
 
 /**
  * @swagger
  *
- * /classifier-jobs/{id}/results:
+ * /classifier-jobs/{id}/summary:
  *   get:
- *     summary: Get classifier job's results
+ *     summary: Get classifier job's summary
  *     tags:
  *       - classifier-jobs
  *     parameters:
@@ -17,11 +17,11 @@ const { getSummary } = require('./bl/results')
  *         type: string
  *     responses:
  *       200:
- *         description: Classifier jobs review status object
+ *         description: Classifier jobs summary object
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ClassifierJobResults'
+ *               $ref: '#/components/schemas/ClassifierJobSummary'
  *       403:
  *         description: Insufficient privileges
  *       404:

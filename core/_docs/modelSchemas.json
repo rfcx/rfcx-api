@@ -1216,7 +1216,7 @@
       }
     ]
   },
-  "ClassifierJobResults": {
+  "ClassifierJobSummary": {
     "properties": {
       "reviewStatus": {
         "$ref": "#/components/schemas/ClassifierJobReviewStatus"

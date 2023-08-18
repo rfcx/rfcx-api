@@ -4,7 +4,7 @@ jest.mock('../dao/index', () => { return { } })
 jest.mock('../dao/update', () => { return { } })
 jest.mock('../dao/review', () => { return { } })
 jest.mock('../../classifier-jobs/dao/index', () => { return { } })
-jest.mock('../../classifier-jobs/dao/results', () => { return { } })
+jest.mock('../../classifier-jobs/dao/summary', () => { return { } })
 
 const { calculateReviewStatus } = require('./review')
 

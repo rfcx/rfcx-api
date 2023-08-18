@@ -5,7 +5,7 @@ const { hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { ForbiddenError, EmptyResultError, ValidationError } = require('../../../common/error-handling/errors')
 const { CANCELLED, DONE, ERROR, WAITING } = require('../classifier-job-status')
 const { get } = require('./get')
-const { updateSummary } = require('./results')
+const { updateSummary } = require('./summary')
 
 const ALLOWED_TARGET_STATUSES = [CANCELLED, WAITING]
 const ALLOWED_SOURCE_STATUSES = [CANCELLED, WAITING, ERROR]

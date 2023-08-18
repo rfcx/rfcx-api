@@ -1,4 +1,4 @@
-const dao = require('../dao/results')
+const dao = require('../dao/summary')
 const detectionsDao = require('../../detections/dao/index')
 const classifierOutputsDao = require('../../classifiers/dao/outputs')
 const { DetectionReview } = require('../../_models')

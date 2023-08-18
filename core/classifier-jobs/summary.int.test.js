@@ -78,17 +78,17 @@ async function seedTestData () {
   await models.ClassifierJobStream.bulkCreate(CLASSIFIER_JOB_STREAMS)
 }
 
-describe('GET /classifier-jobs/{id}/results', () => {
+describe('GET /classifier-jobs/{id}/summary', () => {
   const app = expressApp()
   app.use('/', routes)
 
   test('returns forbidden error', async () => {
-    const response = await request(app).get(`/${JOB_5.id}/results`)
+    const response = await request(app).get(`/${JOB_5.id}/summary`)
     expect(response.statusCode).toBe(403)
   })
 
   test('returns empty error', async () => {
-    const response = await request(app).get('/230000123/results')
+    const response = await request(app).get('/230000123/summary')
 
     expect(response.statusCode).toBe(404)
   })
@@ -102,7 +102,7 @@ describe('GET /classifier-jobs/{id}/results', () => {
       { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
     ])
 
-    const response = await request(app).get(`/${JOB_1.id}/results`).query()
+    const response = await request(app).get(`/${JOB_1.id}/summary`).query()
 
     const result = response.body
     expect(response.statusCode).toBe(200)

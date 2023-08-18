@@ -4,7 +4,7 @@ const { ForbiddenError, EmptyResultError } = require('../../../common/error-hand
 const { query } = require('../dao/index')
 const { update } = require('../dao/update')
 const reviewsDao = require('../dao/review')
-const classifierJobResultsDao = require('../../classifier-jobs/dao/results')
+const classifierJobResultsDao = require('../../classifier-jobs/dao/summary')
 
 async function createOrUpdate (options) {
   const { streamId, start, userId, classification, classifier, classifierJob } = options
