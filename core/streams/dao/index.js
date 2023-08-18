@@ -113,7 +113,18 @@ async function query (filters, options = {}) {
       }
     }
   }
-
+  if (filters.namesOrIds) {
+    where[Sequelize.Op.or] = {
+      id: {
+        [Sequelize.Op.in]: filters.namesOrIds
+      },
+      name: {
+        [Sequelize.Op.iLike]: {
+          [Sequelize.Op.any]: filters.namesOrIds.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%')}`)
+        }
+      }
+    }
+  }
   if (filters.keywords) {
     where.name = {
       [Sequelize.Op.iLike]: {

@@ -22,12 +22,12 @@ async function create (data, options = {}) {
   if (options.creatableBy && !(await hasPermission(CREATE, options.creatableBy, data.projectId, PROJECT))) {
     throw new ForbiddenError()
   }
-  const names = data.queryStreams ? data.queryStreams.split(',') : undefined
-  const streamIds = (await streamsDao.query({ projects: [data.projectId], names }, { fields: ['id'] })).results.map(r => r.id)
+  const namesOrIds = data.queryStreams ? data.queryStreams.split(',') : undefined
+  const streamIds = (await streamsDao.query({ projects: [data.projectId], namesOrIds }, { fields: ['id'] })).results.map(r => r.id)
   if (!streamIds.length) {
     throw new EmptyResultError('No streams found for the query')
   }
-  if (names && (streamIds.length < names.length)) {
+  if (namesOrIds && (streamIds.length < namesOrIds.length)) {
     throw new EmptyResultError('Some streams not found for the query')
   }
   return await sequelize.transaction(async (transaction) => {

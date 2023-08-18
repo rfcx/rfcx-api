@@ -83,6 +83,32 @@ describe('POST /classifiers-jobs', () => {
     expect(jobStreams[0].streamId).toBe(STREAM_1.id)
   })
 
+  test('works with stream ids in query_streams', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
+      query_streams: STREAM_1.id,
+      query_start: '2021-01-02',
+      query_end: '2021-01-02',
+      query_hours: '1,2'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(201)
+    const jobs = await models.ClassifierJob.findAll()
+    expect(jobs.length).toBe(1)
+    expect(jobs[0].classifierId).toBe(requestBody.classifier_id)
+    expect(jobs[0].projectId).toBe(requestBody.project_id)
+    expect(jobs[0].queryStreams).toBe(requestBody.query_streams)
+    expect(jobs[0].queryStart).toBe(requestBody.query_start)
+    expect(jobs[0].queryEnd).toBe(requestBody.query_end)
+    expect(jobs[0].queryHours).toBe(requestBody.query_hours)
+    const jobStreams = await models.ClassifierJobStream.findAll()
+    expect(jobStreams.length).toBe(1)
+    expect(jobStreams[0].classifierJobId).toBe(jobs[0].id)
+    expect(jobStreams[0].streamId).toBe(STREAM_1.id)
+  })
+
   test('if query_streams is not set, assigns all streams from the projects', async () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
