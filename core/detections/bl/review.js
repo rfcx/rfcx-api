@@ -4,7 +4,7 @@ const { ForbiddenError, EmptyResultError } = require('../../../common/error-hand
 const { query } = require('../dao/index')
 const { update } = require('../dao/update')
 const reviewsDao = require('../dao/review')
-const classifierJobDao = require('../../classifier-jobs/dao')
+const classifierJobResultsDao = require('../../classifier-jobs/dao/results')
 
 async function createOrUpdate (options) {
   const { streamId, start, userId, classification, classifier, classifierJob } = options
@@ -54,9 +54,9 @@ async function createOrUpdate (options) {
 }
 
 async function refreshClassifierJobSummary (classifierJobId, classificationId, status, options = {}) {
-  const summary = (await classifierJobDao.getJobSummaries(classifierJobId, { classificationId }, options))[0]
+  const summary = (await classifierJobResultsDao.getJobSummaries(classifierJobId, { classificationId }, options))[0]
   const newValue = summary[status] + 1
-  await classifierJobDao.updateJobSummary(classifierJobId, classificationId, { [status]: newValue }, options)
+  await classifierJobResultsDao.updateJobSummary(classifierJobId, classificationId, { [status]: newValue }, options)
 }
 
 async function refreshDetectionReviewStatus (detectionId, streamId, start, transaction) {

@@ -1,4 +1,4 @@
-const { ClassifierJob, ClassifierJobStream, Classifier, Classification, ClassifierJobSummary, Stream, Sequelize } = require('../../_models')
+const { ClassifierJob, ClassifierJobStream, Classifier, Stream, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -9,10 +9,6 @@ const availableIncludes = [
   Classifier.include({ attributes: ['id', 'name'] }),
   // `through: { attributes: [] }` is required to delete `classifier_job_streams: { ClassifierJobId: id, StreamId: id }` from result
   Stream.include({ as: 'streams', attributes: ['id', 'name'], required: false, through: { attributes: [] } })
-]
-
-const availableIncludesSummary = [
-  Classification.include({ attributes: ['value', 'title', 'image'] })
 ]
 
 /**
@@ -131,61 +127,11 @@ async function update (id, newJob, options = {}) {
   return await ClassifierJob.update(newJob, { where: { id }, transaction })
 }
 
-async function createJobSummary (classificationData, options = {}) {
-  const transaction = options.transaction
-  return await ClassifierJobSummary.bulkCreate(classificationData, { transaction })
-}
-
-async function getJobSummaries (classifierJobId, filters, options = {}) {
-  const transaction = options.transaction
-  if (!classifierJobId) {
-    throw new Error('Classifier job id must be set to get job summary')
-  }
-  const where = { classifierJobId }
-  if (filters.classificationId) {
-    where.classificationId = filters.classificationId
-  }
-  return await ClassifierJobSummary.findAll({
-    where,
-    attributes: ClassifierJobSummary.attributes.lite,
-    include: availableIncludesSummary,
-    transaction
-  })
-}
-
-async function updateJobSummary (classifierJobId, classificationId, data, options = {}) {
-  const transaction = options.transaction
-  const where = { classifierJobId, classificationId }
-  const update = {};
-  ['total', 'confirmed', 'rejected', 'uncertain'].forEach(s => {
-    if (data[s] !== undefined) {
-      update[s] = data[s]
-    }
-  })
-  return await ClassifierJobSummary.update(data, {
-    where,
-    transaction
-  })
-}
-
-async function deleteJobSummary (classifierJobId, options = {}) {
-  if (!classifierJobId) {
-    throw new Error('Classifier job id must be set for job summary delete')
-  }
-  const transaction = options.transaction
-  const where = { classifierJobId }
-  return await ClassifierJobSummary.destroy({ where }, { transaction })
-}
-
 module.exports = {
   query,
   create,
   createJobStreams,
   deleteJobStreams,
   get,
-  update,
-  createJobSummary,
-  getJobSummaries,
-  updateJobSummary,
-  deleteJobSummary
+  update
 }
