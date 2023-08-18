@@ -59,7 +59,7 @@ async function calcSummary (id, options = {}) {
 }
 
 async function getSummary (classifierJobId, filters = {}, options = {}) {
-  const job = await get(classifierJobId, { ...options, fields: ['last_reviewed_by'] })
+  const job = await get(classifierJobId, options)
   const summaries = await dao.getJobSummaries(classifierJobId, filters, options)
   return summaries.reduce((acc, cur) => {
     acc.reviewStatus.total += cur.total
@@ -81,8 +81,7 @@ async function getSummary (classifierJobId, filters = {}, options = {}) {
       rejected: 0,
       uncertain: 0
     },
-    classificationsSummary: [],
-    lastReviewedBy: job.lastReviewedBy
+    classificationsSummary: []
   })
 }
 

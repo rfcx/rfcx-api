@@ -1894,13 +1894,11 @@ describe('POST /:streamId/detections/:start/review', () => {
       await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
       const summaries = await models.ClassifierJobSummary.findAll()
-      const jobAfter = await models.ClassifierJob.findOne({ where: { id: job.id } })
       expect(summaries.length).toBe(1)
       expect(summaries[0].total).toBe(1)
       expect(summaries[0].confirmed).toBe(1)
       expect(summaries[0].rejected).toBe(0)
       expect(summaries[0].uncertain).toBe(0)
-      expect(jobAfter.last_reviewed_by_id).toBe(seedValues.primaryUserId)
     })
     test('updates confirmed to 2', async () => {
       const { stream, classification, classifier, job } = await commonSetup()

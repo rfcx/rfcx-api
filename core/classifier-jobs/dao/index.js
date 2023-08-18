@@ -1,4 +1,4 @@
-const { ClassifierJob, ClassifierJobStream, Classifier, Classification, ClassifierJobSummary, Stream, User, Sequelize } = require('../../_models')
+const { ClassifierJob, ClassifierJobStream, Classifier, Classification, ClassifierJobSummary, Stream, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -9,11 +9,6 @@ const availableIncludes = [
   Classifier.include({ attributes: ['id', 'name'] }),
   // `through: { attributes: [] }` is required to delete `classifier_job_streams: { ClassifierJobId: id, StreamId: id }` from result
   Stream.include({ as: 'streams', attributes: ['id', 'name'], required: false, through: { attributes: [] } })
-]
-
-const availableIncludesGet = [
-  ...availableIncludes,
-  User.include({ required: false, as: 'last_reviewed_by' })
 ]
 
 const availableIncludesSummary = [
@@ -113,7 +108,7 @@ async function deleteJobStreams (classifierJobId, streamIds, options = {}) {
  */
 async function get (id, options = {}) {
   const attributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
-  const include = options.fields && options.fields.length > 0 ? availableIncludesGet.filter(i => options.fields.includes(i.as)) : availableIncludesGet
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
   const transaction = options.transaction || null
   const job = await ClassifierJob.findOne({ where: { id }, attributes, include, transaction })
   if (!job) {

@@ -1230,9 +1230,6 @@
         "items": {
           "$ref": "#/components/schemas/ClassificationSummary"
         }
-      },
-      "lastReviewedBy": {
-        "$ref": "#/components/schemas/UserLite"
       }
     }
   }

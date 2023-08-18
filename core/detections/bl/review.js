@@ -48,7 +48,6 @@ async function createOrUpdate (options) {
         const classifierJobId = classifierJob.split('-')[0]
         const classificationId = classifierJob.split('-')[1]
         await refreshClassifierJobSummary(classifierJobId, classificationId, options.status, { transaction })
-        await refreshClassifierLastReviewed(classifierJobId, userId, { transaction })
       }
     }
   })
@@ -58,10 +57,6 @@ async function refreshClassifierJobSummary (classifierJobId, classificationId, s
   const summary = (await classifierJobDao.getJobSummaries(classifierJobId, { classificationId }, options))[0]
   const newValue = summary[status] + 1
   await classifierJobDao.updateJobSummary(classifierJobId, classificationId, { [status]: newValue }, options)
-}
-
-async function refreshClassifierLastReviewed (classifierJobId, userId, options = {}) {
-  await classifierJobDao.update(classifierJobId, { last_reviewed_by_id: userId }, options)
 }
 
 async function refreshDetectionReviewStatus (detectionId, streamId, start, transaction) {
