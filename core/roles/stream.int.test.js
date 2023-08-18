@@ -12,7 +12,6 @@ beforeAll(async () => {
 })
 afterEach(async () => {
   await truncateNonBase(models)
-  // await truncate({ Stream: models.Stream, UserStreamRole: models.UserStreamRole, Project: models.Project, UserProjectRole: models.UserProjectRole })
 })
 afterAll(async () => {
   await models.sequelize.close()
