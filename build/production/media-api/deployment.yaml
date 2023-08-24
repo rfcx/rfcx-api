@@ -25,10 +25,10 @@ spec:
             name: media-api-configmap
         resources:
           requests:
-            memory: "700Mi"
-            cpu: "600m"
+            memory: "200Mi"
+            cpu: "100m"
           limits:
             memory: "700Mi"
-            cpu: "1.5"
+            cpu: "1"
         ports:
         - containerPort: 80
