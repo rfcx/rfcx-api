@@ -25,7 +25,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
   const { start, end, streams, projects, classifiers, classifications, classifierJobs, minConfidence, reviewStatuses, streamsOnlyPublic } = filters
   const { user, offset, limit, descending, fields } = options
 
-  const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.full
+  const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.lite
   const include = fields && fields.length > 0 ? availableIncludes.filter(i => fields.includes(i.as)) : []
 
   const order = [['start', descending ? 'DESC' : 'ASC']]
