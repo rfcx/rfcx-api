@@ -39,13 +39,9 @@ async function createOrUpdate (options) {
       }
       await refreshDetectionReviewStatus(detection.id, streamId, start, transaction)
     }
-    const classifierJobIds = [...new Set(detections
-      .filter(d => !!d.classifier_job_id)
-      .map(d => { return `${d.classifier_job_id}-${d.classification_id}` })
-    )]
-    for (const classifierJob of classifierJobIds) {
-      const classifierJobId = classifierJob.split('-')[0]
-      const classificationId = classifierJob.split('-')[1]
+    const classificationId = detections[0].classification_id // we have only single classification here, so we can get id from the first item
+    const classifierJobIds = [...new Set(detections.filter(d => !!d.classifier_job_id).map(d => d.classifier_job_id))]
+    for (const classifierJobId of classifierJobIds) {
       await refreshClassifierJobSummary(classifierJobId, classificationId, options.status, { transaction })
     }
   })
