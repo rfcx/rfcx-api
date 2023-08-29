@@ -30,7 +30,7 @@ const { getSummary } = require('./bl/summary')
 module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
-  const options = { readableBy, user } // user is needed for detections dao
+  const options = { readableBy }
   getSummary(req.params.id, options)
     .then(result => { res.json(result) })
     .catch(httpErrorHandler(req, res))
