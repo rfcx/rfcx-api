@@ -26,17 +26,29 @@ async function getJobSummaries (classifierJobId, filters, options = {}) {
   })
 }
 
-async function updateJobSummary (classifierJobId, classificationId, data, options = {}) {
+/**
+ * Increment specific job summary metric
+ * @param {*} filters
+ * @param {number} filters.classifierJobId Where belongs to one of the projects (array of project ids)
+ * @param {number} filters.classificationId Include only status in filters
+ * @param {*} data Query options
+ * @param {string} data.field field which is needed to be incremented
+ * @param {number} [data.by=1] increment size
+ * @param {*} options
+ * @param {object} [options.transaction]
+ * @returns
+ */
+async function incrementJobSummaryMetric (filters, data, options = {}) {
   const transaction = options.transaction
-  const where = { classifierJobId, classificationId }
-  const update = {};
-  ['total', 'confirmed', 'rejected', 'uncertain'].forEach(s => {
-    if (data[s] !== undefined) {
-      update[s] = data[s]
-    }
-  })
-  return await ClassifierJobSummary.update(data, {
-    where,
+  if (!filters.classifierJobId || !filters.classificationId) {
+    throw new Error('filters.classifierJobId and filters.classificationId are required to be set for incrementJobSummaryMetric')
+  }
+  if (!data.field) {
+    throw new Error('data.field is required to be set for incrementJobSummaryMetric')
+  }
+  return await ClassifierJobSummary.increment(data.field, {
+    by: data.by || 1,
+    where: filters,
     transaction
   })
 }
@@ -53,6 +65,6 @@ async function deleteJobSummary (classifierJobId, options = {}) {
 module.exports = {
   createJobSummary,
   getJobSummaries,
-  updateJobSummary,
+  incrementJobSummaryMetric,
   deleteJobSummary
 }

@@ -42,15 +42,9 @@ async function createOrUpdate (options) {
     const classificationId = detections[0].classification_id // we have only single classification here, so we can get id from the first item
     const classifierJobIds = [...new Set(detections.filter(d => !!d.classifier_job_id).map(d => d.classifier_job_id))]
     for (const classifierJobId of classifierJobIds) {
-      await refreshClassifierJobSummary(classifierJobId, classificationId, options.status, { transaction })
+      await classifierJobResultsDao.incrementJobSummaryMetric({ classifierJobId, classificationId }, { field: options.status }, { transaction })
     }
   })
-}
-
-async function refreshClassifierJobSummary (classifierJobId, classificationId, status, options = {}) {
-  const summary = (await classifierJobResultsDao.getJobSummaries(classifierJobId, { classificationId }, options))[0]
-  const newValue = summary[status] + 1
-  await classifierJobResultsDao.updateJobSummary(classifierJobId, classificationId, { [status]: newValue }, options)
 }
 
 async function refreshDetectionReviewStatus (detectionId, streamId, start, transaction) {
