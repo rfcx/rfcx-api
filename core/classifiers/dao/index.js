@@ -12,7 +12,12 @@ const availableIncludes = [
   {
     model: models.ClassifierOutput,
     as: 'outputs',
-    attributes: models.ClassifierOutput.attributes.lite
+    attributes: models.ClassifierOutput.attributes.lite,
+    include: [{
+      model: models.Classification,
+      as: 'classification',
+      attributes: models.Classification.attributes.lite
+    }]
   },
   {
     model: models.User,
@@ -41,6 +46,7 @@ const availableIncludes = [
  * @throws EmptyResultError when classifier not found
  */
 async function get (id, options = {}) {
+  const requiredAttrs = ['is_public', 'created_by_id']
   const transaction = options.transaction
   const where = { id }
 
@@ -49,7 +55,7 @@ async function get (id, options = {}) {
 
   let classifier = await models.Classifier.findOne({
     where,
-    attributes: ['is_public', 'created_by_id', ...attributes],
+    attributes: [...requiredAttrs, ...attributes],
     include,
     transaction
   })
@@ -61,7 +67,12 @@ async function get (id, options = {}) {
   if (options.readableBy && !classifier.is_public && classifier.created_by_id !== options.readableBy) {
     throw new ForbiddenError()
   }
-
+  // delete attributes we needed for permissions which user hasn't requested
+  requiredAttrs.forEach((a) => {
+    if (!attributes.includes(a)) {
+      delete classifier[a]
+    }
+  })
   if (classifier.activeStreams) {
     classifier.activeStreams = classifier.activeStreams.map(({ classifierActiveStreams, ...obj }) => obj)
   }

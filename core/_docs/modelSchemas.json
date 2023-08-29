@@ -185,9 +185,8 @@
   },
   "OutputLite": {
     "properties": {
-      "classificationId": {
-        "type": "number",
-        "example": 80
+      "classification": {
+        "$ref": "#/components/schemas/ClassificationLite"
       },
       "outputClassName": {
         "type": "string",
