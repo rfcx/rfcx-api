@@ -43,12 +43,10 @@ async function createOrUpdate (options) {
       .filter(d => !!d.classifier_job_id)
       .map(d => { return `${d.classifier_job_id}-${d.classification_id}` })
     )]
-    if (classifierJobIds.length) {
-      for (const classifierJob of classifierJobIds) {
-        const classifierJobId = classifierJob.split('-')[0]
-        const classificationId = classifierJob.split('-')[1]
-        await refreshClassifierJobSummary(classifierJobId, classificationId, options.status, { transaction })
-      }
+    for (const classifierJob of classifierJobIds) {
+      const classifierJobId = classifierJob.split('-')[0]
+      const classificationId = classifierJob.split('-')[1]
+      await refreshClassifierJobSummary(classifierJobId, classificationId, options.status, { transaction })
     }
   })
 }
