@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Detection.attributes = {
     lite: ['stream_id', 'start', 'end', 'confidence'],
-    full: ['id', 'stream_id', 'classifier_id', 'start', 'end', 'confidence', 'review_status']
+    full: ['id', 'stream_id', 'classifier_id', 'classification_id', 'classifier_job_id', 'start', 'end', 'confidence', 'review_status']
   }
   return Detection
 }

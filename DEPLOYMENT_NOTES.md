@@ -1,5 +1,9 @@
 # API Deployment Notes
 
+## 1.3.1
+- Run `npm run migrate:core` to apply migrations:
+  - `20230727000001-create-classifier-job-streams`
+
 ## 1.3.0
 - Run `npm run migrate:core` to apply migrations:
   - `20230228000001-change-detections-table`

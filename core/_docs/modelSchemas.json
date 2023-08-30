@@ -185,9 +185,8 @@
   },
   "OutputLite": {
     "properties": {
-      "classificationId": {
-        "type": "number",
-        "example": 80
+      "classification": {
+        "$ref": "#/components/schemas/ClassificationLite"
       },
       "outputClassName": {
         "type": "string",
@@ -337,7 +336,7 @@
       }
     ]
   },
-  "StreamLite": {
+  "StreamIdAndName": {
     "properties": {
       "id": {
         "type": "string",
@@ -346,22 +345,30 @@
       "name": {
         "type": "string",
         "example": "My Stream 1"
-      },
-      "start": {
-        "type": "date",
-        "example": "2020-05-12T07:30:21.500Z"
-      },
-      "end": {
-        "type": "date",
-        "example": "2020-05-12T07:30:22.500Z"
-      },
-      "is_public": {
-        "type": "boolean",
-        "example": false
       }
-    },
-    "required": [
-      "name"
+    }
+  },
+  "StreamLite": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/StreamIdAndName"
+      },
+      {
+        "properties": {
+          "start": {
+            "type": "date",
+            "example": "2020-05-12T07:30:21.500Z"
+          },
+          "end": {
+            "type": "date",
+            "example": "2020-05-12T07:30:22.500Z"
+          },
+          "is_public": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      }
     ]
   },
   "Stream": {
@@ -443,10 +450,6 @@
       "email": {
         "type": "string",
         "example": "john@doe.com"
-      },
-      "picture": {
-        "type": "string",
-        "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
       }
     }
   },
@@ -1156,6 +1159,12 @@
             "example": "gunshot"
           }
         }
+      },
+      "streams": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/StreamIdAndName"
+        }
       }
     }
   },
@@ -1189,12 +1198,24 @@
           "total": {
             "type": "integer",
             "example": 2
+          },
+          "confirmed": {
+            "type": "integer",
+            "example": 1
+          },
+          "rejected": {
+            "type": "integer",
+            "example": 1
+          },
+          "uncertain": {
+            "type": "integer",
+            "example": 0
           }
         }
       }
     ]
   },
-  "ClassifierJobResults": {
+  "ClassifierJobSummary": {
     "properties": {
       "reviewStatus": {
         "$ref": "#/components/schemas/ClassifierJobReviewStatus"

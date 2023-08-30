@@ -1,6 +1,7 @@
 jest.mock('../../_models', () => { return {} })
 jest.mock('../../../core/_models', () => {
   return {
+    Classification: { attributes: {} },
     ClassifierDeployment: { attributes: {} },
     ClassifierOutput: { attributes: {} },
     User: { attributes: {}, include: jest.fn() },

@@ -1,10 +1,21 @@
 const routes = require('./index')
 const models = require('../_models')
-const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const { WAITING, DONE } = require('./classifier-job-status')
 
+const CLASSIFICATION_1 = { id: 232, value: 'chainsaw', title: 'Chainsaw', typeId: 1, source_id: 1 }
+const CLASSIFICATION_2 = { id: 233, value: 'vehicle', title: 'Vehicle', typeId: 1, source_id: 1 }
+const CLASSIFICATION_3 = { id: 234, value: 'gunshot', title: 'Gunshot', typeId: 1, source_id: 1 }
+const CLASSIFICATION_4 = { id: 235, value: 'aircraft', title: 'Aircraft', typeId: 1, source_id: 1 }
+const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2, CLASSIFICATION_3, CLASSIFICATION_4]
+
 const CLASSIFIER_1 = { id: 151, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
+const CLASSIFIER_OUTPUT_1 = { id: 100, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_1.id, outputClassName: `${CLASSIFICATION_1.value}_custom`, ignoreThreshold: 0.5 }
+const CLASSIFIER_OUTPUT_2 = { id: 101, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_2.id, outputClassName: `${CLASSIFICATION_2.value}_custom`, ignoreThreshold: 0.5 }
+const CLASSIFIER_OUTPUT_3 = { id: 102, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_3.id, outputClassName: `${CLASSIFICATION_3.value}_custom`, ignoreThreshold: 0.5 }
+const CLASSIFIER_OUTPUT_4 = { id: 104, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_4.id, outputClassName: `${CLASSIFICATION_4.value}_custom`, ignoreThreshold: 0.5 }
+const CLASSIFIER_OUTPUTS = [CLASSIFIER_OUTPUT_1, CLASSIFIER_OUTPUT_2, CLASSIFIER_OUTPUT_3, CLASSIFIER_OUTPUT_4]
 
 const PROJECT_1 = { id: 'testprojec01', name: 'Test project', createdById: seedValues.otherUserId }
 const PROJECT_2 = { id: 'testprojec02', name: 'Test project 2', createdById: seedValues.otherUserId }
@@ -40,6 +51,10 @@ const CLASSIFIER_JOB_4_STREAM_1 = { classifierJobId: JOB_4.id, streamId: STREAM_
 const CLASSIFIER_JOB_5_STREAM_1 = { classifierJobId: JOB_5.id, streamId: STREAM_5.id }
 const CLASSIFIER_JOB_STREAMS = [CLASSIFIER_JOB_1_STREAM_1, CLASSIFIER_JOB_1_STREAM_2, CLASSIFIER_JOB_2_STREAM_1, CLASSIFIER_JOB_3_STREAM_1, CLASSIFIER_JOB_4_STREAM_1, CLASSIFIER_JOB_5_STREAM_1]
 
+beforeAll(() => {
+  muteConsole('warn')
+})
+
 beforeEach(async () => {
   await seedTestData()
 })
@@ -49,12 +64,13 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await truncateNonBase(models)
   await models.sequelize.close()
 })
 
 async function seedTestData () {
+  await models.Classification.bulkCreate(CLASSIFICATIONS)
   await models.Classifier.create(CLASSIFIER_1)
+  await models.ClassifierOutput.bulkCreate(CLASSIFIER_OUTPUTS)
   await models.Project.bulkCreate(PROJECTS)
   await models.Stream.bulkCreate(STREAMS)
   await models.UserProjectRole.bulkCreate(ROLES)
@@ -62,139 +78,66 @@ async function seedTestData () {
   await models.ClassifierJobStream.bulkCreate(CLASSIFIER_JOB_STREAMS)
 }
 
-describe('GET /classifier-jobs', () => {
+describe('GET /classifier-jobs/{id}/summary', () => {
   const app = expressApp()
   app.use('/', routes)
 
-  test('returns successfully', async () => {
-    const response = await request(app).get('/')
+  test('returns forbidden error', async () => {
+    const response = await request(app).get(`/${JOB_5.id}/summary`)
+    expect(response.statusCode).toBe(403)
+  })
+
+  test('returns empty error', async () => {
+    const response = await request(app).get('/230000123/summary')
+
+    expect(response.statusCode).toBe(404)
+  })
+
+  test('returns valid data', async () => {
+    await models.ClassifierJobSummary.bulkCreate([
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 0 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_2.id, total: 1, confirmed: 0, rejected: 1, uncertain: 0 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_3.id, total: 1, confirmed: 0, rejected: 0, uncertain: 1 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
+      { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
+    ])
+
+    const response = await request(app).get(`/${JOB_1.id}/summary`).query()
 
     const result = response.body
     expect(response.statusCode).toBe(200)
-    expect(result).toBeDefined()
-    expect(Array.isArray(result)).toBe(true)
-    expect(result.length).toBe(4)
-    expect(result[0].projectId).toBe(JOB_1.projectId)
-    expect(result[0].minutesCompleted).toBe(JOB_1.minutesCompleted)
-    expect(result[0].minutesTotal).toBe(JOB_1.minutesTotal)
-    expect(result[0].createdAt).toBeDefined()
-    expect(result[0].completedAt).toBe(JOB_1.completedAt)
-    expect(result[0].classifier.id).toBe(CLASSIFIER_1.id)
-    expect(result[0].classifier.name).toBe(CLASSIFIER_1.name)
-    expect(result[0].streams).toBeDefined()
-    expect(result[0].streams.length).toBe(2)
-    expect(result[0].streams[0].id).toBe(STREAM_1.id)
-    expect(result[0].streams[0].name).toBe(STREAM_1.name)
-    expect(result[0].streams[1].id).toBe(STREAM_2.id)
-    expect(result[0].streams[1].name).toBe(STREAM_2.name)
-  })
-
-  test('can set all fields', async () => {
-    const query = {
-      projects: [PROJECT_1.id],
-      status: 0,
-      created_by: 'me',
-      limit: 2,
-      offset: 0,
-      sort: '-updated_at',
-      fields: ['projectId', 'queryStreams']
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body).toEqual([])
-  })
-
-  test('not exist project', async () => {
-    const query = {
-      projects: ['testproject11']
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body).toEqual([])
-  })
-
-  test('get correct classifiers jobs for one project', async () => {
-    const query = {
-      projects: [PROJECT_1.id]
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('get correct classifiers jobs for several projects', async () => {
-    const query = {
-      projects: [PROJECT_1.id, PROJECT_2.id]
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(3)
-  })
-
-  test('get correct classifiers jobs for exist and not exist projects', async () => {
-    const query = {
-      projects: [PROJECT_1.id, 'testproject22']
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('if project ids set, but empty (no accessible projects)', async () => {
-    const query = {
-      projects: [PROJECT_4.id]
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(0)
-  })
-
-  test('get correct classifiers jobs filtered by WAITING (0) status', async () => {
-    const query = {
-      status: WAITING
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('get correct classifiers jobs filtered by DONE (30) status', async () => {
-    const query = {
-      status: DONE
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('fields option is working well', async () => {
-    const query = {
-      fields: ['project_id', 'query_streams']
-    }
-    const expectedFields = ['projectId', 'queryStreams']
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(4)
-    expectedFields.forEach(actualProperty => expect(Object.keys(response.body[0])).toContain(actualProperty))
-  })
-
-  test('created_by filter is working well', async () => {
-    const query = {
-      created_by: 'me'
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(1)
-    expect(response.body[0].projectId).toEqual(PROJECT_3.id)
+    expect(result.reviewStatus.total).toBe(3)
+    expect(result.reviewStatus.confirmed).toBe(1)
+    expect(result.reviewStatus.rejected).toBe(1)
+    expect(result.reviewStatus.uncertain).toBe(1)
+    const output1 = result.classificationsSummary.find(o => CLASSIFICATION_1.value === o.value)
+    expect(output1.id).toBeUndefined()
+    expect(output1.value).toBe(CLASSIFICATION_1.value)
+    expect(output1.label).toBe(CLASSIFICATION_1.label)
+    expect(output1.total).toBe(1)
+    expect(output1.confirmed).toBe(1)
+    expect(output1.rejected).toBe(0)
+    expect(output1.uncertain).toBe(0)
+    const output2 = result.classificationsSummary.find(o => CLASSIFICATION_2.value === o.value)
+    expect(output2.value).toBe(CLASSIFICATION_2.value)
+    expect(output2.label).toBe(CLASSIFICATION_2.label)
+    expect(output2.total).toBe(1)
+    expect(output2.confirmed).toBe(0)
+    expect(output2.rejected).toBe(1)
+    expect(output2.uncertain).toBe(0)
+    const output3 = result.classificationsSummary.find(o => CLASSIFICATION_3.value === o.value)
+    expect(output3.value).toBe(CLASSIFICATION_3.value)
+    expect(output3.label).toBe(CLASSIFICATION_3.label)
+    expect(output3.total).toBe(1)
+    expect(output3.confirmed).toBe(0)
+    expect(output3.rejected).toBe(0)
+    expect(output3.uncertain).toBe(1)
+    const output4 = result.classificationsSummary.find(o => CLASSIFICATION_4.value === o.value)
+    expect(output4.value).toBe(CLASSIFICATION_4.value)
+    expect(output4.label).toBe(CLASSIFICATION_4.label)
+    expect(output4.total).toBe(0)
+    expect(output4.confirmed).toBe(0)
+    expect(output4.rejected).toBe(0)
+    expect(output4.uncertain).toBe(0)
   })
 })

@@ -4,21 +4,26 @@ const { ForbiddenError, EmptyResultError } = require('../../../common/error-hand
 const { query } = require('../dao/index')
 const { update } = require('../dao/update')
 const reviewsDao = require('../dao/review')
+const classifierJobResultsDao = require('../../classifier-jobs/dao/summary')
 
 async function createOrUpdate (options) {
-  const { streamId, start, userId, classification, classifier } = options
+  const { streamId, start, userId, classification, classifier, classifierJob } = options
 
   if (userId && !(await hasPermission(UPDATE, userId, streamId, STREAM))) {
     throw new ForbiddenError('You do not have permission to review detections in this stream.')
   }
-  const detections = await query({
+  const where = {
     start,
     end: start,
     streams: [streamId],
     classifications: [classification],
     classifiers: [classifier],
     minConfidence: 0
-  }, { fields: ['id'] })
+  }
+  if (classifierJob) {
+    where.classifierJobs = [classifierJob]
+  }
+  const detections = await query(where, { fields: ['id', 'classification_id', 'classifier_job_id'] })
   if (!detections.length) {
     throw new EmptyResultError('Detection with given parameters not found')
   }
@@ -33,6 +38,11 @@ async function createOrUpdate (options) {
         review = await reviewsDao.create({ detectionId: detection.id, userId, status }, { transaction })
       }
       await refreshDetectionReviewStatus(detection.id, streamId, start, transaction)
+    }
+    const classificationId = detections[0].classification_id // we have only single classification here, so we can get id from the first item
+    const classifierJobIds = [...new Set(detections.filter(d => !!d.classifier_job_id).map(d => d.classifier_job_id))]
+    for (const classifierJobId of classifierJobIds) {
+      await classifierJobResultsDao.incrementJobSummaryMetric({ classifierJobId, classificationId }, { field: options.status }, { transaction })
     }
   })
 }

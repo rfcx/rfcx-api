@@ -12,15 +12,11 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await truncateNonBase(models)
-  await models.Classification.destroy({ where: { value: 'chainsaw' } })
-  await models.Classifier.destroy({ where: { externalId: 'cccddd' } })
-  await models.Stream.destroy({ where: { id: 'abc' } })
   await models.sequelize.close()
 })
 
 async function commonSetup () {
-  const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+  const project = await models.Project.create({ id: 'foo', name: 'my project', createdById: seedValues.primaryUserId })
   const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId, projectId: project.id }
   await models.Stream.create(stream)
   const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 }

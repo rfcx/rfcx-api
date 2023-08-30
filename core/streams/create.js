@@ -58,7 +58,7 @@ module.exports = (req, res) => {
       }
 
       if (params.projectId) {
-        const duplicateStreamInProject = await dao.query({ name: params.name, projects: [params.projectId] }, { fields: 'id' })
+        const duplicateStreamInProject = await dao.query({ names: [params.name], projects: [params.projectId] }, { fields: 'id' })
         if (duplicateStreamInProject.total > 0) {
           throw new ValidationError('Duplicate stream name in the project')
         }

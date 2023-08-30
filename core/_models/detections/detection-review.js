@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   DetectionReview.include = includeBuilder(DetectionReview, 'reviews', DetectionReview.attributes.lite)
   DetectionReview.statusMapping = {
+    'null': 'null',
     '-1': 'rejected',
     '0': 'uncertain',
     '1': 'confirmed'

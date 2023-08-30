@@ -19,7 +19,6 @@ afterEach(async () => {
   resetTestData()
 })
 afterAll(async () => {
-  await truncateNonBase(models)
   await models.sequelize.close()
 })
 

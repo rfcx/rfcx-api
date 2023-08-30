@@ -7,7 +7,7 @@ const app = expressApp()
 
 app.use('/', routes)
 
-beforeEach(async () => {
+afterEach(async () => {
   await truncateNonBase(models)
 })
 

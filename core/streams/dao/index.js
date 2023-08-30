@@ -84,7 +84,8 @@ async function create (stream, options = {}) {
 /**
  * Get a list of streams matching the filters
  * @param {*} filters Stream attributes
- * @param {string} filters.keyword Where keyword is found (in the stream name)
+ * @param {string[]} filters.names Where names are found
+ * @param {string[]} filters.keywords Where keywords are found (in the stream name)
  * @param {string[]} filters.projects Where belongs to one of the projects (array of project ids)
  * @param {string[]} filters.organizations Where belongs to one of the organizations (array of organization ids)
  * @param {string|number} filters.start Having audio (segments) after start (moment)
@@ -105,15 +106,30 @@ async function query (filters, options = {}) {
   const where = {}
 
   // Filters (restrict results - can use multiple filters safely)
-  if (filters.name) {
+  if (filters.names) {
     where.name = {
-      [Sequelize.Op.iLike]: `${filters.name.replace(/^\*/, '%').replace(/\*$/, '%')}`
+      [Sequelize.Op.iLike]: {
+        [Sequelize.Op.any]: filters.names.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%')}`)
+      }
     }
   }
-
-  if (filters.keyword) {
+  if (filters.namesOrIds) {
+    where[Sequelize.Op.or] = {
+      id: {
+        [Sequelize.Op.in]: filters.namesOrIds
+      },
+      name: {
+        [Sequelize.Op.iLike]: {
+          [Sequelize.Op.any]: filters.namesOrIds.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%')}`)
+        }
+      }
+    }
+  }
+  if (filters.keywords) {
     where.name = {
-      [Sequelize.Op.iLike]: `%${filters.keyword}%`
+      [Sequelize.Op.iLike]: {
+        [Sequelize.Op.any]: filters.keywords.map(k => `%${k}%`)
+      }
     }
   }
   if (filters.organizations) {
@@ -222,7 +238,7 @@ async function update (id, stream, options = {}) {
   if (fullStream.name) {
     const existingStream = await get(id, { transaction })
     if (existingStream && existingStream.project_id && existingStream.name !== fullStream.name) {
-      const duplicateStreamInProject = await query({ name: fullStream.name, projects: [fullStream.project_id || existingStream.project_id] }, { fields: 'id', transaction })
+      const duplicateStreamInProject = await query({ names: [fullStream.name], projects: [fullStream.project_id || existingStream.project_id] }, { fields: 'id', transaction })
       if (duplicateStreamInProject.total > 0) {
         throw new ValidationError('Duplicate stream name in the project')
       }

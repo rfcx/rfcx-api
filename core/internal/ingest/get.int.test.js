@@ -14,7 +14,6 @@ afterEach(async () => {
   await truncateNonBase(models)
 })
 afterAll(async () => {
-  await truncateNonBase(models)
   await models.sequelize.close()
 })
 
@@ -25,7 +24,7 @@ async function commonSetup () {
   await models.AudioCodec.create(audioCodec)
   const fileExtension = { id: 1, value: '.wav' }
   await models.FileExtension.create(fileExtension)
-  const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+  const project = await models.Project.create({ id: 'foo', name: 'my project', createdById: seedValues.primaryUserId })
   const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
   return { audioFileFormat, audioCodec, fileExtension, project, stream }
 }

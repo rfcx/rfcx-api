@@ -10,7 +10,6 @@ app.use('/', routes)
 
 beforeAll(async () => {
   muteConsole()
-  await truncateNonBase(models)
 })
 
 afterEach(async () => {

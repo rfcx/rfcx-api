@@ -24,7 +24,6 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await truncateNonBase(models)
   await models.sequelize.close()
 })
 
