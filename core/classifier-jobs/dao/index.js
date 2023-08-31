@@ -1,6 +1,6 @@
 const { ClassifierJob, ClassifierJobStream, Classifier, Stream, Sequelize } = require('../../_models')
-const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
-const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
+const { ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
+const { getAccessibleObjectsIDs, PROJECT } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
