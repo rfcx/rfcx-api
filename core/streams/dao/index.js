@@ -189,7 +189,8 @@ async function query (filters, options = {}) {
     order,
     limit: options.limit,
     offset: options.offset,
-    paranoid: options.onlyDeleted !== true
+    paranoid: options.onlyDeleted !== true,
+    transaction: options.transaction
   })
 
   // TODO move country into the table and perform lookup once on create/update

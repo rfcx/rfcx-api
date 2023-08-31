@@ -66,10 +66,8 @@ async function query (filters, options = {}) {
  * @throws ValidationError when the project does not exist
  */
 async function create (job, options = {}) {
-  if (options.creatableBy && !(await hasPermission(CREATE, options.creatableBy, job.projectId, PROJECT).catch(() => { throw new ValidationError('project does not exist') }))) {
-    throw new ForbiddenError()
-  }
-  return await ClassifierJob.create(job)
+  const transaction = options.transaction
+  return await ClassifierJob.create(job, { transaction })
     .catch((e) => {
       console.error('error', e)
       throw new ValidationError('Cannot create classifier job with provided data')

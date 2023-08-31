@@ -147,9 +147,9 @@ function create (attrs) {
     createdById: attrs.createdById,
     parameters: attrs.parameters
   }
-  return models.sequelize.transaction(async (t) => {
+  return models.sequelize.transaction(async (transaction) => {
     // Create the classifier
-    const classifier = await models.Classifier.create(classifierData, { transaction: t })
+    const classifier = await models.Classifier.create(classifierData, { transaction })
 
     // Create the outputs
     const outputsData = attrs.outputs.map(output => ({
@@ -157,14 +157,14 @@ function create (attrs) {
       classificationId: output.id,
       outputClassName: output.className
     }))
-    await Promise.all(outputsData.map(output => models.ClassifierOutput.create(output, { transaction: t })))
+    await Promise.all(outputsData.map(output => models.ClassifierOutput.create(output, { transaction })))
 
     // Create the active projects and streams
     if (attrs.activeProjects) {
-      await updateActiveProjects({ id: classifier.id, activeProjects: attrs.activeProjects }, t)
+      await updateActiveProjects({ id: classifier.id, activeProjects: attrs.activeProjects }, { transaction })
     }
     if (attrs.activeStreams) {
-      await updateActiveStreams({ id: classifier.id, activeStreams: attrs.activeStreams }, t)
+      await updateActiveStreams({ id: classifier.id, activeStreams: attrs.activeStreams }, { transaction })
     }
 
     return classifier
