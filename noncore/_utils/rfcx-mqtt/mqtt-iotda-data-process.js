@@ -14,7 +14,7 @@ async function parse (pingObj) {
   const messageBody = {
     services: [
       {
-        service_id: 'TestService',
+        service_id: 'GuardianDiagnostic',
         properties: {
           ...requiredData
         },
