@@ -25,12 +25,12 @@ function forwardMessage (device, message) {
 
   app.on('error', (err) => {
     console.error('IoTDA MQTT: Error', err)
-    app.end()
+    app = null
   })
   app.on('reconnect', () => {
     console.info('IoTDA MQTT: Reconnected')
     // No need to reconnect to avoid reconnection loop stuck
-    app.end()
+    app = null
   })
   app.on('close', () => {
     console.info('IoTDA MQTT: Closed')
