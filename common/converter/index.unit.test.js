@@ -25,7 +25,7 @@ test('can convert to moment', () => {
   const converter = new Converter(source)
   converter.convert('start').toMomentUtc()
   return converter.validate().then(result => {
-    expect(result.start).toBeInstanceOf(moment)
+    expect(moment.isMoment(result.start)).toBeTruthy()
     expect(result.start.toISOString()).toStrictEqual(source.start)
   })
 })
