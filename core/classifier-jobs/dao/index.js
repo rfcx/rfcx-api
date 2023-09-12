@@ -23,7 +23,7 @@ const availableIncludes = [
  * @param {number} options.offset Number of results to skip
  * @param {number} options.readableBy Include only classifier jobs readable by the given user id
  */
-async function query (filters, options = {}) {
+async function query (filters = {}, options = {}) {
   const accessibleProjects = options.readableBy ? await getAccessibleObjectsIDs(options.readableBy, PROJECT, filters.projects) : null
   const filterProjects = Array.isArray(filters.projects) ? filters.projects : null
   const projectIds = accessibleProjects && filterProjects
