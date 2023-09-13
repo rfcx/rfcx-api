@@ -220,7 +220,7 @@ describe('PATCH /classifier-jobs/:id', () => {
 
       await models.Detection.create({ classifierJobId: JOB_RUNNING.id, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.99 })
       await models.Detection.create({ classifierJobId: JOB_RUNNING.id, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.99 })
-      await models.Detection.create({ classifierJobId: JOB_RUNNING.id, streamId: STREAM_1.id, classificationId: CLASSIFICATION_3.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.99 })
+      await models.Detection.create({ classifierJobId: JOB_RUNNING.id, streamId: STREAM_1.id, classificationId: CLASSIFICATION_3.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.000001 })
       await models.Detection.create({ classifierJobId: JOB_DONE.id, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.99 })
       await models.Detection.create({ streamId: STREAM_1.id, classificationId: CLASSIFICATION_3.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.99 })
 

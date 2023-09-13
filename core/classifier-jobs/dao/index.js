@@ -6,7 +6,7 @@ const pagedQuery = require('../../_utils/db/paged-query')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
 
 const availableIncludes = [
-  Classifier.include({ attributes: ['id', 'name'] }),
+  Classifier.include({ attributes: ['id', 'name', 'version'] }),
   // `through: { attributes: [] }` is required to delete `classifier_job_streams: { ClassifierJobId: id, StreamId: id }` from result
   Stream.include({ as: 'streams', attributes: ['id', 'name'], required: false, through: { attributes: [] } })
 ]
@@ -23,7 +23,7 @@ const availableIncludes = [
  * @param {number} options.offset Number of results to skip
  * @param {number} options.readableBy Include only classifier jobs readable by the given user id
  */
-async function query (filters, options = {}) {
+async function query (filters = {}, options = {}) {
   const accessibleProjects = options.readableBy ? await getAccessibleObjectsIDs(options.readableBy, PROJECT, filters.projects) : null
   const filterProjects = Array.isArray(filters.projects) ? filters.projects : null
   const projectIds = accessibleProjects && filterProjects
