@@ -31,11 +31,14 @@ test('can detect missing property', async () => {
   converter.convert('a').toString()
   converter.convert('b').toInt()
   expect.assertions(2)
+  let err
   try {
     await converter.validate()
-  } catch(e) {
-    expect(e).toBeInstanceOf(ValidationError)
-    expect(e.message).toBe(`Validation errors: Parameter 'b' the parameter is required but was not provided.`)
+  } catch (e) {
+    err = e
+  } finally {
+    expect(err).toBeInstanceOf(ValidationError)
+    expect(err.message).toBe('Validation errors: Parameter \'b\' the parameter is required but was not provided.')
   }
 })
 
@@ -48,11 +51,14 @@ test('can detect incorrect type (int)', async () => {
   converter.convert('a').toString()
   converter.convert('b').toInt()
   expect.assertions(2)
+  let err
   try {
     await converter.validate()
-  } catch(e) {
-    expect(e).toBeInstanceOf(ValidationError)
-    expect(e.message).toBe(`Validation errors: Parameter 'b' should be an integer.`)
+  } catch (e) {
+    err = e
+  } finally {
+    expect(err).toBeInstanceOf(ValidationError)
+    expect(err.message).toBe('Validation errors: Parameter \'b\' should be an integer.')
   }
 })
 
@@ -81,11 +87,14 @@ test('can detect multiple type errors', async () => {
   converter.convert('a').toString()
   converter.convert('b').toInt()
   expect.assertions(2)
+  let err
   try {
     await converter.validate()
-  } catch(e) {
-    expect(e).toBeInstanceOf(ValidationError)
-    expect(e.message).toBe(`Validation errors: Parameter 'b' should be an integer.`)
+  } catch (e) {
+    err = e
+  } finally {
+    expect(err).toBeInstanceOf(ValidationError)
+    expect(err.message).toBe('Validation errors: Parameter \'b\' should be an integer.')
   }
 })
 
