@@ -18,6 +18,7 @@ async function calcSummary (id, options = {}) {
     streams: (job.streams || []).map(s => s.id),
     start: `${job.queryStart}T00:00:00.000Z`,
     end: `${job.queryEnd}T23:59:59.999Z`,
+    minConfidence: 0,
     classifierJobs: [id]
   }, {
     user: options.user,
