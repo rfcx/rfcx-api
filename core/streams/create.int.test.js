@@ -69,6 +69,7 @@ describe('POST /streams', () => {
     const stream = await models.Stream.findByPk(id)
     expect(stream.name).toBe(requestBody.name)
     expect(stream.createdById).toBe(seedValues.primaryUserId)
+    expect(stream.timezone).toBe('Asia/Phnom_Penh')
     expect(stream.externalId).toBe(123)
   })
 

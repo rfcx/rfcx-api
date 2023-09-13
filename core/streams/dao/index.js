@@ -13,16 +13,17 @@ const availableIncludes = [
   Project.include({ required: false })
 ]
 
-function computedAdditions (stream) {
+function computedAdditions (data, stream = {}) {
   const additions = {}
-  const { latitude, longitude } = stream
+  const { latitude, longitude } = data
   if (latitude !== undefined && longitude !== undefined) {
     const country = crg.get_country(latitude, longitude)
     if (country) {
       additions.countryName = country.name
     }
-
-    additions.timezone = getTzByLatLng(latitude, longitude)
+    if (!stream.timezone_locked) {
+      additions.timezone = getTzByLatLng(latitude, longitude)
+    }
   }
   return additions
 }
@@ -230,16 +231,16 @@ async function query (filters, options = {}) {
  * @throws EmptyResultError when stream not found
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the stream
  */
-async function update (id, stream, options = {}) {
+async function update (id, data, options = {}) {
+  const transaction = options.transaction || null
+  const stream = await get(id, { transaction })
   if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, STREAM))) {
     throw new ForbiddenError()
   }
-  const fullStream = { ...stream, ...computedAdditions(stream) }
-  const transaction = options.transaction || null
+  const fullStream = { ...data, ...computedAdditions(data, stream) }
   if (fullStream.name) {
-    const existingStream = await get(id, { transaction })
-    if (existingStream && existingStream.project_id && existingStream.name !== fullStream.name) {
-      const duplicateStreamInProject = await query({ names: [fullStream.name], projects: [fullStream.project_id || existingStream.project_id] }, { fields: 'id', transaction })
+    if (stream && stream.project_id && stream.name !== fullStream.name) {
+      const duplicateStreamInProject = await query({ names: [fullStream.name], projects: [fullStream.project_id || stream.project_id] }, { fields: 'id', transaction })
       if (duplicateStreamInProject.total > 0) {
         throw new ValidationError('Duplicate stream name in the project')
       }
