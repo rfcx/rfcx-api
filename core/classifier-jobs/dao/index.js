@@ -6,7 +6,7 @@ const pagedQuery = require('../../_utils/db/paged-query')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
 
 const availableIncludes = [
-  Classifier.include({ attributes: ['id', 'name'] }),
+  Classifier.include({ attributes: ['id', 'name', 'version'] }),
   // `through: { attributes: [] }` is required to delete `classifier_job_streams: { ClassifierJobId: id, StreamId: id }` from result
   Stream.include({ as: 'streams', attributes: ['id', 'name'], required: false, through: { attributes: [] } })
 ]
