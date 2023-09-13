@@ -66,6 +66,11 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(40),
       allowNull: true
     },
+    timezoneLocked: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
+    },
     maxSampleRate: {
       type: DataTypes.INTEGER,
       allowNull: true
@@ -151,7 +156,7 @@ module.exports = function (sequelize, DataTypes) {
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   Stream.attributes = {
-    full: ['id', 'name', 'description', 'start', 'end', 'project_id', 'is_public', 'latitude', 'longitude', 'altitude', 'timezone', 'max_sample_rate', 'external_id', 'created_by_id', 'created_at', 'updated_at'],
+    full: ['id', 'name', 'description', 'start', 'end', 'project_id', 'is_public', 'latitude', 'longitude', 'altitude', 'timezone', 'timezone_locked', 'max_sample_rate', 'external_id', 'created_by_id', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'start', 'end', 'latitude', 'longitude', 'altitude', 'is_public']
   }
   Stream.include = includeBuilder(Stream, 'stream', Stream.attributes.lite)
