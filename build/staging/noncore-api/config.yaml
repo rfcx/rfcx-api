@@ -20,14 +20,14 @@ data:
   AWS_REGION_ID: "eu-west-1"
   FIREBASE_ENABLED: "true"
   GUARDIAN_API_SMS_ADDRESS: "+14154803657"
-  GUARDIAN_BROKER_HOSTNAME: "staging-api-mqtt.rfcx.org"
+  GUARDIAN_BROKER_HOSTNAME: "staging-rabbit.rfcx.org"
   INGEST_BUCKET: "rfcx-streams-staging"
   INGEST_SERVICE_BASE_URL: "http://ingest-service-api-service.staging.svc.cluster.local/"
   INGEST_SERVICE_ENABLED: "true"
   MAILCHIMP_API_URL: "https://us9.api.mailchimp.com/3.0/"
   MESSAGE_QUEUE_ENABLED: 'true'
   MESSAGE_QUEUE_PREFIX: 'staging'
-  MQTT_BROKER_HOST: "rabbitmq-http.staging.svc.cluster.local"
+  MQTT_BROKER_HOST: "rabbitmq.staging.svc.cluster.local"
   MQTT_BROKER_PORT: "1883"
   NEW_RELIC_APP_NAME: "Staging Noncore API"
   NODE_ENV: "staging"
