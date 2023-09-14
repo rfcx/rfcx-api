@@ -1,6 +1,6 @@
 const SNS = require('aws-sdk/clients/sns')
 const SQS = require('aws-sdk/clients/sqs')
-const S3 = require('knox')
+const S3 = require('knox-s3')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 const _snsClient = new SNS({
