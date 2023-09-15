@@ -27,7 +27,7 @@ data:
   MAILCHIMP_API_URL: "https://us9.api.mailchimp.com/3.0/"
   MESSAGE_QUEUE_ENABLED: 'true'
   MESSAGE_QUEUE_PREFIX: 'staging'
-  MQTT_BROKER_HOST: "rabbitmq.staging.svc.cluster.local"
+  MQTT_BROKER_HOST: "rabbitmq-service.staging.svc.cluster.local"
   MQTT_BROKER_PORT: "1883"
   NEW_RELIC_APP_NAME: "Staging Noncore API"
   NODE_ENV: "staging"
