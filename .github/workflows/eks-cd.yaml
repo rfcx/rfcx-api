@@ -55,7 +55,7 @@ jobs:
 
   deploy-core-api-secrets:
     name: 'Deploy core-api secrets'
-    needs: [configure]
+    needs: [configure, build]
     uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@eks_cicd
     with:
       namespace: ${{ needs.configure.outputs.namespace }}
@@ -66,7 +66,7 @@ jobs:
 
   deploy-noncore-api-secrets:
     name: 'Deploy noncore-api secrets'
-    needs: [configure]
+    needs: [configure, build]
     uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@eks_cicd
     with:
       namespace: ${{ needs.configure.outputs.namespace }}
@@ -77,7 +77,7 @@ jobs:
 
   deploy:
     name: 'Deploy'
-    needs: [build, configure]
+    needs: [configure, build]
     uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
     with:
       tag: ${{ needs.build.outputs.unique-tag }}
