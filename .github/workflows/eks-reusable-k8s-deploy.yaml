@@ -48,8 +48,8 @@ jobs:
 
       - name: 'Deploy: Kubernetes apply'
         run: |
-          kubectl delete -R -f build/${{ inputs.namespace }} --ignore-not-found=true -n${{ inputs.namespace }} --grace-period=10
-          kubectl apply -R -f build/${{ inputs.namespace }} -n${{ inputs.namespace }}
+          kubectl delete -R -f build/${{ inputs.namespace }} --ignore-not-found=true -n ${{ inputs.namespace }} --grace-period=10
+          kubectl apply -R -f build/${{ inputs.namespace }} -n ${{ inputs.namespace }}
 
 
 #      - name: 'Deploy: Kubernetes verify core-api'
