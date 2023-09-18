@@ -1,20 +1,38 @@
-## 1.3.0 (2023-XX-XX)
+
+## 1.3.1 (2023-07-31)
 
 ### Features
-* **core**: add `id`, `review_status` and `classifier_job_id` to `detections` table
-* **core**: create new `detection_reviews` table
-* **core**: update detection review logic
-* **core**: add `/streams/{streamId}/detections/{start}/review` endpoint
-* **core**: add `review_statuses` to `/detections` endpoint
-* **core**: create `classifier_processed_segments` table
-* **core**: add `/internal/prediction/streams/segments/processed` endpoint
-* **core**: add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
+* **core**: Add `classifier_job_streams` table
+* **core**: Add GET `/classifier-jobs` endpoint
+* **core**: Add GET `/classifier-jobs/:id` endpoint
+* **core**: Add GET `/classifier-jobs/:id/results` endpoint
+
+## 1.3.0 (2023-03-01)
+
+### Features
+* **core**: Add `id`, `review_status` and `classifier_job_id` to `detections` table
+* **core**: Create new `detection_reviews` table
+* **core**: Update detection review logic
+* **core**: Add `/streams/{streamId}/detections/{start}/review` endpoint
+* **core**: Add `review_statuses` to `/detections` endpoint
+* **core**: Create `classifier_processed_segments` table
+* **core**: Add `/internal/prediction/streams/segments/processed` endpoint
+* **core**: Add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
+* **core**: Add `availability` to `stream-segments` table
+* **noncore**: Receive `last_deployed` in `PATCH /v2/guardian/:guid`
+* **noncore**: Remove update `last_deployed` from previous logic
+* **media**: Won't generate audio file if `stream-segments` `availability` is not `1`
+
+## 1.2.3 (2023-04-15)
+
+### Features
+* **noncore**: Receive `last_deployed` in `PATCH /v2/guardian/:guid`
+* **noncore**: Remove update `last_deployed` from previous logic
 
 ## 1.2.2 (2022-09-06)
 
 ### Features
 * **core**: Update `GET /classifiers/:id` and `GET /classifiers/:id/file` to get data by permission
-
 
 ## 1.2.1 (2022-08-24)
 

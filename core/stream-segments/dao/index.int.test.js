@@ -21,16 +21,16 @@ async function commonSetup () {
   stream = await models.Stream.create({ id: 'aaaaaaaaaaaa', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
   sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, filename: '20210726_101000.wav', duration: 600, sample_count: 1, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: codec.id, audio_file_format_id: format.id })
   segments = await Promise.all([
-    { stream_id: stream.id, start: '2021-07-26T10:10:00.000Z', end: '2021-07-26T10:10:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id },
-    { stream_id: stream.id, start: '2021-07-26T10:11:00.000Z', end: '2021-07-26T10:11:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id },
-    { stream_id: stream.id, start: '2021-07-26T10:12:00.000Z', end: '2021-07-26T10:12:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id },
-    { stream_id: stream.id, start: '2021-07-26T10:13:00.000Z', end: '2021-07-26T10:13:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id },
-    { stream_id: stream.id, start: '2021-07-26T10:14:00.000Z', end: '2021-07-26T10:14:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id },
-    { stream_id: stream.id, start: '2021-07-26T10:15:00.000Z', end: '2021-07-26T10:15:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id },
-    { stream_id: stream.id, start: '2021-07-26T10:16:00.000Z', end: '2021-07-26T10:16:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id },
-    { stream_id: stream.id, start: '2021-07-26T10:17:00.000Z', end: '2021-07-26T10:17:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id },
-    { stream_id: stream.id, start: '2021-07-26T10:18:00.000Z', end: '2021-07-26T10:18:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id },
-    { stream_id: stream.id, start: '2021-07-26T10:19:00.000Z', end: '2021-07-26T10:19:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id }
+    { stream_id: stream.id, start: '2021-07-26T10:10:00.000Z', end: '2021-07-26T10:10:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 },
+    { stream_id: stream.id, start: '2021-07-26T10:11:00.000Z', end: '2021-07-26T10:11:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 },
+    { stream_id: stream.id, start: '2021-07-26T10:12:00.000Z', end: '2021-07-26T10:12:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 },
+    { stream_id: stream.id, start: '2021-07-26T10:13:00.000Z', end: '2021-07-26T10:13:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 },
+    { stream_id: stream.id, start: '2021-07-26T10:14:00.000Z', end: '2021-07-26T10:14:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 },
+    { stream_id: stream.id, start: '2021-07-26T10:15:00.000Z', end: '2021-07-26T10:15:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 },
+    { stream_id: stream.id, start: '2021-07-26T10:16:00.000Z', end: '2021-07-26T10:16:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 },
+    { stream_id: stream.id, start: '2021-07-26T10:17:00.000Z', end: '2021-07-26T10:17:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 },
+    { stream_id: stream.id, start: '2021-07-26T10:18:00.000Z', end: '2021-07-26T10:18:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 },
+    { stream_id: stream.id, start: '2021-07-26T10:19:00.000Z', end: '2021-07-26T10:19:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: extension.id, availability: 1 }
   ].map(segment => models.StreamSegment.create(segment)))
   return { stream, segments }
 }

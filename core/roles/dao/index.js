@@ -83,8 +83,8 @@ function getByName (name, opts = {}) {
  * @param {string} itemOrId item id or item
  * @param {string} itemName `STREAM` or `PROJECT` or `ORGANIZATION`
  */
-async function hasPermission (type, userId, itemOrId, itemName) {
-  const permissions = await getPermissions(userId, itemOrId, itemName)
+async function hasPermission (type, userId, itemOrId, itemName, options = {}) {
+  const permissions = await getPermissions(userId, itemOrId, itemName, options)
   return permissions.includes(type)
 }
 
@@ -93,7 +93,8 @@ async function hasPermission (type, userId, itemOrId, itemName) {
  * @param {string | object} itemOrId item id or item
  * @param {string} itemName `STREAM` or `PROJECT` or `ORGANIZATION`
  */
-async function getPermissions (userOrId, itemOrId, itemName) {
+async function getPermissions (userOrId, itemOrId, itemName, options = {}) {
+  const transaction = options.transaction
   const isId = typeof itemOrId === 'string'
   const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
   const userId = userIsPrimitive ? userOrId : userOrId.id
@@ -106,13 +107,13 @@ async function getPermissions (userOrId, itemOrId, itemName) {
   let item = itemOrId
   if (isId) {
     try {
-      item = (await hierarchy[itemName].model.findOne({ where: { id: itemOrId }, paranoid: false })).toJSON()
+      item = (await hierarchy[itemName].model.findOne({ where: { id: itemOrId }, paranoid: false, transaction })).toJSON()
     } catch (e) {
       throw new EmptyResultError(`${itemName} with given id doesn't exist.`)
     }
   }
   const originalItem = { ...item }
-  const user = await (userIsPrimitive ? usersService.getUserByParams({ id: userId }) : Promise.resolve(userOrId))
+  const user = await (userIsPrimitive ? usersService.getUserByParams({ id: userId }, false, { transaction }) : Promise.resolve(userOrId))
   if (user.is_super || item.created_by_id === userId) {
     return [CREATE, READ, UPDATE, DELETE]
   }
@@ -126,7 +127,8 @@ async function getPermissions (userOrId, itemOrId, itemName) {
         user_id: userId,
         [currentLevel.columnId]: item.id
       },
-      include: userRoleBaseInclude
+      include: userRoleBaseInclude,
+      transaction
     })
     if (itemRole && itemRole.role) {
       // if role is found, check permissions of this role
@@ -141,7 +143,8 @@ async function getPermissions (userOrId, itemOrId, itemName) {
           where: {
             id: item[parentColumnId] || item[parentModelName].id
           },
-          paranoid: false
+          paranoid: false,
+          transaction
         })
         if (item) {
           if (item.created_by_id === userId) {
@@ -202,7 +205,8 @@ async function getPermissionsForProjects (projectIds, userId) {
  * @param {string[]} inIds Subset of object ids to select from
  * @param {string} userId The user for which the projects are accessible
  */
-async function getPermissionsForObjects (itemName, inIds, userId) {
+async function getPermissionsForObjects (itemName, inIds, userId, options = {}) {
+  const transaction = options.transaction
   if (!inIds.length) {
     return {}
   }
@@ -211,7 +215,7 @@ async function getPermissionsForObjects (itemName, inIds, userId) {
   const where = `WHERE ${itemName}r.${itemName}_id IN (:inIds) AND ${itemName}r.user_id = ${userId}`
   const sql = `${select} ${join} ${where}`
 
-  return models.sequelize.query(sql, { replacements: { inIds }, type: models.sequelize.QueryTypes.SELECT })
+  return models.sequelize.query(sql, { replacements: { inIds }, type: models.sequelize.QueryTypes.SELECT, transaction })
     .then(data => {
       return data.reduce((result, row) => {
         result[row[`${itemName}_id`]] = (result[row[`${itemName}_id`]] || []).concat(row.permission)
@@ -229,7 +233,8 @@ async function getPermissionsForObjects (itemName, inIds, userId) {
  * @param {string[]} inIds Subset of object ids to select from
  * @param {string} permission Required permission "R" by default
  */
-async function getAccessibleObjectsIDs (userId, itemName, inIds, permission = READ, includePublic = false) {
+async function getAccessibleObjectsIDs (userId, itemName, inIds, permission = READ, includePublic = false, options = {}) {
+  const transaction = options.transaction
   const select = `SELECT DISTINCT ${itemName}.id FROM ${itemName}s ${itemName}`
   const joins = [
     `LEFT JOIN user_${itemName}_roles ${itemName}r ON ${itemName}.id = ${itemName}r.${itemName}_id AND ${itemName}r.user_id = ${userId}`,
@@ -264,7 +269,7 @@ async function getAccessibleObjectsIDs (userId, itemName, inIds, permission = RE
   if (inIds && inIds.length) {
     sql += ` AND ${itemName}.id IN (:inIds)`
   }
-  return models.sequelize.query(sql, { replacements: { userId, inIds }, type: models.sequelize.QueryTypes.SELECT })
+  return models.sequelize.query(sql, { replacements: { userId, inIds }, type: models.sequelize.QueryTypes.SELECT, transaction })
     .then(data => data.map(x => x.id))
 }
 

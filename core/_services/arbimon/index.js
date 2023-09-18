@@ -101,7 +101,7 @@ function matchSegmentToRecording (sfParams, segment) {
     datetime: moment.utc(segment.start).format('YYYY-MM-DD HH:mm:ss.SSS'),
     duration: (segment.end - segment.start) / 1000,
     samples: segment.sample_count,
-    file_size: segment.file_size,
+    file_size: 0,
     bit_rate: sfParams.bit_rate,
     sample_rate: sfParams.sample_rate,
     sample_encoding: sfParams.audio_codec,
@@ -119,7 +119,7 @@ function createRecordings (body) {
     },
     body,
     json: true,
-    timeout: 20000
+    timeout: 59000
   }
 
   return getClientToken()
@@ -140,6 +140,37 @@ async function createRecordingsFromSegments (sfParams, segments, opts) {
     return matchSegmentToRecording(sfParams, segment, opts)
   })
   return createRecordings(recordings)
+}
+
+async function deleteRecordingsFromSegments (streamId, segments) {
+  const body = segments.map(s => {
+    return {
+      site_external_id: streamId,
+      uri: s.path
+    }
+  })
+  const options = {
+    method: 'POST',
+    url: `${arbimonBaseUrl}api/ingest/recordings/delete`,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body,
+    json: true,
+    timeout: 59000
+  }
+
+  return getClientToken()
+    .then((token) => {
+      options.headers.authorization = `Bearer ${token}`
+      return rp(options).catch(rpErrorHandler)
+    })
+    .then((response) => {
+      if (response) {
+        console.error(`arbimon deleteRecordings: req: ${JSON.stringify(body)} res: ${JSON.stringify(response)}`)
+        throw Error('Unable to delete recordings in Arbimon')
+      }
+    })
 }
 
 function createUser (user, idToken) {
@@ -168,6 +199,9 @@ module.exports = {
   createSite,
   updateSite,
   deleteSite,
+  matchSegmentToRecording,
   createRecordingsFromSegments,
+  deleteRecordingsFromSegments,
+  createRecordings,
   createUser
 }

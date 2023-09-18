@@ -9,7 +9,7 @@ const Converter = require('../../common/converter')
  * /streams/{streamId}/detections/{start}/review:
  *   post:
  *     summary: Review a detection
- *     description:
+ *     description: Creates or updates reviews for any detections matching stream and start
  *     tags:
  *       - detections
  *     parameters:
@@ -27,37 +27,40 @@ const Converter = require('../../common/converter')
  *         description: Review status ('rejected', 'uncertain', 'confirmed')
  *         in: query
  *         type: string
+ *       - name: classification
+ *         description: Classification value
+ *         in: query
+ *         required: true
+ *         type: string
+ *       - name: classifier
+ *         description: Classifier id
+ *         in: query
+ *         required: true
+ *         type: number
+ *       - name: classifier_job
+ *         description: Classifier job id
+ *         in: query
+ *         type: number
  *     responses:
- *       201:
- *         description: Created
- *         headers:
- *           Location:
- *             description: Path of the created resource (e.g. `/detections/reviews/xyz123`)
- *             schema:
- *               type: string
- *       204:
- *         description: Updated
- *         headers:
- *           Location:
- *             description: Path of the updated resource (e.g. `/detections/reviews/xyz123`)
- *             schema:
- *               type: string
+ *       200:
+ *         description: Success
  *       400:
  *         description: Invalid query parameters
  */
 router.post('/:streamId/detections/:start/review', (req, res) => {
+  const userId = req.rfcx.auth_token_info.id
   const converter = new Converter(req.body, {}, true)
   converter.convert('status').toString().isEqualToAny(['rejected', 'uncertain', 'confirmed'])
+  converter.convert('classification').toString()
+  converter.convert('classifier').toInt()
+  converter.convert('classifier_job').optional().toInt()
   return converter.validate()
     .then(async (params) => {
-      return await createOrUpdate({
-        userId: req.rfcx.auth_token_info.id,
-        streamId: req.params.streamId,
-        start: req.params.start,
-        status: params.status
-      })
+      const { streamId, start } = req.params
+      const { status, classification, classifier, classifierJob } = params
+      return await createOrUpdate({ userId, streamId, start, status, classification, classifier, classifierJob })
     })
-    .then(({ review, created }) => res.location(`/detections/reviews/${review.id}`).sendStatus(created ? 201 : 204))
+    .then(() => res.send(200))
     .catch(httpErrorHandler(req, res, 'Failed reviewing the detection'))
 })
 

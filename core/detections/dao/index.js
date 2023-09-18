@@ -1,4 +1,3 @@
-const moment = require('moment')
 const { Sequelize, Stream, Classification, Classifier, DetectionReview, User, Detection } = require('../../_models')
 const { propertyToFloat } = require('../../_utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../_utils/db/time-aggregated-query')
@@ -26,14 +25,17 @@ async function defaultQueryOptions (filters = {}, options = {}) {
   const { start, end, streams, projects, classifiers, classifications, classifierJobs, minConfidence, reviewStatuses, streamsOnlyPublic } = filters
   const { user, offset, limit, descending, fields } = options
 
-  const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.full
+  const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.lite
   const include = fields && fields.length > 0 ? availableIncludes.filter(i => fields.includes(i.as)) : []
 
   const order = [['start', descending ? 'DESC' : 'ASC']]
-  const where = {
-    start: {
-      [Sequelize.Op.gte]: moment.utc(start).valueOf(),
-      [Sequelize.Op.lt]: moment.utc(end).valueOf()
+  const where = {}
+  if (start === end) {
+    where.start = { [Sequelize.Op.eq]: start }
+  } else {
+    where.start = {
+      [Sequelize.Op.gte]: start,
+      [Sequelize.Op.lt]: end
     }
   }
   if (projects) {
@@ -43,19 +45,19 @@ async function defaultQueryOptions (filters = {}, options = {}) {
     }
   }
   if (streams) {
-    where.stream_id = user === undefined ? streams : await getAccessibleObjectsIDs(user.id, STREAM, streams, 'R', true)
+    where.streamId = user === undefined ? streams : await getAccessibleObjectsIDs(user.id, STREAM, streams, 'R', true)
   } else if (!user.has_system_role) {
     const streamIds = streamsOnlyPublic
       ? await streamDao.getPublicStreamIds()
       : await getAccessibleObjectsIDs(user.id, STREAM)
-    where.stream_id = { [Sequelize.Op.in]: streamIds }
+    where.streamId = { [Sequelize.Op.in]: streamIds }
   }
   if (classifications) {
     where['$classification.value$'] = { [Sequelize.Op.or]: classifications }
-    if (!include.find(i => i.as === 'classification')) {
-      include.push(availableIncludes.find(a => a.as === 'classification'))
-    }
   }
+  // Always include classification so the query can group it by id
+  include.push(availableIncludes.find(a => a.as === 'classification'))
+
   if (classifiers) {
     where.classifier_id = { [Sequelize.Op.or]: classifiers }
   }
@@ -66,12 +68,12 @@ async function defaultQueryOptions (filters = {}, options = {}) {
     const statuses = reviewStatuses.map(s => REVIEW_STATUS_MAPPING[s])
     if (statuses.includes('null')) {
       if (statuses.length === 1) {
-        where.review_status = { [Sequelize.Op.eq]: null }
+        where.reviewStatus = { [Sequelize.Op.eq]: null }
       } else {
-        where.review_status = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: statuses.filter(s => s !== 'null') } }
+        where.reviewStatus = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: statuses.filter(s => s !== 'null') } }
       }
     } else {
-      where.review_status = { [Sequelize.Op.in]: statuses }
+      where.reviewStatus = { [Sequelize.Op.in]: statuses }
     }
   }
   // TODO: if minConfidence is undefined, get it from event strategy
@@ -124,7 +126,7 @@ async function timeAggregatedQuery (start, end, streams, streamsOnlyPublic, clas
   const timeBucketAttribute = 'time_bucket'
   const aggregatedValueAttribute = 'aggregated_value'
   const queryOptions = {
-    ...(await defaultQueryOptions(start, end, streams, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user)),
+    ...(await defaultQueryOptions({ start, end, streams, streamsOnlyPublic, classifications, minConfidence }, { descending, limit, offset, user })),
     attributes: timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Detection', 'start', timeBucketAttribute, aggregatedValueAttribute),
     order: [Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
     group: [timeBucketAttribute].concat(Sequelize.col('classification.id')),

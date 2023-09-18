@@ -13,13 +13,13 @@ afterAll(async () => {
 
 async function commonSetup () {
   const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
-  await models.Stream.create(stream)
+  await models.Stream.findOrCreate({ where: stream })
   const classification = { id: 6, value: 'vehicle', title: 'Vehicle', typeId: 1, sourceId: 1 }
-  await models.Classification.create(classification)
+  await models.Classification.findOrCreate({ where: classification })
   const classifier = { id: 3, externalId: 'cccddd', name: 'vehicle', version: 5, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
-  await models.Classifier.create(classifier)
+  await models.Classifier.findOrCreate({ where: classifier })
   const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'vh', ignoreThreshold: 0.1 }
-  await models.ClassifierOutput.create(classifierOutput)
+  await models.ClassifierOutput.findOrCreate({ where: classifierOutput })
   return { stream, classification, classifier, classifierOutput }
 }
 

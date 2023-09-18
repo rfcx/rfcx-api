@@ -69,6 +69,7 @@ module.exports = (req, res) => {
           project.externalId = arbimonProject.project_id
         } catch (error) {
           console.error(`Error creating project in Arbimon (project: ${project.id})`)
+          throw new Error()
         }
       }
 

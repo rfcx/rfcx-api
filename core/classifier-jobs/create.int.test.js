@@ -6,24 +6,33 @@ const request = require('supertest')
 const CLASSIFIER_1 = { id: 912, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
 const CLASSIFIERS = [CLASSIFIER_1]
 
-const PROJECT_1 = { id: 'testproject1', name: 'Test project 1', createdById: seedValues.otherUserId }
-const PROJECTS = [PROJECT_1]
+const PROJECT_1 = { id: 'testproj0001', name: 'Test project 1', createdById: seedValues.otherUserId }
+const PROJECT_2 = { id: 'testproj0002', name: 'Test project 2', createdById: seedValues.anotherUserId }
+const PROJECT_3 = { id: 'testproj0003', name: 'Test project 3', createdById: seedValues.primaryUserId }
+const PROJECTS = [PROJECT_1, PROJECT_2, PROJECT_3]
+
+const STREAM_1 = { id: 'LilSjZJkRK40', name: 'Stream 1', projectId: PROJECT_1.id, createdById: seedValues.otherUserId }
+const STREAM_2 = { id: 'LilSjZJkRK41', name: 'Stream 2', projectId: PROJECT_2.id, createdById: seedValues.anotherUserId }
+const STREAM_3 = { id: 'LilSjZJkRK42', name: 'Stream 3', projectId: PROJECT_3.id, createdById: seedValues.primaryUserId }
+const STREAM_4 = { id: 'LilSjZJkRK43', name: 'Stream 4', projectId: PROJECT_3.id, createdById: seedValues.primaryUserId }
+const STREAM_5 = { id: 'LilSjZJkRK44', name: 'Stream 5', projectId: PROJECT_3.id, createdById: seedValues.primaryUserId }
+const STREAMS = [STREAM_1, STREAM_2, STREAM_3, STREAM_4, STREAM_5]
 
 async function seedTestData () {
-  await models.Classifier.bulkCreate(CLASSIFIERS)
-  await models.Project.bulkCreate(PROJECTS)
+  await await models.Classifier.bulkCreate(CLASSIFIERS)
+  await await models.Project.bulkCreate(PROJECTS)
+  await await models.Stream.bulkCreate(STREAMS)
   await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
 }
 
 beforeAll(async () => {
   muteConsole('warn')
 })
-
-beforeAll(async () => {
+beforeEach(async () => {
   await seedTestData()
 })
 afterEach(async () => {
-  await truncateNonBase()
+  await truncateNonBase(models)
 })
 afterAll(async () => {
   await models.sequelize.close()
@@ -52,7 +61,7 @@ describe('POST /classifiers-jobs', () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
       project_id: PROJECT_1.id,
-      query_streams: 'LilSjZJkRK20',
+      query_streams: STREAM_1.name,
       query_start: '2021-01-02',
       query_end: '2021-01-02',
       query_hours: '1,2'
@@ -60,6 +69,73 @@ describe('POST /classifiers-jobs', () => {
 
     const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
+    const jobs = await models.ClassifierJob.findAll()
+    expect(jobs.length).toBe(1)
+    expect(jobs[0].classifierId).toBe(requestBody.classifier_id)
+    expect(jobs[0].projectId).toBe(requestBody.project_id)
+    expect(jobs[0].queryStreams).toBe(requestBody.query_streams)
+    expect(jobs[0].queryStart).toBe(requestBody.query_start)
+    expect(jobs[0].queryEnd).toBe(requestBody.query_end)
+    expect(jobs[0].queryHours).toBe(requestBody.query_hours)
+    const jobStreams = await models.ClassifierJobStream.findAll()
+    expect(jobStreams.length).toBe(1)
+    expect(jobStreams[0].classifierJobId).toBe(jobs[0].id)
+    expect(jobStreams[0].streamId).toBe(STREAM_1.id)
+  })
+
+  test('works with stream ids in query_streams', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
+      query_streams: STREAM_1.id,
+      query_start: '2021-01-02',
+      query_end: '2021-01-02',
+      query_hours: '1,2'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(201)
+    const jobs = await models.ClassifierJob.findAll()
+    expect(jobs.length).toBe(1)
+    expect(jobs[0].classifierId).toBe(requestBody.classifier_id)
+    expect(jobs[0].projectId).toBe(requestBody.project_id)
+    expect(jobs[0].queryStreams).toBe(requestBody.query_streams)
+    expect(jobs[0].queryStart).toBe(requestBody.query_start)
+    expect(jobs[0].queryEnd).toBe(requestBody.query_end)
+    expect(jobs[0].queryHours).toBe(requestBody.query_hours)
+    const jobStreams = await models.ClassifierJobStream.findAll()
+    expect(jobStreams.length).toBe(1)
+    expect(jobStreams[0].classifierJobId).toBe(jobs[0].id)
+    expect(jobStreams[0].streamId).toBe(STREAM_1.id)
+  })
+
+  test('if query_streams is not set, assigns all streams from the projects', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_3.id,
+      query_start: '2021-01-02',
+      query_end: '2021-01-02',
+      query_hours: '1,2'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(201)
+    const jobs = await models.ClassifierJob.findAll()
+    expect(jobs.length).toBe(1)
+    expect(jobs[0].classifierId).toBe(requestBody.classifier_id)
+    expect(jobs[0].projectId).toBe(requestBody.project_id)
+    expect(jobs[0].queryStreams).toBeNull()
+    expect(jobs[0].queryStart).toBe(requestBody.query_start)
+    expect(jobs[0].queryEnd).toBe(requestBody.query_end)
+    expect(jobs[0].queryHours).toBe(requestBody.query_hours)
+    const jobStreams = await models.ClassifierJobStream.findAll()
+    expect(jobStreams.length).toBe(3)
+    expect(jobStreams[0].classifierJobId).toBe(jobs[0].id)
+    expect(jobStreams[0].streamId).toBe(STREAM_3.id)
+    expect(jobStreams[1].classifierJobId).toBe(jobs[0].id)
+    expect(jobStreams[1].streamId).toBe(STREAM_4.id)
+    expect(jobStreams[2].classifierJobId).toBe(jobs[0].id)
+    expect(jobStreams[2].streamId).toBe(STREAM_5.id)
   })
 
   test('can omit optional query_streams', async () => {
@@ -79,7 +155,7 @@ describe('POST /classifiers-jobs', () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
       project_id: PROJECT_1.id,
-      query_streams: 'LilSjZJkRK20',
+      query_streams: STREAM_1.name,
       query_end: '2021-01-02',
       query_hours: '1,2'
     }
@@ -92,7 +168,7 @@ describe('POST /classifiers-jobs', () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
       project_id: PROJECT_1.id,
-      query_streams: 'LilSjZJkRK20',
+      query_streams: STREAM_1.name,
       query_start: '2021-01-02',
       query_hours: '1,2'
     }
@@ -105,7 +181,7 @@ describe('POST /classifiers-jobs', () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
       project_id: PROJECT_1.id,
-      query_streams: 'LilSjZJkRK20',
+      query_streams: STREAM_1.name,
       query_start: '2021-01-02',
       query_end: '2021-01-02'
     }
@@ -118,7 +194,7 @@ describe('POST /classifiers-jobs', () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
       project_id: PROJECT_1.id,
-      query_streams: 'LilSjZJkRK20',
+      query_streams: STREAM_1.name,
       query_start: '2020-01-02',
       query_end: '2020-01-01',
       query_hours: '1,2'
@@ -132,12 +208,12 @@ describe('POST /classifiers-jobs', () => {
   test('user is not project member', async () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
-      project_id: 'testproject2',
-      query_streams: 'LilSjZJkRK23'
+      project_id: PROJECT_2.id,
+      query_streams: STREAM_2.name
     }
 
     const response = await request(app).post('/').send(requestBody)
-    expect(response.statusCode).toBe(400)
+    expect(response.statusCode).toBe(403)
   })
 
   test('query hours with 1 digit format (midnight)', async () => {
@@ -264,13 +340,11 @@ describe('POST /classifiers-jobs', () => {
   test('missing project id', async () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
-      query_streams: ['LilSjZJkRK20']
+      query_streams: STREAM_1.name
     }
-    console.warn = jest.fn()
 
     const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
-    expect(console.warn).toHaveBeenCalled()
   })
 
   test('returns 400 when project id length is not correct', async () => {
@@ -284,13 +358,46 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(400)
   })
 
-  test('returns 400 when project id is not exist', async () => {
+  test('returns 404 when project not found', async () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
       project_id: 'abcdef123456'
     }
 
     const response = await request(app).post('/').send(requestBody)
-    expect(response.statusCode).toBe(400)
+    expect(response.statusCode).toBe(404)
+  })
+  test('returns 404 when a single query stream not found', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
+      query_streams: 'random111111'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(404)
+    expect(response.body.message).toBe('No streams found for the query')
+  })
+  test('returns 404 when all of the query streams not found', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
+      query_streams: 'random111111,random222222'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(404)
+    expect(response.body.message).toBe('No streams found for the query')
+  })
+  test('returns 404 when one of the query streams not found', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
+      query_streams: `${STREAM_1.name},randommmmmmm`
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(404)
+    expect(response.body.message).toBe('Some streams not found for the query')
   })
 })

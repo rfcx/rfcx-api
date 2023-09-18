@@ -13,16 +13,17 @@ const availableIncludes = [
   Project.include({ required: false })
 ]
 
-function computedAdditions (stream) {
+function computedAdditions (data, stream = {}) {
   const additions = {}
-  const { latitude, longitude } = stream
+  const { latitude, longitude } = data
   if (latitude !== undefined && longitude !== undefined) {
     const country = crg.get_country(latitude, longitude)
     if (country) {
       additions.countryName = country.name
     }
-
-    additions.timezone = getTzByLatLng(latitude, longitude)
+    if (!stream.timezone_locked) {
+      additions.timezone = getTzByLatLng(latitude, longitude)
+    }
   }
   return additions
 }
@@ -47,7 +48,13 @@ async function get (idOrWhere, options = {}) {
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
   const transaction = options.transaction || null
 
-  const stream = await Stream.findOne({ where, attributes, include, paranoid: false, transaction })
+  const stream = await Stream.findOne({
+    where,
+    attributes,
+    include,
+    paranoid: options.onlyDeleted !== true,
+    transaction
+  })
 
   if (!stream) {
     throw new EmptyResultError('Stream not found')
@@ -78,7 +85,8 @@ async function create (stream, options = {}) {
 /**
  * Get a list of streams matching the filters
  * @param {*} filters Stream attributes
- * @param {string} filters.keyword Where keyword is found (in the stream name)
+ * @param {string[]} filters.names Where names are found
+ * @param {string[]} filters.keywords Where keywords are found (in the stream name)
  * @param {string[]} filters.projects Where belongs to one of the projects (array of project ids)
  * @param {string[]} filters.organizations Where belongs to one of the organizations (array of organization ids)
  * @param {string|number} filters.start Having audio (segments) after start (moment)
@@ -99,15 +107,30 @@ async function query (filters, options = {}) {
   const where = {}
 
   // Filters (restrict results - can use multiple filters safely)
-  if (filters.name) {
+  if (filters.names) {
     where.name = {
-      [Sequelize.Op.iLike]: `${filters.name.replace(/^\*/, '%').replace(/\*$/, '%')}`
+      [Sequelize.Op.iLike]: {
+        [Sequelize.Op.any]: filters.names.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%')}`)
+      }
     }
   }
-
-  if (filters.keyword) {
+  if (filters.namesOrIds) {
+    where[Sequelize.Op.or] = {
+      id: {
+        [Sequelize.Op.in]: filters.namesOrIds
+      },
+      name: {
+        [Sequelize.Op.iLike]: {
+          [Sequelize.Op.any]: filters.namesOrIds.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%')}`)
+        }
+      }
+    }
+  }
+  if (filters.keywords) {
     where.name = {
-      [Sequelize.Op.iLike]: `%${filters.keyword}%`
+      [Sequelize.Op.iLike]: {
+        [Sequelize.Op.any]: filters.keywords.map(k => `%${k}%`)
+      }
     }
   }
   if (filters.organizations) {
@@ -167,7 +190,8 @@ async function query (filters, options = {}) {
     order,
     limit: options.limit,
     offset: options.offset,
-    paranoid: options.onlyDeleted !== true
+    paranoid: options.onlyDeleted !== true,
+    transaction: options.transaction
   })
 
   // TODO move country into the table and perform lookup once on create/update
@@ -207,12 +231,21 @@ async function query (filters, options = {}) {
  * @throws EmptyResultError when stream not found
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the stream
  */
-async function update (id, stream, options = {}) {
+async function update (id, data, options = {}) {
+  const transaction = options.transaction || null
+  const stream = await get(id, { transaction })
   if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, STREAM))) {
     throw new ForbiddenError()
   }
-  const fullStream = { ...stream, ...computedAdditions(stream) }
-  const transaction = options.transaction || null
+  const fullStream = { ...data, ...computedAdditions(data, stream) }
+  if (fullStream.name) {
+    if (stream && stream.project_id && stream.name !== fullStream.name) {
+      const duplicateStreamInProject = await query({ names: [fullStream.name], projects: [fullStream.project_id || stream.project_id] }, { fields: 'id', transaction })
+      if (duplicateStreamInProject.total > 0) {
+        throw new ValidationError('Duplicate stream name in the project')
+      }
+    }
+  }
   return Stream.update(fullStream, {
     where: { id },
     individualHooks: true, // force use afterUpdate hook

@@ -57,21 +57,21 @@ async function generateDetectionsAndReviews (models, streamIds) {
   while (total < 10000000) {
     const classifier = getRandomFromArray(classifiers)
     detections.push({
-      stream_id: getRandomFromArray(streamIds),
-      classifier_id: classifier.id,
-      classification_id: classifier.classification,
+      streamId: getRandomFromArray(streamIds),
+      classifierId: classifier.id,
+      classificationId: classifier.classification,
       start: start.clone().toISOString(),
       end: start.clone().add(2, 'seconds').toISOString(),
       confidence: (Math.random() * (1 - 0.9) + 0.9).toFixed(8), // between 0.9 and 1
-      review_status: getRandomReview()
+      reviewStatus: getRandomReview()
     })
     if (detections.length === 100) { // save by chunks with size of 100 items
-      const dbDetections = await models.Detection.bulkCreate(detections, { returning: ['id', 'review_status'] })
+      const dbDetections = await models.Detection.bulkCreate(detections, { returning: ['id', 'reviewStatus'] })
       let reviews = []
       dbDetections.forEach((dbDetection) => {
-        if (dbDetection.review_status !== 0) {
+        if (dbDetection.reviewStatus !== 0) {
           const detectionReviews = []
-          const positive = `${dbDetection.review_status}` === '1'
+          const positive = `${dbDetection.reviewStatus}` === '1'
           const higherNumber = randomBetween(uCounts.max, 1)
           const lowerNumber = randomBetween(higherNumber > uCounts.mid ? uCounts.max - higherNumber : higherNumber - 1, 0)
           const positiveReviewsCount = positive ? higherNumber : lowerNumber

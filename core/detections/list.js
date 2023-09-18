@@ -78,6 +78,8 @@ const Converter = require('../../common/converter')
  *           application/json:
  *             schema:
  *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Detection'
  *       400:
  *         description: Invalid query parameters
  */

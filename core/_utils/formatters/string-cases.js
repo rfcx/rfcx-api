@@ -26,7 +26,7 @@ function toCamelObject (o, maxLevels) {
   if (maxLevels === 0) {
     return o
   }
-  if (isObject(o)) {
+  if (isObject(o) && !(o instanceof Date)) {
     const n = {}
     Object.keys(o)
       .forEach((k) => {

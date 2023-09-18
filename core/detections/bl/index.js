@@ -1,15 +1,17 @@
-const classifierService = require('../../classifiers/dao')
+const classifierDao = require('../../classifiers/dao')
+const detectionDao = require('../dao/create')
 const { Op } = require('sequelize')
 
-async function addClassifiers (rawDetections) {
+async function addClassifiers (rawDetections, options = {}) {
+  const transaction = options.transaction
   // Extract all classifier ids
   const unknownIds = [...new Set(rawDetections.map(d => `${d.classifier}`))]
 
   // Gather the potential classifiers
-  const queryOptions = { fields: ['id', 'external_id', 'name', 'version', 'outputs'] }
-  const classifiersUsingIds = (await classifierService.query({ ids: unknownIds.filter(id => !isNaN(id)) }, queryOptions)).results
-  const classifiersUsingExternalIds = (await classifierService.query({ externalIds: unknownIds }, queryOptions)).results
-  const classifiersUsingNameAndVersions = (await classifierService.query({ [Op.or]: unknownIds.map(x => x.toString().split('-v')).filter(x => x.length === 2).map(([name, version]) => ({ name, version })) }, queryOptions)).results
+  const queryOptions = { fields: ['id', 'external_id', 'name', 'version', 'outputs'], transaction }
+  const classifiersUsingIds = (await classifierDao.query({ ids: unknownIds.filter(id => !isNaN(id)) }, queryOptions)).results
+  const classifiersUsingExternalIds = (await classifierDao.query({ externalIds: unknownIds }, queryOptions)).results
+  const classifiersUsingNameAndVersions = (await classifierDao.query({ [Op.or]: unknownIds.map(x => x.toString().split('-v')).filter(x => x.length === 2).map(([name, version]) => ({ name, version })) }, queryOptions)).results
 
   // Create a mapping from unknown id to classifier
   const classifierMapping = {}
@@ -27,8 +29,8 @@ async function addClassifiers (rawDetections) {
   return rawDetections.map(detection => ({ ...detection, classifier: classifierMapping[detection.classifier] }))
 }
 
-async function build (rawDetections) {
-  const detectionsWithClassifiers = await addClassifiers(rawDetections)
+async function build (rawDetections, options = {}) {
+  const detectionsWithClassifiers = await addClassifiers(rawDetections, options)
 
   // Remove detections without matching classifiers or missing classification ids (classifier outputs)
   const validDetections = detectionsWithClassifiers.filter(detection => {
@@ -59,10 +61,23 @@ async function build (rawDetections) {
     start: detection.start,
     end: detection.end,
     confidence: detection.confidence,
-    classifierJobId: detection.classifier_job_id
+    classifierJobId: detection.classifierJobId
   }))
 
   return { detections, classifierIds }
 }
 
-module.exports = build
+async function create (rawDetections, options = {}) {
+  // Find dependent ids, filter rows
+  const { detections, classifierIds } = await build(rawDetections, options)
+
+  // Save the detections
+  await detectionDao.create(detections, options)
+
+  // Mark classifiers as updated
+  for (const id of classifierIds) {
+    await classifierDao.update(id, null, { last_executed_at: new Date() }, options)
+  }
+}
+
+module.exports = { create }

@@ -172,7 +172,7 @@
         "type": "string",
         "description": "One of 'draft' (default), 'staging', 'active', 'retired'"
       },
-      "external_id": {
+      "externalId": {
         "type": "string",
         "description": "Identifier in AI Hub or other service"
       }
@@ -183,6 +183,21 @@
       "version"
     ]
   },
+  "OutputLite": {
+    "properties": {
+      "classification": {
+        "$ref": "#/components/schemas/ClassificationLite"
+      },
+      "outputClassName": {
+        "type": "string",
+        "example": "chainsaw"
+      },
+      "ignoreThreshold": {
+        "type": "float",
+        "example": 0.5
+      }
+    }
+  },
   "Classifier": {
     "allOf": [
       {
@@ -190,20 +205,26 @@
       },
       {
         "properties": {
-          "supported_classifications": {
+          "deployments": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ClassificationLite"
+              "$ref": "#/components/schemas/ClassifierDeploymentLite"
             }
           },
-          "enabled_projects": {
+          "outputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutputLite"
+            }
+          },
+          "activeProjects": {
             "type": "array",
             "description": "Projects that are enabled for this classifier",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ProjectLite"
             }
           },
-          "enabled_streams": {
+          "activeStreams": {
             "type": "array",
             "description": "Individual streams that are enabled for this classifier",
             "items": {
@@ -218,9 +239,6 @@
           },
           "updated_at": {
             "type": "date"
-          },
-          "updated_by": {
-            "$ref": "#/components/schemas/UserLite"
           }
         }
       }
@@ -280,6 +298,10 @@
         "type": "string",
         "example": "xu82jDgX49"
       },
+      "classifier_id": {
+        "type": "number",
+        "example": 89
+      },
       "start": {
         "type": "date",
         "example": "2020-05-12T07:30:21.500Z"
@@ -314,7 +336,7 @@
       }
     ]
   },
-  "StreamLite": {
+  "StreamIdAndName": {
     "properties": {
       "id": {
         "type": "string",
@@ -323,22 +345,30 @@
       "name": {
         "type": "string",
         "example": "My Stream 1"
-      },
-      "start": {
-        "type": "date",
-        "example": "2020-05-12T07:30:21.500Z"
-      },
-      "end": {
-        "type": "date",
-        "example": "2020-05-12T07:30:22.500Z"
-      },
-      "is_public": {
-        "type": "boolean",
-        "example": false
       }
-    },
-    "required": [
-      "name"
+    }
+  },
+  "StreamLite": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/StreamIdAndName"
+      },
+      {
+        "properties": {
+          "start": {
+            "type": "date",
+            "example": "2020-05-12T07:30:21.500Z"
+          },
+          "end": {
+            "type": "date",
+            "example": "2020-05-12T07:30:22.500Z"
+          },
+          "is_public": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      }
     ]
   },
   "Stream": {
@@ -420,10 +450,6 @@
       "email": {
         "type": "string",
         "example": "john@doe.com"
-      },
-      "picture": {
-        "type": "string",
-        "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
       }
     }
   },
@@ -500,6 +526,21 @@
         "example": 90126
       }
     }
+  },
+  "StreamSourceFileLiteWithAvailability": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/StreamSourceFileLite"
+      },
+      {
+        "properties": {
+          "availability": {
+            "type": "integer",
+            "example": 1
+          }
+        }
+      }
+    ]
   },
   "StreamSourceFile": {
     "allOf": [
@@ -578,6 +619,24 @@
       "file_extension": {
         "type": "string",
         "example": "opus"
+      }
+    }
+  },
+  "StreamSegmentId": {
+    "properties": {
+      "id": {
+        "type": "uuid",
+        "example": "e44e4fb1-df10-4176-9f8c-e989ccf4d0d8"
+      }
+    }
+  },
+  "IngestionResponse": {
+    "properties": {
+      "stream_segments": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/StreamSegmentId"
+        }
       }
     }
   },
@@ -980,7 +1039,7 @@
       }
     }
   },
-  "ClassifierDeployment": {
+  "ClassifierDeploymentLite": {
     "properties": {
       "id": {
         "type": "integer",
@@ -1001,18 +1060,92 @@
       "end": {
         "type": "string",
         "example": "2022-05-12T07:33:27.000Z"
+      }
+    }
+  },
+  "ClassifierDeployment": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassifierDeploymentLite"
       },
-      "createdById": {
+      {
+        "properties": {
+          "createdById": {
+            "type": "integer",
+            "example": 3
+          },
+          "platform": {
+            "type": "string",
+            "example": "aws"
+          },
+          "modelUrl": {
+            "type": "string",
+            "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
+          },
+          "classifier": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 1
+              },
+              "name": {
+                "type": "string",
+                "example": "gunshot"
+              },
+              "version": {
+                "type": "integer",
+                "example": 4
+              },
+              "externalId": {
+                "type": "string",
+                "example": "a7e9b5e6-7e6b-2237-0bf0-b6a274ef781d"
+              },
+              "modelRunner": {
+                "type": "string",
+                "example": "tf2"
+              },
+              "modelUrl": {
+                "type": "string",
+                "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
+              },
+              "lastExecutedAt": {
+                "type": "string",
+                "example": "2020-10-22 21:30:14.376000"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "ClassifierJob": {
+    "properties": {
+      "classifierId": {
         "type": "integer",
-        "example": 3
+        "description": "A classifier id",
+        "example": "123"
       },
-      "platform": {
+      "projectId": {
         "type": "string",
-        "example": "aws"
+        "description": "A project id",
+        "example": "qwe2jDgX49"
       },
-      "modelUrl": {
-        "type": "string",
-        "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
+      "minutesCompleted": {
+        "type": "integer",
+        "example": "10"
+      },
+      "minutesTotal": {
+        "type": "integer",
+        "example": "100"
+      },
+      "createdAt": {
+        "type": "date",
+        "example": "2020-07-24T00:00:18.000Z"
+      },
+      "completedAt": {
+        "type": "date",
+        "example": "2020-07-25T00:00:18.000Z"
       },
       "classifier": {
         "type": "object",
@@ -1024,27 +1157,73 @@
           "name": {
             "type": "string",
             "example": "gunshot"
-          },
-          "version": {
-            "type": "integer",
-            "example": 4
-          },
-          "externalId": {
-            "type": "string",
-            "example": "a7e9b5e6-7e6b-2237-0bf0-b6a274ef781d"
-          },
-          "modelRunner": {
-            "type": "string",
-            "example": "tf2"
-          },
-          "modelUrl": {
-            "type": "string",
-            "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
-          },
-          "lastExecutedAt": {
-            "type": "string",
-            "example": "2020-10-22 21:30:14.376000"
           }
+        }
+      },
+      "streams": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/StreamIdAndName"
+        }
+      }
+    }
+  },
+  "ClassifierJobReviewStatus": {
+    "properties": {
+      "total": {
+        "type": "integer",
+        "example": 1
+      },
+      "rejected": {
+        "type": "integer",
+        "example": 2
+      },
+      "uncertain": {
+        "type": "integer",
+        "example": 0
+      },
+      "confirmed": {
+        "type": "integer",
+        "example": 1
+      }
+    }
+  },
+  "ClassificationSummary": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassificationLite"
+      },
+      {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 2
+          },
+          "confirmed": {
+            "type": "integer",
+            "example": 1
+          },
+          "rejected": {
+            "type": "integer",
+            "example": 1
+          },
+          "uncertain": {
+            "type": "integer",
+            "example": 0
+          }
+        }
+      }
+    ]
+  },
+  "ClassifierJobSummary": {
+    "properties": {
+      "reviewStatus": {
+        "$ref": "#/components/schemas/ClassifierJobReviewStatus"
+      },
+      "classificationsSummary": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ClassificationSummary"
         }
       }
     }

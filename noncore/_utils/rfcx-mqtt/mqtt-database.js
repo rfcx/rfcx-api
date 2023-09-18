@@ -346,7 +346,8 @@ exports.checkInDatabase = {
     })
     const [dbAudio] = await models.GuardianAudio.findOrCreate({
       where: {
-        sha1_checksum: checkInObj.audio.meta.sha1CheckSum
+        sha1_checksum: checkInObj.audio.meta.sha1CheckSum,
+        measured_at: checkInObj.audio.meta.measuredAt
       },
       defaults: {
         guardian_id: checkInObj.db.dbGuardian.id,

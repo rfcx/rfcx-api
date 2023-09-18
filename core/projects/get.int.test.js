@@ -68,4 +68,15 @@ describe('GET /projects/:id', () => {
 
     expect(response.statusCode).toBe(200)
   })
+
+  test('can get external_id field only', async () => {
+    const project = { id: 'ft3', name: 'House in the woods', createdById: seedValues.primaryUserId, externalId: 12345 }
+    await models.Project.create(project)
+
+    const response = await request(app).get(`/${project.id}`).query({ fields: 'external_id' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.external_id).toBe(project.externalId)
+    expect(Object.keys(response.body)).toHaveLength(2) // Includes `id`
+  })
 })

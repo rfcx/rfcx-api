@@ -73,7 +73,7 @@ router.get('/streams/:attrs', function (req, res) {
     const start = gluedDateStrToMoment(attrs.time.starts)
     const end = gluedDateStrToMoment(attrs.time.ends)
     const queryData = await streamSegmentDao.query({ streamId: attrs.streamId, start, end }, {
-      fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
+      fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension', 'availability'],
       strict: false,
       readableBy
     })
@@ -81,6 +81,16 @@ router.get('/streams/:attrs', function (req, res) {
     if (!segments.length) {
       throw new EmptyResultError('No audio files found for selected time range.')
     }
+    segments.forEach(segment => {
+      /*
+       availability 0 is  unavailable
+       availability 1 is  available
+       availability 2 is  cold storage
+       */
+      if (segment.availability !== 1) {
+        throw new EmptyResultError('Unavailable')
+      }
+    })
     segments = streamSegmentDao.removeDuplicates(segments)
     const nextTimestamp = await streamSegmentDao.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end)
     return await getFile(req, res, attrs, fileExtension, segments, nextTimestamp)

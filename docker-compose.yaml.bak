@@ -1,0 +1,22 @@
+version: "3.2"
+services:
+  timescaledb:
+    image: "timescale/timescaledb:latest-pg14"
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: bind
+        source: ./admin/pg/create-multiple-postgresql-databases.sh
+        target: /docker-entrypoint-initdb.d/101_create-multiple-postgresql-databases.sh
+      - data-timescaledb:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_MULTIPLE_DATABASES=core,noncore
+  sqs:
+    image: roribio16/alpine-sqs
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+volumes:
+  data-timescaledb:

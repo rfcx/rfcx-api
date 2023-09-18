@@ -1,25 +1,37 @@
 const routes = require('.')
 const models = require('../_models')
-const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 const app = expressApp()
 
 app.use('/', routes)
 
-afterAll(async () => {
+beforeAll(() => {
+  muteConsole('warn')
+})
+afterEach(async () => {
   await truncateNonBase(models)
+})
+afterAll(async () => {
   await models.sequelize.close()
 })
 
 describe('GET /streams/:id', () => {
   test('not found', async () => {
-    console.warn = jest.fn()
-
     const response = await request(app).get('/1234')
 
     expect(response.statusCode).toBe(404)
-    expect(console.warn).toHaveBeenCalled()
+  })
+
+  test('deleted stream not found', async () => {
+    const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, altitude: 200, deletedAt: '2021-01-01T00:00:00.000Z' }
+    await models.Stream.create(stream)
+
+    const response = await request(app).get(`/${stream.id}`)
+
+    expect(response.statusCode).toBe(404)
+    expect(response.body.message).toBe('Stream not found')
   })
 
   test('readable by creator', async () => {

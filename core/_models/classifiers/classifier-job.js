@@ -57,6 +57,12 @@ module.exports = (sequelize, DataTypes) => {
     completedAt: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    createdAt: {
+      type: DataTypes.DATE
+    },
+    updatedAt: {
+      type: DataTypes.DATE
     }
   }, {
     underscored: true
@@ -65,6 +71,7 @@ module.exports = (sequelize, DataTypes) => {
     ClassifierJob.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
     ClassifierJob.belongsTo(models.Project, { as: 'project', foreignKey: 'project_id' })
     ClassifierJob.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
+    ClassifierJob.belongsToMany(models.Stream, { as: 'streams', through: 'classifier_job_streams', timestamps: false })
   }
   ClassifierJob.attributes = {
     full: [
@@ -84,7 +91,7 @@ module.exports = (sequelize, DataTypes) => {
       'started_at',
       'completed_at'
     ],
-    lite: ['id', 'classifier_id', 'project_id', 'minutes_completed', 'minutes_total', 'created_by_id', 'created_at', 'completed_at']
+    lite: ['id', 'classifier_id', 'project_id', 'minutes_completed', 'minutes_total', 'created_by_id', 'created_at', 'completed_at', 'status']
   }
   ClassifierJob.include = includeBuilder(ClassifierJob, 'classifier_job', ClassifierJob.attributes.lite)
   return ClassifierJob

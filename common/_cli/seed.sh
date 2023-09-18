@@ -43,7 +43,7 @@ currentdir=$(dirname "$0")
 for filename in $currentdir/../../$folder/_cli/seeds/*.sql; do
   [ -e "$filename" ] || continue
   echo "=== Seeding $filename ==="
-  psql $connection -f $filename
+  psql $connection -f $filename 1> /dev/null
 done
 
 echo '=== Done! ==='

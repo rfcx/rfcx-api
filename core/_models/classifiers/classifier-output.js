@@ -31,10 +31,11 @@ module.exports = (sequelize, DataTypes) => {
   })
   ClassifierOutput.associate = function (models) {
     ClassifierOutput.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
+    ClassifierOutput.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classification_id' })
   }
   ClassifierOutput.attributes = {
-    full: ['classification_id', 'output_class_name', 'ignore_threshold'],
-    lite: ['classification_id', 'output_class_name', 'ignore_threshold']
+    full: ['classification_id', 'classifier_id', 'output_class_name', 'ignore_threshold'],
+    lite: ['classification_id', 'classifier_id', 'output_class_name', 'ignore_threshold']
   }
   ClassifierOutput.include = includeBuilder(ClassifierOutput, 'classifier_output', ClassifierOutput.attributes.lite)
   return ClassifierOutput

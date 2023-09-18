@@ -19,3 +19,4 @@ INSERT INTO public.users (id, guid, username, email, created_at, updated_at, fir
 INSERT INTO public.users (id, guid, username, email, created_at, updated_at, firstname, lastname, picture) VALUES (4965, '5c545d61-c321-4eab-9854-c904907a3af8', null, 'soledadmerlo@gmail.com', '2020-05-29 22:59:01.000', '2020-05-29 23:44:32.000', 'Soledad', 'Merlo', null);
 INSERT INTO public.users (id, guid, username, email, created_at, updated_at, firstname, lastname, picture) VALUES (4853, 'a8f80087-fc76-4bfc-b0c1-f581fddf4368', null, 'mnoelc@gmail.com', '2020-05-29 22:59:01.000', '2020-05-29 23:44:32.000', 'Maria', 'Noel', null);
 INSERT INTO public.users (id, guid, username, email, created_at, updated_at, firstname, lastname, picture) VALUES (5930, '8c541193-9144-4bfe-ad5e-2fa0446ed419', null, 'frongs@rfcx.org', '2020-05-29 22:59:01.000', '2020-05-29 23:44:32.000', 'Wasuphon', 'Naksut', null);
+SELECT setval(pg_get_serial_sequence('users', 'id'), max(id)) FROM users;

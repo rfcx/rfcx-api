@@ -22,11 +22,13 @@ function findOrCreateUser (defaults) {
     })
 }
 
-function getUserByParams (params, ignoreMissing) {
+function getUserByParams (params, ignoreMissing, options = {}) {
+  const transaction = options.transaction
   return User
     .findOne({
       where: params,
-      include: [{ all: true }]
+      include: [{ all: true }],
+      transaction
     })
     .then((user) => {
       if (!user && !ignoreMissing) { throw new EmptyResultError('User not found') }
