@@ -15,10 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
-      AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY: ${{ secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY }}
-      AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
-      AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
-      AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
     outputs:
       cluster: ${{ steps.configuration.outputs.cluster }}
       namespace: ${{ steps.configuration.outputs.namespace }}
@@ -26,23 +22,28 @@ jobs:
       aws_secret_access_key: ${{ steps.configuration.outputs.aws_access_key_id }}
     steps:
       - name: 'Conditional environment'
+        with:
+          AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY: ${{ secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY }}
+          AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
+          AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
+          AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
         id: configuration
         run: |
           if [[ "$BRANCH_NAME" == "master" ]]; then
             echo "cluster=prod" >> $GITHUB_OUTPUT
             echo "namespace=production" >> $GITHUB_OUTPUT
-            echo "aws_access_key_id=${{ vars.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
-            echo "aws_secret_access_key=${{ vars.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
+            echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
+            echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH_NAME" == "staging" ]]; then
             echo "namespace=staging" >> $GITHUB_OUTPUT
           else
             echo "namespace=testing" >> $GITHUB_OUTPUT
           fi
           if [[ "$BRANCH_NAME" != "master" && "$BRANCH_NAME" != "staging" ]]; then
-            echo vars.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY
+            echo secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY
             echo "cluster=nonprod" >> $GITHUB_OUTPUT
-            echo "aws_access_key_id=vars.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY" >> $GITHUB_OUTPUT
-            echo "aws_secret_access_key=vars.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY" >> $GITHUB_OUTPUT
+            echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
+            echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
           fi
   test:
     name: 'Test outputs'
