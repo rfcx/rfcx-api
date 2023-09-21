@@ -54,6 +54,7 @@ jobs:
         run: |
           echo ${{ needs.configure.outputs.region }}
           echo ${{ needs.configure.outputs.registry }}
+          echo ${{ needs.configure.outputs.region }}
 
   # I haven't found a way to make a condition for prod/nonprod secrets inside 'with' or 'secrets'
   # so we have to duplicate jobs...
