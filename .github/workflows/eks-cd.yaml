@@ -16,7 +16,9 @@ jobs:
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
       AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY: ${{ secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY }}
+      AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
       AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
+      AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
     outputs:
       cluster: ${{ steps.configuration.outputs.cluster }}
       namespace: ${{ steps.configuration.outputs.namespace }}
