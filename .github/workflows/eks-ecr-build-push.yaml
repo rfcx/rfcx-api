@@ -38,12 +38,13 @@ on:
         type: boolean
         default: false
         required: false
-    secrets:
       aws-access-key-id:
         description: AWS Access Key ID
+        type: string
         required: true
       aws-secret-access-key:
         description: AWS Secret Access Key
+        type: string
         required: true
     outputs:
       short-sha: 
@@ -86,8 +87,8 @@ jobs:
         # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
         uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
         with:
-          aws-access-key-id: ${{ secrets.aws-access-key-id }}
-          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-access-key-id: ${{ inputs.aws-access-key-id }}
+          aws-secret-access-key: ${{ inputes.aws-secret-access-key }}
           aws-region: ${{ steps.get-region.outputs.ecr_region }}
 
 
