@@ -45,7 +45,10 @@ jobs:
     steps:
       - name: 'Print outputs'
         id: printoutputs
-        run: echo ${{ needs.configure.outputs }}
+        run: |
+          echo ${{ needs.configure.outputs.cluster }}
+          echo ${{ needs.configure.outputs.namespace }}
+          echo ${{ needs.configure.outputs.aws_access_key_id }}
 
   build:
     name: 'Build'
