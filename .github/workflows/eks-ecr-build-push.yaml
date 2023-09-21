@@ -88,7 +88,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
         with:
           aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputes.aws-secret-access-key }}
+          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
           aws-region: ${{ steps.get-region.outputs.ecr_region }}
 
 
