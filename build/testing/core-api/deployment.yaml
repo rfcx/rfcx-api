@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-api
+  namespace: testing
+spec:
+  selector:
+    matchLabels:
+      app: core-api
+  template:
+    metadata:
+      labels:
+        app: core-api
+    spec:
+      containers:
+      - name: core-api
+        image: aws-account-id.dkr.ecr.aws-region.amazonaws.com/core-api:latest
+        args: ["npm", "run", "start:core"]
+        envFrom:
+        - secretRef:
+            name: core-secrets
+        - configMapRef:
+            name: core-api-configmap
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "0.05"
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
+        ports:
+        - containerPort: 80

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-tasks
+  namespace: testing
+spec:
+  selector:
+    matchLabels:
+      app: core-tasks
+  template:
+    metadata:
+      labels:
+        app: core-tasks
+    spec:
+      containers:
+        - name: core-tasks
+          image: aws-account-id.dkr.ecr.aws-region.amazonaws.com/core-api:latest
+          args: ["npm", "run", "start:tasks"]
+          envFrom:
+            - secretRef:
+                name: core-secrets
+            - configMapRef:
+                name: core-api-configmap
+            - configMapRef:
+                name: core-tasks-configmap
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "0.05"
+            limits:
+              memory: "250Mi"
+              cpu: "0.2"

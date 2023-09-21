@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: core-tasks-configmap
+  namespace: testing
+data:
+  NEW_RELIC_APP_NAME: "Staging Core Tasks"

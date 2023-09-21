@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: noncore-mqtt
+  namespace: testing
+spec:
+  selector:
+    matchLabels:
+      app: noncore-mqtt
+  template:
+    metadata:
+      labels:
+        app: noncore-mqtt
+    spec:
+      containers:
+        - name: noncore-mqtt
+          image: aws-account-id.dkr.ecr.aws-region.amazonaws.com/noncore-mqtt:latest
+          args: ["npm", "run", "start:mqtt"]
+          envFrom:
+            - secretRef:
+                name: noncore-secrets
+            - configMapRef:
+                name: noncore-api-configmap
+            - configMapRef:
+                name: noncore-mqtt-configmap
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "0.05"
+            limits:
+              memory: "256Mi"
+              cpu: "0.2"
+          ports:
+            - containerPort: 8080

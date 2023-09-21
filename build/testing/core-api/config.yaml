@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: core-api-configmap
+  namespace: testing
+data:
+  ARBIMON_BASE_URL: "https://staging-arbimon.rfcx.org/"
+  ARBIMON_ENABLED: "true"
+  ASSET_BUCKET_AI: "rfcx-ai-dev"
+  AUTH0_AUTHZ_AUDIENCE: "urn:auth0-authz-api"
+  AUTH0_CLOUD_AUDIENCE: "https://rfcx.org"
+  AUTH0_CUSTOM_DOMAIN: "auth.rfcx.org"
+  AUTH0_DEFAULT_DB_CONNECTION: "Username-Password-Authentication"
+  AUTH0_DOMAIN: "rfcx.eu.auth0.com"
+  AUTH0_EXTENSION_URL: "rfcx.eu.webtask.io/adf6e2f2b84784b57522e3b19dfc9201/api"
+  AWS_ACCOUNT_ID: "887044485231"
+  AWS_REGION_ID: "us-east-1"  #"eu-west-1"
+  INGEST_BUCKET: "rfcx-streams-staging"
+  MESSAGE_QUEUE_ENABLED: 'true'
+  MESSAGE_QUEUE_PREFIX: 'staging'
+  NEW_RELIC_APP_NAME: "Staging Core API"
+  NODE_ENV: "staging"
+  NODE_LOG_LEVEL: "debug"
+  CORE_DB_NAME: "core"
+  NONCORE_DB_NAME: "noncore"
+  POSTGRES_HOSTNAME: "172.31.34.22"
+  POSTGRES_PORT: "5432"
+  POSTGRES_SSL_ENABLED: "true"
+  REST_PROTOCOL: "https"
+  REST_HOST: "staging-api.rfcx.org"
+  STREAMS_CACHE_BUCKET: "rfcx-streams-cache-staging"
+  USERS_BUCKET: "rfcx-users-production"

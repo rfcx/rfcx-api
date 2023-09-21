@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: noncore-api
+  namespace: staging
+spec:
+  selector:
+    matchLabels:
+      app: noncore-api
+  template:
+    metadata:
+      labels:
+        app: noncore-api
+    spec:
+      containers:
+      - name: noncore-api
+        image: aws-account-id.dkr.ecr.aws-region.amazonaws.com/noncore-api:latest
+        args: ["npm", "run", "start:noncore"]
+        envFrom:
+        - secretRef:
+            name: noncore-secrets
+        - configMapRef:
+            name: noncore-api-configmap
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "0.05"
+          limits:
+            memory: "400Mi"
+            cpu: "0.3"
+        ports:
+        - containerPort: 80
