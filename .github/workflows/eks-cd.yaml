@@ -44,11 +44,12 @@ jobs:
         id: get-region
         run: |
           URI=${{ steps.configuration.outputs.registry }}
-          REG=${URI:21}
-          LENGTH=$((${#REG}-14))
-          REG=${REG:0:LENGTH}
-          export REGISTRY_REGION=$REG 
-          echo "region::$REGISTRY_REGION" >> $GITHUB_OUTPUT
+          REG=${URI:21:9}
+          echo "region::$REG" >> $GITHUB_OUTPUT
+      - name: 'Print AWS Region'
+        id: print-region
+        run: |
+          echo ${{ steps.get-region.outputs.region }}
 
   # I haven't found a way to make a condition for prod/nonprod secrets inside 'with' or 'secrets'
   # so we have to duplicate jobs...
