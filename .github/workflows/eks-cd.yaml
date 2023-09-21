@@ -16,19 +16,26 @@ jobs:
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
     outputs:
+      cluster: ${{ steps.configuration.outputs.cluster }}
       namespace: ${{ steps.configuration.outputs.namespace }}
-      environment: ${{ steps.configuration.outputs.environment }}
+      aws_access_key_id: ${{ steps.configuration.outputs.aws_access_key_id }}
+      aws_secret_access_key: ${{ steps.configuration.outputs.aws_access_key_id }}
     steps:
       - name: 'Conditional environment'
         id: configuration
         run: |
-          echo "::set-output name=namespace::eks-test-ns"
           if [[ "$BRANCH_NAME" == "master" ]]; then
-            echo "::set-output name=environment::production"
-          elif [[ "$BRANCH_NAME" == "eks-branch" ]]; then
-            echo "::set-output name=environment::staging"
+            echo "cluster=prod" >> $GITHUB_OUTPUT
+            echo "namespace=production" >> $GITHUB_OUTPUT
+            echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH_NAME" == "staging" ]]; then
+            echo "namespace=staging" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=environment::testing"
+            echo "namespace=testing" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$BRANCH_NAME" != "master" && "$BRANCH_NAME" != "staging" ]]; then
+            echo "cluster=nonprod" >> $GITHUB_OUTPUT
+            echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
           fi
 
   build:
@@ -41,10 +48,12 @@ jobs:
       dockerfile: build/Dockerfile
       targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
       tag-environment: ${{ needs.configure.outputs.namespace }}
-      tag-latest: ${{ needs.configure.outputs.namespace == 'eks-test-ns' }}
-    secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+      tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
+      aws-access-key-id: ${{ needs.configure.outputs.aws_access_key_id }}
+      aws-secret-access-key: ${{ needs.configure.outputs.aws_secret_access_key }}
+    # secrets:
+    #   aws-access-key-id: ${{ needs.configure.outputs.namespace == 'prod' ? secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY : secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
+    #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
 
   deploy-core-api-secrets:
     name: 'Deploy core-api secrets'
