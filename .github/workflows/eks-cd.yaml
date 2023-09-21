@@ -36,9 +36,23 @@ jobs:
             echo "cluster=nonprod" >> $GITHUB_OUTPUT
             echo "registry=${{ vars.EKS_ECR_URI_NONPROD }}" >> $GITHUB_OUTPUT
           fi
+      - name: 'Get AWS Region'
+        id: get-region
+        run: |
           URI=${{ steps.configuration.outputs.registry }}
           REG=${URI:21:9}
           echo "region=$REG" >> $GITHUB_OUTPUT
+
+  test:
+    needs: [configure]
+    name: 'Configure'
+    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'check region'
+        id: reg
+        run: |
+          echo ${{ needs.configure.outputs.region }}
 
   # I haven't found a way to make a condition for prod/nonprod secrets inside 'with' or 'secrets'
   # so we have to duplicate jobs...
