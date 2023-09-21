@@ -40,6 +40,7 @@ jobs:
   test:
     name: 'Test outputs'
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
+    needs: [configure]
     runs-on: ubuntu-latest
     steps:
       - name: 'Print outputs'
