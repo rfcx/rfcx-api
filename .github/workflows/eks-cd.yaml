@@ -37,6 +37,7 @@ jobs:
             echo "namespace=testing" >> $GITHUB_OUTPUT
           fi
           if [[ "$BRANCH_NAME" != "master" && "$BRANCH_NAME" != "staging" ]]; then
+            echo vars.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY
             echo "cluster=nonprod" >> $GITHUB_OUTPUT
             echo "aws_access_key_id=${{ vars.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
             echo "aws_secret_access_key=${{ vars.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}" >> $GITHUB_OUTPUT
