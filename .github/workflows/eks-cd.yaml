@@ -45,7 +45,7 @@ jobs:
         run: |
           URI=${{ steps.configuration.outputs.registry }}
           REG=${URI:21:9}
-          echo "region::$REG" >> $GITHUB_OUTPUT
+          echo "region=$REG" >> $GITHUB_OUTPUT
       - name: 'Print AWS Region'
         id: print-region
         run: |
