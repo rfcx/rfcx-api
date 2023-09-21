@@ -8,7 +8,6 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
-
   configure:
     name: 'Configure'
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
@@ -41,9 +40,11 @@ jobs:
             echo "cluster=nonprod" >> $GITHUB_OUTPUT
           fi
 
-  build:
+  # I haven't found a way to make a condition for prod/nonprod secrets inside 'with' or 'secrets'
+  # so we have to duplicate jobs...
+  build-nonprod:
     name: 'Build'
-    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
+    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'nonprod' }}
     needs: [configure]
 #    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
     uses: rfcx/rfcx-api/.github/workflows/eks-ecr-build-push.yaml@eks-branch
@@ -52,16 +53,24 @@ jobs:
       targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
       tag-environment: ${{ needs.configure.outputs.namespace }}
       tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
-      # cluster: ${{ needs.configure.outputs.cluster }}
     secrets:
-      aws-access-key-id-nonprod: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
-      aws-secret-access-key-nonprod: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
-      aws-access-key-id-prod: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
-      aws-secret-access-key-prod: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
-      # aws-access-key-id: ${{ ([[ needs.configure.outputs.cluster == 'prod' ]] && secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY || secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY) }}
-      # aws-secret-access-key: ${{ ([[ needs.configure.outputs.cluster == 'prod' ]] && secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY || secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
-      # aws-access-key-id: ${{ needs.configure.outputs.namespace == 'prod' ? secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY : secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
-    #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+
+  build-prod:
+    name: 'Build'
+    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'prod' }}
+    needs: [configure]
+#    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
+    uses: rfcx/rfcx-api/.github/workflows/eks-ecr-build-push.yaml@eks-branch
+    with:
+      dockerfile: build/Dockerfile
+      targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
+      tag-environment: ${{ needs.configure.outputs.namespace }}
+      tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
+    secrets:
+      aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
 
   deploy-core-api-secrets:
     name: 'Deploy core-api secrets'
