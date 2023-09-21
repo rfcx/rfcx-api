@@ -54,8 +54,12 @@ jobs:
       tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
       # cluster: ${{ needs.configure.outputs.cluster }}
     secrets:
-      aws-access-key-id: ${{ ([[ needs.configure.outputs.cluster == 'prod' ]] && secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY || secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY) }}
-      aws-secret-access-key: ${{ ([[ needs.configure.outputs.cluster == 'prod' ]] && secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY || secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+      aws-access-key-id-nonprod: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
+      aws-secret-access-key-nonprod: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+      aws-access-key-id-prod: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
+      aws-secret-access-key-prod: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
+      # aws-access-key-id: ${{ ([[ needs.configure.outputs.cluster == 'prod' ]] && secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY || secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY) }}
+      # aws-secret-access-key: ${{ ([[ needs.configure.outputs.cluster == 'prod' ]] && secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY || secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
       # aws-access-key-id: ${{ needs.configure.outputs.namespace == 'prod' ? secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY : secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
     #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
 
