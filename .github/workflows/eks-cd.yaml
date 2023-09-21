@@ -41,20 +41,7 @@ jobs:
         run: |
           URI=${{ steps.configuration.outputs.registry }}
           REG=${URI:21:9}
-          export REGISTRY_REGION=$REG
-          echo "aws-region=$REGISTRY_REGION" >> $GITHUB_OUTPUT
-
-  test:
-    needs: [configure]
-    name: 'Test'
-    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'check region'
-        id: reg
-        run: |
-          echo ${{ needs.configure.outputs.registry }}
-          echo ${{ needs.configure.outputs.aws-region }}
+          echo "aws-region=$REG" >> $GITHUB_OUTPUT
 
   # I haven't found a way to make a condition for prod/nonprod secrets inside 'with' or 'secrets'
   # so we have to duplicate jobs...
@@ -124,7 +111,7 @@ jobs:
     with:
       tag: ${{ needs.build.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
-      region: ${{ needs.configure.outputs.region }}
+      aws-region: ${{ needs.configure.outputs.aws-region }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
@@ -137,7 +124,7 @@ jobs:
     with:
       tag: ${{ needs.build.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
-      region: ${{ needs.configure.outputs.region }}
+      aws-region: ${{ needs.configure.outputs.aws-region }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
