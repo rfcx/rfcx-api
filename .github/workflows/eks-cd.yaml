@@ -22,6 +22,7 @@ jobs:
       aws_secret_access_key: ${{ steps.configuration.outputs.aws_access_key_id }}
     steps:
       - name: 'Conditional environment'
+        shell: bash
         env:
           AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY: ${{ secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY }}
           AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
