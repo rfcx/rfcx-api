@@ -14,6 +14,10 @@ on:
         description: Kubernetes namespace
         type: string
         required: true
+      region:
+        description: AWS region
+        type: string
+        required: false
     secrets:
       aws-access-key-id:
         description: AWS Access Key ID
@@ -32,8 +36,9 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
-          aws-region: ${{ vars.AWS_REGION_NONPROD }}
+          aws-region: ${{ inputs.region }}
 
+      # TODO: get cluster name from inputs
       - name: 'Get Kubeconf EKS'
         run: |          
           aws eks update-kubeconfig --region ${{ vars.AWS_REGION_NONPROD }} --name ${{ vars.EKS_CLUSTER_NAME_NONPROD }}
@@ -45,6 +50,8 @@ jobs:
       - name: 'Deploy: Set image version'
         run: |
           find build -name "*.yaml" -exec sed -i s/:latest/:${{ inputs.tag }}/g {} +
+          find build -name "*.yaml" -exec sed -i s/aws-account-id/:${{ inputs.aws-account-id }}/g {} +
+          find build -name "*.yaml" -exec sed -i s/aws-region/:${{ inputs.region }}/g {} +
 
       - name: 'Deploy: Kubernetes apply'
         run: |

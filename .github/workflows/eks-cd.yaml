@@ -17,20 +17,16 @@ jobs:
     outputs:
       cluster: ${{ steps.configuration.outputs.cluster }}
       namespace: ${{ steps.configuration.outputs.namespace }}
-      # aws_access_key_id: ${{ steps.configuration.outputs.aws_access_key_id }}
-      # aws_secret_access_key: ${{ steps.configuration.outputs.aws_access_key_id }}
+      region: ${{ steps.configuration.outputs.region }}
+      registry: ${{ steps.configuration.outputs.registry }}
     steps:
       - name: 'Conditional environment'
-        # env:
-        #   AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY: ${{ secrets.AWS_ACCESS_KEY_ID_PROD_APP_DEPLOY }}
-        #   AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
-        #   AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
-        #   AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
         id: configuration
         run: |
           if [[ "$BRANCH_NAME" == "master" ]]; then
             echo "cluster=prod" >> $GITHUB_OUTPUT
             echo "namespace=production" >> $GITHUB_OUTPUT
+            echo "registry=${{ vars.EKS_ECR_URI_PROD }} >> $GITHUB_OUTPUT
           elif [[ "$BRANCH_NAME" == "staging" ]]; then
             echo "namespace=staging" >> $GITHUB_OUTPUT
           else
@@ -38,12 +34,26 @@ jobs:
           fi
           if [[ "$BRANCH_NAME" != "master" ]]; then
             echo "cluster=nonprod" >> $GITHUB_OUTPUT
+            echo "registry=${{ vars.EKS_ECR_URI_NONPROD }} >> $GITHUB_OUTPUT
           fi
+      - name: 'Print first outputs'
+        id: print-outputs
+        run: |
+          echo ${{ steps.configuration.outputs.registry }}
+      - name: 'Get AWS Region'
+        id: get-region
+        run: |
+          URI=${{ steps.configuration.outputs.registry }}
+          REG=${URI:21}
+          LENGTH=$((${#REG}-14))
+          REG=${REG:0:LENGTH}
+          export REGISTRY_REGION=$REG 
+          echo "region::$REGISTRY_REGION" >> $GITHUB_OUTPUT
 
   # I haven't found a way to make a condition for prod/nonprod secrets inside 'with' or 'secrets'
   # so we have to duplicate jobs...
   build-nonprod:
-    name: 'Build'
+    name: 'Build nonprod'
     if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'nonprod' }}
     needs: [configure]
 #    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
@@ -53,12 +63,13 @@ jobs:
       targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
       tag-environment: ${{ needs.configure.outputs.namespace }}
       tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
+      registry: ${{ needs.configure.outputs.registry }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
 
   build-prod:
-    name: 'Build'
+    name: 'Build prod'
     if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'prod' }}
     needs: [configure]
 #    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
@@ -68,6 +79,7 @@ jobs:
       targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
       tag-environment: ${{ needs.configure.outputs.namespace }}
       tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
+      registry: ${{ needs.configure.outputs.registry }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
@@ -97,25 +109,27 @@ jobs:
     secrets: inherit
 
   deploy-nonprod:
-    name: 'Deploy'
+    name: 'Deploy nonprod'
     if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'nonprod' }}
     needs: [configure, build-nonprod]
     uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
     with:
       tag: ${{ needs.build.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
+      region: ${{ needs.configure.outputs.region }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
 
   deploy-prod:
-    name: 'Deploy'
+    name: 'Deploy prod'
     if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'prod' }}
     needs: [configure, build-prod]
     uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
     with:
       tag: ${{ needs.build.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
+      region: ${{ needs.configure.outputs.region }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
