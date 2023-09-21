@@ -17,8 +17,8 @@ jobs:
     outputs:
       cluster: ${{ steps.configuration.outputs.cluster }}
       namespace: ${{ steps.configuration.outputs.namespace }}
-      aws-region: ${{ steps.configuration.outputs.aws-region }}
       registry: ${{ steps.configuration.outputs.registry }}
+      aws-region: ${{ steps.get-region.outputs.aws-region }}
     steps:
       - name: 'Conditional environment'
         id: configuration
