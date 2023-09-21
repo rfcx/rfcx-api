@@ -23,6 +23,7 @@ jobs:
       - name: 'Conditional environment'
         id: configuration
         run: |
+          echo ${{ vars.EKS_ECR_URI_NONPROD }}
           if [[ "$BRANCH_NAME" == "master" ]]; then
             echo "cluster=prod" >> $GITHUB_OUTPUT
             echo "namespace=production" >> $GITHUB_OUTPUT
