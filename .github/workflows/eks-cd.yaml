@@ -41,11 +41,12 @@ jobs:
         run: |
           URI=${{ steps.configuration.outputs.registry }}
           REG=${URI:21:9}
-          echo "aws-region=$REG" >> $GITHUB_OUTPUT
+          export REGISTRY_REGION=$REG
+          echo "aws-region=$REGISTRY_REGION" >> $GITHUB_OUTPUT
 
   test:
     needs: [configure]
-    name: 'Configure'
+    name: 'Test'
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     steps:
