@@ -17,7 +17,7 @@ jobs:
     outputs:
       cluster: ${{ steps.configuration.outputs.cluster }}
       namespace: ${{ steps.configuration.outputs.namespace }}
-      region: ${{ steps.configuration.outputs.region }}
+      aws-region: ${{ steps.configuration.outputs.aws-region }}
       registry: ${{ steps.configuration.outputs.registry }}
     steps:
       - name: 'Conditional environment'
@@ -41,8 +41,7 @@ jobs:
         run: |
           URI=${{ steps.configuration.outputs.registry }}
           REG=${URI:21:9}
-          export REGISTRY_REGION=$REG 
-          echo "region=$REGISTRY_REGION" >> $GITHUB_OUTPUT
+          echo "aws-region=$REG" >> $GITHUB_OUTPUT
 
   test:
     needs: [configure]
@@ -53,9 +52,8 @@ jobs:
       - name: 'check region'
         id: reg
         run: |
-          echo ${{ needs.configure.outputs.region }}
           echo ${{ needs.configure.outputs.registry }}
-          echo ${{ needs.configure.outputs.region }}
+          echo ${{ needs.configure.outputs.aws-region }}
 
   # I haven't found a way to make a condition for prod/nonprod secrets inside 'with' or 'secrets'
   # so we have to duplicate jobs...
@@ -71,7 +69,7 @@ jobs:
       tag-environment: ${{ needs.configure.outputs.namespace }}
       tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
       registry: ${{ needs.configure.outputs.registry }}
-      region: ${{ needs.configure.outputs.region }}
+      aws-region: ${{ needs.configure.outputs.aws-region }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
@@ -88,7 +86,7 @@ jobs:
       tag-environment: ${{ needs.configure.outputs.namespace }}
       tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
       registry: ${{ needs.configure.outputs.registry }}
-      region: ${{ needs.configure.outputs.region }}
+      aws-region: ${{ needs.configure.outputs.aws-region }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
