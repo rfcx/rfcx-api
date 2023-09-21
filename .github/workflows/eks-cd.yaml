@@ -23,11 +23,10 @@ jobs:
       - name: 'Conditional environment'
         id: configuration
         run: |
-          echo ${{ vars.EKS_ECR_URI_NONPROD }}
           if [[ "$BRANCH_NAME" == "master" ]]; then
             echo "cluster=prod" >> $GITHUB_OUTPUT
             echo "namespace=production" >> $GITHUB_OUTPUT
-            echo "registry=${{ vars.EKS_ECR_URI_PROD }} >> $GITHUB_OUTPUT
+            echo "registry=${{ vars.EKS_ECR_URI_PROD }}" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH_NAME" == "staging" ]]; then
             echo "namespace=staging" >> $GITHUB_OUTPUT
           else
@@ -35,7 +34,7 @@ jobs:
           fi
           if [[ "$BRANCH_NAME" != "master" ]]; then
             echo "cluster=nonprod" >> $GITHUB_OUTPUT
-            echo "registry=${{ vars.EKS_ECR_URI_NONPROD }} >> $GITHUB_OUTPUT
+            echo "registry=${{ vars.EKS_ECR_URI_NONPROD }}" >> $GITHUB_OUTPUT
           fi
       - name: 'Print first outputs'
         id: print-outputs
