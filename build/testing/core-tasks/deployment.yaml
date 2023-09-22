@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: core-tasks
-          image: aws-account-id.dkr.ecr.aws-region.amazonaws.com/core-api:latest
+          image: 'aws-account-id.dkr.ecr.aws-region.amazonaws.com/core-api:latest'
           args: ["npm", "run", "start:tasks"]
           envFrom:
             - secretRef:

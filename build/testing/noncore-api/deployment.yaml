@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: noncore-api
-        image: aws-account-id.dkr.ecr.aws-region.amazonaws.com/noncore-api:latest
+        image: 'aws-account-id.dkr.ecr.aws-region.amazonaws.com/noncore-api:latest'
         args: ["npm", "run", "start:noncore"]
         envFrom:
         - secretRef:

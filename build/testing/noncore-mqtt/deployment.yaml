@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: noncore-mqtt
-          image: aws-account-id.dkr.ecr.aws-region.amazonaws.com/noncore-mqtt:latest
+          image: 'aws-account-id.dkr.ecr.aws-region.amazonaws.com/noncore-mqtt:latest'
           args: ["npm", "run", "start:mqtt"]
           envFrom:
             - secretRef:
