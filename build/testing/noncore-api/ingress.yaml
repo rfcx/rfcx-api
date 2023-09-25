@@ -20,4 +20,5 @@ spec:
             backend:
               service:
                 name: noncore-api-service
-                port: 80
+                port: 
+                  number: 80

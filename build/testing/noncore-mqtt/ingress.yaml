@@ -17,4 +17,5 @@ spec:
             backend:
               service:
                 name: noncore-mqtt-service
-                port: 80
+                port: 
+                  number: 80

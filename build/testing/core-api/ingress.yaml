@@ -25,4 +25,5 @@ spec:
             backend:
               service:
                 name: core-api-service
-                port: 80
+                port: 
+                  number: 80
