@@ -23,5 +23,7 @@ spec:
           - path: /
             pathType: Prefix
             backend:
-              serviceName: core-api-service
-              servicePort: 80
+              service:
+                name: core-api-service
+                port: 
+                  number: 80

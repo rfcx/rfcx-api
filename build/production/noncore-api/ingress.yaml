@@ -17,5 +17,7 @@ spec:
           - path: /(v[12]/.*)
             pathType: Prefix
             backend:
-              serviceName: noncore-api-service
-              servicePort: 80
+              service:
+                name: noncore-api-service
+                port: 
+                  number: 80
