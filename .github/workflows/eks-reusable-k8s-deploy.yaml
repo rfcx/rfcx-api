@@ -14,6 +14,10 @@ on:
         description: Kubernetes namespace
         type: string
         required: true
+      aws-account-id:
+        description: AWS account id
+        type: string
+        required: false
       aws-region:
         description: AWS region
         type: string
