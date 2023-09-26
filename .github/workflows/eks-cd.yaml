@@ -112,7 +112,7 @@ jobs:
     needs: [configure, build-nonprod]
     uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
     with:
-      tag: ${{ needs.build.outputs.unique-tag }}
+      tag: ${{ needs.build-nonprod.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
       aws-region: ${{ needs.configure.outputs.aws-region }}
       aws-account-id: ${{ needs.configure.outputs.aws-account-id }}
@@ -126,7 +126,7 @@ jobs:
     needs: [configure, build-prod]
     uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
     with:
-      tag: ${{ needs.build.outputs.unique-tag }}
+      tag: ${{ needs.build-prod.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
       aws-region: ${{ needs.configure.outputs.aws-region }}
       aws-account-id: ${{ needs.configure.outputs.aws-account-id }}
