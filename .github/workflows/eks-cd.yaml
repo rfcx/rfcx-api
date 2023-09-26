@@ -92,7 +92,7 @@ jobs:
     uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@eks_cicd
     with:
       namespace: ${{ needs.configure.outputs.namespace }}
-      environment: ${{ needs.configure.outputs.environment }}/core-api
+      environment: ${{ needs.configure.outputs.namespace }}/core-api
       aws-region: ${{ needs.configure.outputs.aws-region }}
       cluster-name: ${{ needs.configure.outputs.cluster-name }}
       name: core-secrets
@@ -106,7 +106,7 @@ jobs:
     uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@eks_cicd
     with:
       namespace: ${{ needs.configure.outputs.namespace }}
-      environment: ${{ needs.configure.outputs.environment }}/noncore-api
+      environment: ${{ needs.configure.outputs.namespace }}/noncore-api
       aws-region: ${{ needs.configure.outputs.aws-region }}
       cluster-name: ${{ needs.configure.outputs.cluster-name }}
       name: noncore-secrets
