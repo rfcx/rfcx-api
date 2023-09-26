@@ -1,3 +1,6 @@
+## 1.3.2 (2023-09-xx)
+### Features
+* **noncore**: Add Cell and Satellite Guardian projects to IoTDA project
 
 ## 1.3.1 (2023-07-31)
 
