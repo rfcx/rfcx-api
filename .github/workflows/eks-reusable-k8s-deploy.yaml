@@ -55,8 +55,8 @@ jobs:
       - name: 'Deploy: Set image version'
         run: |
           find build -name "*.yaml" -exec sed -i s/:latest/:${{ inputs.tag }}/g {} +
-          find build -name "*.yaml" -exec sed -i s/aws-account-id/:${{ inputs.aws-account-id }}/g {} +
-          find build -name "*.yaml" -exec sed -i s/aws-region/:${{ inputs.aws-region }}/g {} +
+          find build -name "*.yaml" -exec sed -i s/aws-account-id/${{ inputs.aws-account-id }}/g {} +
+          find build -name "*.yaml" -exec sed -i s/aws-region/${{ inputs.aws-region }}/g {} +
 
       - name: 'Deploy: Kubernetes apply'
         run: |
