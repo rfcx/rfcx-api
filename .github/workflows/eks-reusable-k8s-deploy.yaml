@@ -63,7 +63,6 @@ jobs:
           kubectl delete -R -f build/${{ inputs.namespace }} --ignore-not-found=true -n ${{ inputs.namespace }} --grace-period=10
           kubectl apply -R -f build/${{ inputs.namespace }} -n ${{ inputs.namespace }}
 
-
 #      - name: 'Deploy: Kubernetes verify core-api'
 #        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
 #        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
