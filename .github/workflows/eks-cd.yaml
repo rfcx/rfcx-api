@@ -29,7 +29,7 @@ jobs:
             echo "cluster-type=prod" >> $GITHUB_OUTPUT
             echo "namespace=production" >> $GITHUB_OUTPUT
             echo "registry=${{ vars.EKS_ECR_URI_PROD }}" >> $GITHUB_OUTPUT
-            echo "cluster-name=${{ vars.EKS_CLUSTER_NAME_NONPROD }}" >> $GITHUB_OUTPUT
+            echo "cluster-name=${{ vars.EKS_CLUSTER_NAME_PROD }}" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH_NAME" == "staging" ]]; then
             echo "namespace=staging" >> $GITHUB_OUTPUT
           else
@@ -38,7 +38,7 @@ jobs:
           if [[ "$BRANCH_NAME" != "master" ]]; then
             echo "cluster-type=nonprod" >> $GITHUB_OUTPUT
             echo "registry=${{ vars.EKS_ECR_URI_NONPROD }}" >> $GITHUB_OUTPUT
-            echo "cluster-name=${{ vars.EKS_CLUSTER_NAME_PROD }}" >> $GITHUB_OUTPUT
+            echo "cluster-name=${{ vars.EKS_CLUSTER_NAME_NONPROD }}" >> $GITHUB_OUTPUT
           fi
       - name: 'Get AWS Details'
         id: get-aws-details
