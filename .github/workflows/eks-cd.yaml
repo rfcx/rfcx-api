@@ -15,9 +15,10 @@ jobs:
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
     outputs:
-      cluster: ${{ steps.configuration.outputs.cluster }}
       namespace: ${{ steps.configuration.outputs.namespace }}
       registry: ${{ steps.configuration.outputs.registry }}
+      cluster-type: ${{ steps.configuration.outputs.cluster-type }}
+      cluster-name: ${{ steps.configuration.outputs.cluster-name }}
       aws-region: ${{ steps.get-aws-details.outputs.aws-region }}
       aws-account-id: ${{ steps.get-aws-details.outputs.aws-account-id }}
     steps:
@@ -25,17 +26,19 @@ jobs:
         id: configuration
         run: |
           if [[ "$BRANCH_NAME" == "master" ]]; then
-            echo "cluster=prod" >> $GITHUB_OUTPUT
+            echo "cluster-type=prod" >> $GITHUB_OUTPUT
             echo "namespace=production" >> $GITHUB_OUTPUT
             echo "registry=${{ vars.EKS_ECR_URI_PROD }}" >> $GITHUB_OUTPUT
+            echo "cluster-name=${{ vars.EKS_CLUSTER_NAME_NONPROD }}" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH_NAME" == "staging" ]]; then
             echo "namespace=staging" >> $GITHUB_OUTPUT
           else
             echo "namespace=testing" >> $GITHUB_OUTPUT
           fi
           if [[ "$BRANCH_NAME" != "master" ]]; then
-            echo "cluster=nonprod" >> $GITHUB_OUTPUT
+            echo "cluster-type=nonprod" >> $GITHUB_OUTPUT
             echo "registry=${{ vars.EKS_ECR_URI_NONPROD }}" >> $GITHUB_OUTPUT
+            echo "cluster-name=${{ vars.EKS_CLUSTER_NAME_PROD }}" >> $GITHUB_OUTPUT
           fi
       - name: 'Get AWS Details'
         id: get-aws-details
@@ -50,7 +53,7 @@ jobs:
   # so we have to duplicate jobs...
   build-nonprod:
     name: 'Build nonprod'
-    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'nonprod' }}
+    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster-type == 'nonprod' }}
     needs: [configure]
 #    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
     uses: rfcx/rfcx-api/.github/workflows/eks-ecr-build-push.yaml@eks-branch
@@ -67,7 +70,7 @@ jobs:
 
   build-prod:
     name: 'Build prod'
-    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'prod' }}
+    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster-type == 'prod' }}
     needs: [configure]
 #    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
     uses: rfcx/rfcx-api/.github/workflows/eks-ecr-build-push.yaml@eks-branch
@@ -90,6 +93,8 @@ jobs:
     with:
       namespace: ${{ needs.configure.outputs.namespace }}
       environment: ${{ needs.configure.outputs.environment }}/core-api
+      aws-region: ${{ needs.configure.outputs.aws-region }}
+      cluster-name: ${{ needs.configure.outputs.cluster-name }}
       secrets_name: core-secrets
       secrets_list: "AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRET,AWS_ACCESS_KEY_ID,AWS_SECRET_KEY,NEW_RELIC_LICENSE_KEY,POSTGRES_PASSWORD,POSTGRES_USER,STREAM_TOKEN_SALT"
     secrets: inherit
@@ -102,13 +107,15 @@ jobs:
     with:
       namespace: ${{ needs.configure.outputs.namespace }}
       environment: ${{ needs.configure.outputs.environment }}/noncore-api
+      aws-region: ${{ needs.configure.outputs.aws-region }}
+      cluster-name: ${{ needs.configure.outputs.cluster-name }}
       secrets_name: noncore-secrets
       secrets_list: "AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRET,AWS_ACCESS_KEY_ID,AWS_SECRET_KEY,CLASSY_CLIENT_ID,CLASSY_CLIENT_SECRET,FIREBASE_CLIENT_EMAIL_PLAYER_APP,FIREBASE_CLIENT_EMAIL_RANGER_APP,FIREBASE_PRIVATE_KEY_PLAYER_APP,FIREBASE_PRIVATE_KEY_RANGER_APP,GUARDIAN_KEYSTORE_PASSPHRASE,MAILCHIMP_KEY,MANDRILL_KEY,MQTT_BROKER_PASSWORD,MQTT_BROKER_USER,NEW_RELIC_LICENSE_KEY,POSTGRES_PASSWORD,POSTGRES_USER,RECAPTCHA_V3_SECRET_KEY,STRIPE_SECRET_KEY,TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN"
     secrets: inherit
 
   deploy-nonprod:
     name: 'Deploy nonprod'
-    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'nonprod' }}
+    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster-type == 'nonprod' }}
     needs: [configure, build-nonprod]
     uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
     with:
@@ -122,7 +129,7 @@ jobs:
 
   deploy-prod:
     name: 'Deploy prod'
-    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster == 'prod' }}
+    if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster-type == 'prod' }}
     needs: [configure, build-prod]
     uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
     with:
