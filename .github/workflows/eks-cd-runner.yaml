@@ -73,8 +73,8 @@ jobs:
       registry: ${{ needs.configure.outputs.registry }}
       aws-region: ${{ needs.configure.outputs.aws-region }}
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+      aws-access-key-id: ${{ secrets.aws-access-key-id }}
+      aws-secret-access-key: ${{ secrets.aws-access-key-id }}
 
 #   build-prod:
 #     name: 'Build prod'
@@ -105,7 +105,9 @@ jobs:
       cluster-name: ${{ needs.configure.outputs.cluster-name }}
       name: core-secrets
       includes: "AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRET,AWS_ACCESS_KEY_ID,AWS_SECRET_KEY,NEW_RELIC_LICENSE_KEY,POSTGRES_PASSWORD,POSTGRES_USER,STREAM_TOKEN_SALT"
-    secrets: inherit
+    secrets:
+      aws-access-key-id: ${{ secrets.aws-access-key-id }}
+      aws-secret-access-key: ${{ secrets.aws-access-key-id }}
 
   deploy-noncore-api-secrets:
     name: 'Deploy noncore-api secrets'
@@ -119,7 +121,9 @@ jobs:
       cluster-name: ${{ needs.configure.outputs.cluster-name }}
       name: noncore-secrets
       includes: "AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRET,AWS_ACCESS_KEY_ID,AWS_SECRET_KEY,CLASSY_CLIENT_ID,CLASSY_CLIENT_SECRET,FIREBASE_CLIENT_EMAIL_PLAYER_APP,FIREBASE_CLIENT_EMAIL_RANGER_APP,FIREBASE_PRIVATE_KEY_PLAYER_APP,FIREBASE_PRIVATE_KEY_RANGER_APP,GUARDIAN_KEYSTORE_PASSPHRASE,MAILCHIMP_KEY,MANDRILL_KEY,MQTT_BROKER_PASSWORD,MQTT_BROKER_USER,NEW_RELIC_LICENSE_KEY,POSTGRES_PASSWORD,POSTGRES_USER,RECAPTCHA_V3_SECRET_KEY,STRIPE_SECRET_KEY,TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN"
-    secrets: inherit
+    secrets:
+      aws-access-key-id: ${{ secrets.aws-access-key-id }}
+      aws-secret-access-key: ${{ secrets.aws-access-key-id }}
 
   # deploy-nonprod:
   deploy:
@@ -134,8 +138,8 @@ jobs:
       aws-region: ${{ needs.configure.outputs.aws-region }}
       aws-account-id: ${{ needs.configure.outputs.aws-account-id }}
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+      aws-access-key-id: ${{ secrets.aws-access-key-id }}
+      aws-secret-access-key: ${{ secrets.aws-access-key-id }}
 
   # deploy-prod:
   #   name: 'Deploy prod'
