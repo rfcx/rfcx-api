@@ -32,6 +32,7 @@ jobs:
       - name: 'Conditional environment'
         id: configuration
         run: |
+          echo $BRANCH_NAME
           if [[ "$BRANCH_NAME" == "master" ]]; then
             echo "cluster-type=prod" >> $GITHUB_OUTPUT
             echo "namespace=production" >> $GITHUB_OUTPUT
