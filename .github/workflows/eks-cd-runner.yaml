@@ -1,5 +1,12 @@
 on:
   workflow_call:
+    inputs:
+      runs-on:
+        description: Platform to execute on
+        type: string
+        # default: deployment-runner
+        default: ubuntu-latest
+        required: false
     secrets: 
       aws-access-key-id:
         description: AWS Access Key ID
