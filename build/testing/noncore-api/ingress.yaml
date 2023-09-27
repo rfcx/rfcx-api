@@ -12,7 +12,7 @@ metadata:
     app: noncore-api
 spec:
   rules:
-    - host: staging-api.myrainforest.org
+    - host: testing-api.myrainforest.org
       http:
         paths:
           - path: /(v[12]/.*)
