@@ -9,11 +9,23 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
+  configure:
+    name: 'Configure'
+    runs-on: 'ubuntu-latest'
+    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
+    steps:
+      - name: 'Setup: Configure AWS credentials'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
+          aws-secret-access-key: ${{ ssecrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+          aws-region: 'eu-west-1'
+    
   build:
     name: 'Run nonprod'
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     uses: rfcx/rfcx-api/.github/workflows/eks-cd-runner.yaml@eks-branch
-    with:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+    # with:
+    #   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
+    #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
     secrets: inherit
