@@ -14,5 +14,5 @@ jobs:
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     uses: rfcx/rfcx-api/.github/workflows/eks-cd-runner.yaml@eks-branch
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
+      aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
