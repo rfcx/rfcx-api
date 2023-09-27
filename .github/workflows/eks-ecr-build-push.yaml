@@ -65,9 +65,6 @@ jobs:
       - name: 'Test matrix'
         run: echo "Running ${{ matrix.target }}"
 
-      - name: 'Test credentials visibility'
-        run: echo "Running ${{ inputs.aws-access-key-id }}"
-
       - name: 'Setup: Docker Buildx'
         # v1 (1.6.0) @ 12 Nov 2021 https://github.com/docker/setup-buildx-action/tags
         uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
@@ -79,7 +76,6 @@ jobs:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           aws-region: ${{ inputs.aws-region }}
-
 
       - name: 'Setup: Git checkout'
         # v3 (3.0.0) @ 02 Mar 2022 https://github.com/actions/checkout/tags

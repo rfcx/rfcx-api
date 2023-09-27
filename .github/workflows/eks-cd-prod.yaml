@@ -1,0 +1,16 @@
+name: 'EKS-CD-Prod'
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+jobs:
+  run:
+    name: 'Run prod'
+    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
+    uses: rfcx/rfcx-api/.github/workflows/eks-cd-runner.yaml@eks-branch
+    secrets:
+      aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
