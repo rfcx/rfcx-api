@@ -17,7 +17,7 @@ metadata:
     app: core-api
 spec:
   rules:
-    - host: staging-api.rfcx.org
+    - host: staging-api.myrainforest.org
       http:
         paths:
           - path: /
