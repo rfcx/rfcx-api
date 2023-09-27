@@ -4,7 +4,8 @@ on:
       runs-on:
         description: Platform to execute on
         type: string
-        default: deployment-runner
+        # default: deployment-runner
+        default: ubuntu-latest
         required: false
       tag: 
         description: Image tag to deploy
