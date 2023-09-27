@@ -6,13 +6,14 @@ on:
         type: string
         # default: deployment-runner
         default: ubuntu-latest
-        required: false
-    secrets: 
+        required: false 
       aws-access-key-id:
         description: AWS Access Key ID
+        type: string
         required: true
       aws-secret-access-key:
         description: AWS Secret Access Key
+        type: string
         required: true
 jobs:
   configure:
@@ -74,8 +75,8 @@ jobs:
       registry: ${{ needs.configure.outputs.registry }}
       aws-region: ${{ needs.configure.outputs.aws-region }}
     secrets:
-      aws-access-key-id: ${{ secrets.aws-access-key-id }}
-      aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+      aws-access-key-id: ${{ inputs.aws-access-key-id }}
+      aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
 
 #   build-prod:
 #     name: 'Build prod'
