@@ -19,12 +19,17 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+          # TODO: calculate
           aws-region: 'eu-west-1'
-    
+          output-credentials: true
+
   build:
     name: 'Run nonprod'
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     uses: rfcx/rfcx-api/.github/workflows/eks-cd-runner.yaml@eks-branch
+    with:
+      aws-access-key-id: ${{ steps.configure.outputs.aws-access-key-id }}
+      aws-secret-access-key: ${{ steps.configure.outputs.aws-secret-access-key }}
     # with:
     #   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
     #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}

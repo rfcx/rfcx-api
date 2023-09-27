@@ -36,13 +36,13 @@ on:
         type: boolean
         default: false
         required: false
-    # secrets: 
-    #   aws-access-key-id:
-    #     description: AWS Access Key ID
-    #     required: true
-    #   aws-secret-access-key:
-    #     description: AWS Secret Access Key
-    #     required: true
+    secrets: 
+      aws-access-key-id:
+        description: AWS Access Key ID
+        required: true
+      aws-secret-access-key:
+        description: AWS Secret Access Key
+        required: true
     outputs:
       short-sha: 
         description: Git commit short SHA
@@ -69,13 +69,13 @@ jobs:
         # v1 (1.6.0) @ 12 Nov 2021 https://github.com/docker/setup-buildx-action/tags
         uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
 
-      # - name: 'Setup: Configure AWS credentials'
-      #   # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
-      #   uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
-      #   with:
-      #     aws-access-key-id: ${{ secrets.aws-access-key-id }}
-      #     aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
-      #     aws-region: ${{ inputs.aws-region }}
+      - name: 'Setup: Configure AWS credentials'
+        # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
+        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
+        with:
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-region: ${{ inputs.aws-region }}
 
       - name: 'Setup: Git checkout'
         # v3 (3.0.0) @ 02 Mar 2022 https://github.com/actions/checkout/tags
@@ -90,8 +90,6 @@ jobs:
       - name: 'Setup: Login to ECR'
         # v1 (1.7.0) @ 09 Aug 2023 https://github.com/aws-actions/amazon-ecr-login/tags
         uses: aws-actions/amazon-ecr-login@2fc7aceee09e9e4a7105c0d060c656fad0b4f63d
-        with:
-          aws-region: ${{ inputs.aws-region }}
 
       - name: 'Build and Push'
         # v2 (2.10.0) @ 15 Mar 2022 https://github.com/docker/build-push-action/tags
