@@ -89,7 +89,7 @@ jobs:
     name: 'Deploy core-api secrets'
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     needs: [configure]
-    uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@eks_cicd
+    uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@master
     with:
       namespace: ${{ needs.configure.outputs.namespace }}
       environment: ${{ needs.configure.outputs.namespace }}/core-api
@@ -103,7 +103,7 @@ jobs:
     name: 'Deploy noncore-api secrets'
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     needs: [configure]
-    uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@eks_cicd
+    uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@master
     with:
       namespace: ${{ needs.configure.outputs.namespace }}
       environment: ${{ needs.configure.outputs.namespace }}/noncore-api
