@@ -1,27 +1,20 @@
+name: 'EKS-CD'
 on:
-  workflow_call:
-    inputs:
-      runs-on:
-        description: Platform to execute on
-        type: string
-        # default: deployment-runner
-        default: ubuntu-latest
-        required: false 
-      aws-access-key-id:
-        description: AWS Access Key ID
-        type: string
-        required: true
-      aws-secret-access-key:
-        description: AWS Secret Access Key
-        type: string
-        required: true
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - eks-branch
+      # - staging
+      # - testing
+
 jobs:
   configure:
     name: 'Configure'
-    # if: ${{ vars.EKS_CD_ENABLED == 'true' }}
+    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     runs-on: ${{ inputs.runs-on }}
     env:
-      BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     outputs:
       namespace: ${{ steps.configuration.outputs.namespace }}
       registry: ${{ steps.configuration.outputs.registry }}
@@ -58,15 +51,11 @@ jobs:
           echo "aws-region=$REG" >> $GITHUB_OUTPUT
           echo "aws-account-id=$ACC" >> $GITHUB_OUTPUT
 
-  # I haven't found a way to make a condition for prod/nonprod secrets inside 'with' or 'secrets'
-  # so we have to duplicate jobs...
-  # build-nonprod:
   build:
     name: 'Build'
-    # if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster-type == 'nonprod' }}
+    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     needs: [configure]
-#    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
-    uses: rfcx/rfcx-api/.github/workflows/eks-ecr-build-push.yaml@eks-branch
+    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
     with:
       dockerfile: build/Dockerfile
       targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
@@ -74,34 +63,12 @@ jobs:
       tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
       registry: ${{ needs.configure.outputs.registry }}
       aws-region: ${{ needs.configure.outputs.aws-region }}
-    secrets:
-      aws-access-key-id: ${{ inputs.aws-access-key-id }}
-      aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
 
-#   build-prod:
-#     name: 'Build prod'
-#     if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster-type == 'prod' }}
-#     needs: [configure]
-# #    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
-#     uses: rfcx/rfcx-api/.github/workflows/eks-ecr-build-push.yaml@eks-branch
-#     with:
-#       dockerfile: build/Dockerfile
-#       targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
-#       tag-environment: ${{ needs.configure.outputs.namespace }}
-#       tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
-#       registry: ${{ needs.configure.outputs.registry }}
-#       aws-region: ${{ needs.configure.outputs.aws-region }}
-#     secrets:
-#       aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
-#       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
-
-  # deploy-nonprod:
   deploy:
     name: 'Deploy'
-    # if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster-type == 'nonprod' }}
-    # needs: [configure, build-nonprod]
+    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     needs: [configure, build]
-    uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
+    uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch-refactored
     with:
       tag: ${{ needs.build-nonprod.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
@@ -111,9 +78,9 @@ jobs:
 
   deploy-core-api-secrets:
     name: 'Deploy core-api secrets'
-    # if: ${{ vars.EKS_CD_ENABLED == 'true' }}
+    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     needs: [configure, deploy]
-    uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@master
+    uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@eks-branch-refactored
     with:
       namespace: ${{ needs.configure.outputs.namespace }}
       environment: ${{ needs.configure.outputs.namespace }}/core-api
@@ -125,7 +92,7 @@ jobs:
 
   deploy-noncore-api-secrets:
     name: 'Deploy noncore-api secrets'
-    # if: ${{ vars.EKS_CD_ENABLED == 'true' }}
+    if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     needs: [configure, deploy]
     uses: rfcx/cicd/.github/workflows/eks-reusable-k8s-deploy-sec.yaml@master
     with:
@@ -136,20 +103,6 @@ jobs:
       name: noncore-secrets
       includes: "AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRET,AWS_ACCESS_KEY_ID,AWS_SECRET_KEY,CLASSY_CLIENT_ID,CLASSY_CLIENT_SECRET,FIREBASE_CLIENT_EMAIL_PLAYER_APP,FIREBASE_CLIENT_EMAIL_RANGER_APP,FIREBASE_PRIVATE_KEY_PLAYER_APP,FIREBASE_PRIVATE_KEY_RANGER_APP,GUARDIAN_KEYSTORE_PASSPHRASE,MAILCHIMP_KEY,MANDRILL_KEY,MQTT_BROKER_PASSWORD,MQTT_BROKER_USER,NEW_RELIC_LICENSE_KEY,POSTGRES_PASSWORD,POSTGRES_USER,RECAPTCHA_V3_SECRET_KEY,STRIPE_SECRET_KEY,TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN"
     secrets: inherit
-
-  # deploy-prod:
-  #   name: 'Deploy prod'
-  #   if: ${{ vars.EKS_CD_ENABLED == 'true' && needs.configure.outputs.cluster-type == 'prod' }}
-  #   needs: [configure, build-prod]
-  #   uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
-  #   with:
-  #     tag: ${{ needs.build-prod.outputs.unique-tag }}
-  #     namespace: ${{ needs.configure.outputs.namespace }}
-  #     aws-region: ${{ needs.configure.outputs.aws-region }}
-  #     aws-account-id: ${{ needs.configure.outputs.aws-account-id }}
-  #   secrets:
-  #     aws-access-key-id: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
-  #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_APP_DEPLOY }}
 
   # notify:
   #   name: 'Notify'

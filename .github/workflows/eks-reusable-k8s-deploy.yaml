@@ -37,11 +37,9 @@ jobs:
     steps:
 
       - name: 'Setup: Configure AWS credentials'
-        # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
-        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
+        # v4 (4.0.0) @ Sep 2023 https://github.com/aws-actions/configure-aws-credentials/tags
+        uses: aws-actions/configure-aws-credentials@8c3f20df09ac63af7b3ae3d7c91f105f857d8497
         with:
-          aws-access-key-id: ${{ secrets.aws-access-key-id }}
-          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           aws-region: ${{ inputs.aws-region }}
 
       # TODO: get cluster name from inputs
@@ -50,8 +48,8 @@ jobs:
           aws eks update-kubeconfig --region ${{ inputs.aws-region }} --name ${{ vars.EKS_CLUSTER_NAME_NONPROD }}
 
       - name: 'Setup: Git checkout'
-        # v3 (3.0.0) @ 02 Mar 2022 https://github.com/actions/checkout/tags
-        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
+        # v4 (4.1.0) @ Sep 2022 https://github.com/actions/checkout/tags
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
 
       - name: 'Deploy: Set image version'
         run: |
