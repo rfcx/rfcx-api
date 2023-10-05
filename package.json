@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^5.2.0",
+    "@rapideditor/country-coder": "^5.2.2",
     "@rfcx/message-queue": "^1.0.8",
     "@tmcw/togeojson": "^4.5.0",
     "archiver": "4.0.1",
@@ -87,7 +88,6 @@
     "twilio": "3.54.1",
     "tz-lookup": "^6.1.25",
     "uuid": "^8.3.2",
-    "which-country": "^1.0.0",
     "winston": "3.3.3",
     "xmldom": "^0.4.0"
   },
