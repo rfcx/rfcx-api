@@ -7,6 +7,7 @@ const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
 const { hashedCredentials } = require('../../../common/crypto/sha256')
 const { getTzByLatLng } = require('../../_utils/datetime/timezone')
+const { getCountryCodeByLatLng } = require('../../_utils/location/country-code')
 
 const availableIncludes = [
   User.include({ as: 'created_by' }),
@@ -24,6 +25,7 @@ function computedAdditions (data, stream = {}) {
     if (!stream.timezone_locked) {
       additions.timezone = getTzByLatLng(latitude, longitude)
     }
+    additions.country_code = getCountryCodeByLatLng(latitude, longitude)
   }
   return additions
 }
@@ -202,6 +204,7 @@ async function query (filters, options = {}) {
       const country = crg.get_country(latitude, longitude)
       stream.country_name = country ? country.name : null
       stream.timezone = getTzByLatLng(latitude, longitude)
+      stream.country_code = getCountryCodeByLatLng(latitude, longitude)
     }
     return stream
   })
