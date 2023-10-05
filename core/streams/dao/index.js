@@ -204,7 +204,6 @@ async function query (filters, options = {}) {
       const country = crg.get_country(latitude, longitude)
       stream.country_name = country ? country.name : null
       stream.timezone = getTzByLatLng(latitude, longitude)
-      stream.country_code = getCountryCodeByLatLng(latitude, longitude)
     }
     return stream
   })
