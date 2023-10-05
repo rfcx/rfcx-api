@@ -3,7 +3,8 @@ const { ValidationError } = require('../../../common/error-handling/errors')
 
 function getCountryCodeByLatLng (latitude, longitude) {
   try {
-    return wc([latitude, longitude])
+    // pass [lng, lat]
+    return wc([longitude, latitude])
   } catch (err) {
     throw new ValidationError(err.message)
   }
