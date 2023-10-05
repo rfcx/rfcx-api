@@ -337,6 +337,7 @@ function getStreamRangeToken (stream, start, end) {
 
 module.exports = {
   get,
+  computedAdditions,
   create,
   query,
   update,
