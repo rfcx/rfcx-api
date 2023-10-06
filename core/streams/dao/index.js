@@ -25,7 +25,7 @@ function computedAdditions (data, stream = {}) {
     if (!stream.timezone_locked) {
       additions.timezone = getTzByLatLng(latitude, longitude)
     }
-    additions.country_code = getCountryCodeByLatLng(latitude, longitude)
+    additions.countryCode = getCountryCodeByLatLng(latitude, longitude)
   }
   return additions
 }

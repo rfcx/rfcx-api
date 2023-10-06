@@ -272,4 +272,52 @@ describe('POST /streams', () => {
     const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
   })
+
+  test('country code works well for a new stream', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', createdById: seedValues.primaryUserId, project_id: project.id, latitude: 54.2, longitude: -4.5 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.countryCode).toBe('GBR')
+  })
+
+  test('country code is null for undefined lat', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', createdById: seedValues.primaryUserId, project_id: project.id, latitude: undefined, longitude: -4.5 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.countryCode).toBe(null)
+  })
+
+  test('country code is null for null lat', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', createdById: seedValues.primaryUserId, project_id: project.id, latitude: null, longitude: -4.5 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.countryCode).toBe(null)
+  })
+
+  test('country code is null for coordinates in the ocean', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', createdById: seedValues.primaryUserId, project_id: project.id, latitude: 40, longitude: -40 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.countryCode).toBe(null)
+  })
 })
