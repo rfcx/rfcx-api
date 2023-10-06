@@ -197,12 +197,10 @@ async function query (filters, options = {}) {
   })
 
   // TODO move country into the table and perform lookup once on create/update
-  // TODO avoid language-specific data in results (return country code instead of name)
   streamsData.results = streamsData.results.map(stream => {
     const { latitude, longitude } = stream
     if (latitude !== undefined && longitude !== undefined) {
-      const country = crg.get_country(latitude, longitude)
-      stream.country_name = country ? country.name : null
+      stream.country_name = getCountryCodeByLatLng(latitude, longitude)
       stream.timezone = getTzByLatLng(latitude, longitude)
     }
     return stream

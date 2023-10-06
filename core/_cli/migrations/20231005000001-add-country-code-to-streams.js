@@ -9,8 +9,9 @@ module.exports = {
       for (const location of locations) {
         const { id, latitude, longitude } = location
         const isLatLngExist = latitude != null && longitude != null
-        const countryCode = isLatLngExist ? (getCountryCodeByLatLng(latitude, longitude) ? getCountryCodeByLatLng(latitude, longitude) : null) : null
-        await queryInterface.sequelize.query(`UPDATE streams SET country_code=${countryCode} WHERE id='${id}';`, { transaction })
+        if (isLatLngExist && getCountryCodeByLatLng(latitude, longitude) !== null) {
+          await queryInterface.sequelize.query(`UPDATE streams SET country_code=${getCountryCodeByLatLng(latitude, longitude)} WHERE id='${id}';`, { transaction })
+        }
       }
     })
   },

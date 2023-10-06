@@ -13,4 +13,12 @@ describe('test for getCountryCodeByLatLng function', () => {
     const countryCode = getCountryCodeByLatLng(40, -40)
     expect(countryCode).toBe(null)
   })
+  test('return null for coordinates with null', async () => {
+    const countryCode = getCountryCodeByLatLng(40, null)
+    expect(countryCode).toBe(null)
+  })
+  test('return null for coordinates with unfefined', async () => {
+    const countryCode = getCountryCodeByLatLng(40, undefined)
+    expect(countryCode).toBe(null)
+  })
 })
