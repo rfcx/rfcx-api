@@ -55,7 +55,7 @@ jobs:
     name: 'Build'
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
     needs: [configure]
-    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
+    uses: rfcx/cicd/.github/workflows/eks-ecr-build-push.yaml@master
     with:
       dockerfile: build/Dockerfile
       targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
