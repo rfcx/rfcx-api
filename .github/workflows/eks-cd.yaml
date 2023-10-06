@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - eks-branch
+      - eks-branch-refactored
       # - staging
       # - testing
 
