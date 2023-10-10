@@ -282,7 +282,7 @@ describe('POST /streams', () => {
     const id = response.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.id).toBe('qwertyuiop40')
-    expect(stream.countryCode).toBe('GBR')
+    expect(stream.countryCode).toBe('GB')
   })
 
   test('country code is null for undefined lat', async () => {

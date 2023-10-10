@@ -7,7 +7,7 @@ const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
 const { hashedCredentials } = require('../../../common/crypto/sha256')
 const { getTzByLatLng } = require('../../_utils/datetime/timezone')
-const { getCountryCodeByLatLng } = require('../../_utils/location/country-code')
+const { getCountryCodeByLatLng, getCountryNameByCode } = require('../../_utils/location/country-code')
 
 const availableIncludes = [
   User.include({ as: 'created_by' }),
@@ -196,11 +196,11 @@ async function query (filters, options = {}) {
     transaction: options.transaction
   })
 
-  // TODO move country into the table and perform lookup once on create/update
   streamsData.results = streamsData.results.map(stream => {
     const { latitude, longitude } = stream
     if (latitude !== undefined && longitude !== undefined) {
-      stream.country_name = getCountryCodeByLatLng(latitude, longitude)
+      const countryCode = getCountryCodeByLatLng(latitude, longitude)
+      stream.country_name = getCountryNameByCode(countryCode)
       stream.timezone = getTzByLatLng(latitude, longitude)
     }
     return stream

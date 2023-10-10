@@ -211,13 +211,13 @@ describe('PATCH /streams/:id', () => {
     const id = response1.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.id).toBe(streamId)
-    expect(stream.countryCode).toBe('GBR')
+    expect(stream.countryCode).toBe('GB')
 
     const requestBody = { latitude: 52.775435, longitude: 23.9068233 }
     const response2 = await request(app).patch(`/${streamId}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(streamId)
-    expect(streamUpdated.countryCode).toBe('POL')
+    expect(streamUpdated.countryCode).toBe('PL')
   })
 
   test('country code is not changed for undefined lat', async () => {
@@ -229,13 +229,13 @@ describe('PATCH /streams/:id', () => {
     const id = response1.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.id).toBe(streamId)
-    expect(stream.countryCode).toBe('GBR')
+    expect(stream.countryCode).toBe('GB')
 
     const requestBody = { latitude: undefined, longitude: -4.5 }
     const response2 = await request(app).patch(`/${streamId}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(streamId)
-    expect(streamUpdated.countryCode).toBe('GBR')
+    expect(streamUpdated.countryCode).toBe('GB')
   })
 
   test('country code is not changed for null lat', async () => {
@@ -247,13 +247,13 @@ describe('PATCH /streams/:id', () => {
     const id = response1.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.id).toBe(streamId)
-    expect(stream.countryCode).toBe('GBR')
+    expect(stream.countryCode).toBe('GB')
 
     const requestBody = { latitude: null, longitude: -4.5 }
     const response2 = await request(app).patch(`/${streamId}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(streamId)
-    expect(streamUpdated.countryCode).toBe('GBR')
+    expect(streamUpdated.countryCode).toBe('GB')
   })
 
   test('country code is null for coordinates somewhere in the ocean', async () => {
@@ -265,7 +265,7 @@ describe('PATCH /streams/:id', () => {
     const id = response1.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.id).toBe(streamId)
-    expect(stream.countryCode).toBe('GBR')
+    expect(stream.countryCode).toBe('GB')
 
     const requestBody = { latitude: 40, longitude: -40 }
     const response2 = await request(app).patch(`/${streamId}`).send(requestBody)
