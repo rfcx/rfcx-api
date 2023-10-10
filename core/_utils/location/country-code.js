@@ -10,7 +10,11 @@ function getCountryCodeByLatLng (latitude, longitude) {
 }
 
 function getCountryNameByCode (code) {
-  return featuresIn(code)[0] && featuresIn(code)[0].properties && featuresIn(code)[0].properties.nameEn ? featuresIn(code)[0].properties.nameEn : null
+  try {
+    return featuresIn(code)[0].properties.nameEn
+  } catch (e) {
+    return null
+  }
 }
 
 module.exports = {

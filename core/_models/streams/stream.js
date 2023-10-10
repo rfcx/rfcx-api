@@ -88,7 +88,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true
     },
     countryCode: {
-      type: DataTypes.STRING(3),
+      type: DataTypes.STRING(2),
       allowNull: true
     }
   }, {
