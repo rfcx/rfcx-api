@@ -1,4 +1,8 @@
-## 1.3.2 (2023-09-xx)
+## 1.3.3 (2023-09-xx)
+### Features
+* **noncore**: End IoTDA connection in close callback
+
+## 1.3.2 (2023-09-26)
 ### Features
 * **noncore**: Add Cell and Satellite Guardian projects to IoTDA project
 
