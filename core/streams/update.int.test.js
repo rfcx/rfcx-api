@@ -203,74 +203,46 @@ describe('PATCH /streams/:id', () => {
   })
 
   test('country code works well for updated stream', async () => {
-    const streamId = 'qwertyuiop40'
-    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
-    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
-    const response1 = await request(app).post('/').send({ id: streamId, name: 'my stream 4', createdById: seedValues.primaryUserId, project_id: project.id, latitude: 54.2, longitude: -4.5 })
-    expect(response1.statusCode).toBe(201)
-    const id = response1.header.location.replace('/streams/', '')
-    const stream = await models.Stream.findByPk(id)
-    expect(stream.id).toBe(streamId)
-    expect(stream.countryCode).toBe('GB')
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
 
     const requestBody = { latitude: 52.775435, longitude: 23.9068233 }
-    const response2 = await request(app).patch(`/${streamId}`).send(requestBody)
-    expect(response2.statusCode).toBe(204)
-    const streamUpdated = await models.Stream.findByPk(streamId)
+    const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+    expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
     expect(streamUpdated.countryCode).toBe('PL')
   })
 
   test('country code is not changed for undefined lat', async () => {
-    const streamId = 'qwertyuiop40'
-    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
-    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
-    const response1 = await request(app).post('/').send({ id: streamId, name: 'my stream 4', createdById: seedValues.primaryUserId, project_id: project.id, latitude: 54.2, longitude: -4.5 })
-    expect(response1.statusCode).toBe(201)
-    const id = response1.header.location.replace('/streams/', '')
-    const stream = await models.Stream.findByPk(id)
-    expect(stream.id).toBe(streamId)
-    expect(stream.countryCode).toBe('GB')
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
 
     const requestBody = { latitude: undefined, longitude: -4.5 }
-    const response2 = await request(app).patch(`/${streamId}`).send(requestBody)
-    expect(response2.statusCode).toBe(204)
-    const streamUpdated = await models.Stream.findByPk(streamId)
+    const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+    expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
     expect(streamUpdated.countryCode).toBe('GB')
   })
 
   test('country code is not changed for null lat', async () => {
-    const streamId = 'qwertyuiop40'
-    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
-    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
-    const response1 = await request(app).post('/').send({ id: streamId, name: 'my stream 4', createdById: seedValues.primaryUserId, project_id: project.id, latitude: 54.2, longitude: -4.5 })
-    expect(response1.statusCode).toBe(201)
-    const id = response1.header.location.replace('/streams/', '')
-    const stream = await models.Stream.findByPk(id)
-    expect(stream.id).toBe(streamId)
-    expect(stream.countryCode).toBe('GB')
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
 
     const requestBody = { latitude: null, longitude: -4.5 }
-    const response2 = await request(app).patch(`/${streamId}`).send(requestBody)
+    const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
-    const streamUpdated = await models.Stream.findByPk(streamId)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
     expect(streamUpdated.countryCode).toBe('GB')
   })
 
   test('country code is null for coordinates somewhere in the ocean', async () => {
-    const streamId = 'qwertyuiop40'
-    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
-    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
-    const response1 = await request(app).post('/').send({ id: streamId, name: 'my stream 4', createdById: seedValues.primaryUserId, project_id: project.id, latitude: 54.2, longitude: -4.5 })
-    expect(response1.statusCode).toBe(201)
-    const id = response1.header.location.replace('/streams/', '')
-    const stream = await models.Stream.findByPk(id)
-    expect(stream.id).toBe(streamId)
-    expect(stream.countryCode).toBe('GB')
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
 
     const requestBody = { latitude: 40, longitude: -40 }
-    const response2 = await request(app).patch(`/${streamId}`).send(requestBody)
+    const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
-    const streamUpdated = await models.Stream.findByPk(streamId)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
     expect(streamUpdated.countryCode).toBe(null)
   })
 })

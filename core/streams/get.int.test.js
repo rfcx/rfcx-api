@@ -94,4 +94,18 @@ describe('GET /streams/:id', () => {
 
     expect(response.statusCode).toBe(200)
   })
+
+  test('country name works correct for stream coordinates', async () => {
+    const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB' }
+    await models.Stream.create(stream)
+
+    const response = await request(app).get(`/${stream.id}`)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.id).toBe(stream.id)
+    expect(response.body.latitude).toBe(stream.latitude)
+    expect(response.body.longitude).toBe(stream.longitude)
+    console.debug('response.body', response.body)
+    expect(response.body.countryName).toBe('Britain')
+  })
 })

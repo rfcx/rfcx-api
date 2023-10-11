@@ -11,15 +11,15 @@ describe('test for getCountryCodeByLatLng function', () => {
   })
   test('return null for not correct coordinates', async () => {
     const countryCode = getCountryCodeByLatLng(40, -40)
-    expect(countryCode).toBe(null)
+    expect(countryCode).toBeNull()
   })
   test('return null for coordinates with null', async () => {
     const countryCode = getCountryCodeByLatLng(40, null)
-    expect(countryCode).toBe(null)
+    expect(countryCode).toBeNull()
   })
   test('return null for coordinates with unfefined', async () => {
     const countryCode = getCountryCodeByLatLng(40, undefined)
-    expect(countryCode).toBe(null)
+    expect(countryCode).toBeNull()
   })
 })
 
