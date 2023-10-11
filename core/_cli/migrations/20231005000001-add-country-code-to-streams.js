@@ -11,7 +11,7 @@ module.exports = {
         const isLatLngExist = latitude != null && longitude != null
         const countryCode = getCountryCodeByLatLng(latitude, longitude)
         if (isLatLngExist && countryCode !== null) {
-          await queryInterface.sequelize.query(`UPDATE streams SET country_code=${countryCode} WHERE id='${id}';`, { transaction })
+          await queryInterface.sequelize.query(`UPDATE streams SET country_code='${countryCode}' WHERE id='${id}';`, { transaction })
         }
       }
     })
