@@ -272,4 +272,44 @@ describe('POST /streams', () => {
     const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
   })
+
+  test('country code works well for a new stream', async () => {
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.countryCode).toBe('GB')
+  })
+
+  test('country code is null for undefined lat', async () => {
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: undefined, longitude: -4.5 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.countryCode).toBe(null)
+  })
+
+  test('country code is null for null lat', async () => {
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: null, longitude: -4.5 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.countryCode).toBe(null)
+  })
+
+  test('country code is null for coordinates in the ocean', async () => {
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: 40, longitude: -40 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.countryCode).toBe(null)
+  })
 })

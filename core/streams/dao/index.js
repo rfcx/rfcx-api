@@ -7,6 +7,7 @@ const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
 const { hashedCredentials } = require('../../../common/crypto/sha256')
 const { getTzByLatLng } = require('../../_utils/datetime/timezone')
+const { getCountryCodeByLatLng, getCountryNameByCode } = require('../../_utils/location/country-code')
 
 const availableIncludes = [
   User.include({ as: 'created_by' }),
@@ -24,6 +25,7 @@ function computedAdditions (data, stream = {}) {
     if (!stream.timezone_locked) {
       additions.timezone = getTzByLatLng(latitude, longitude)
     }
+    additions.countryCode = getCountryCodeByLatLng(latitude, longitude)
   }
   return additions
 }
@@ -194,13 +196,11 @@ async function query (filters, options = {}) {
     transaction: options.transaction
   })
 
-  // TODO move country into the table and perform lookup once on create/update
-  // TODO avoid language-specific data in results (return country code instead of name)
   streamsData.results = streamsData.results.map(stream => {
     const { latitude, longitude } = stream
     if (latitude !== undefined && longitude !== undefined) {
-      const country = crg.get_country(latitude, longitude)
-      stream.country_name = country ? country.name : null
+      const countryCode = getCountryCodeByLatLng(latitude, longitude)
+      stream.country_name = getCountryNameByCode(countryCode)
       stream.timezone = getTzByLatLng(latitude, longitude)
     }
     return stream
@@ -335,6 +335,7 @@ function getStreamRangeToken (stream, start, end) {
 
 module.exports = {
   get,
+  computedAdditions,
   create,
   query,
   update,

@@ -532,4 +532,18 @@ describe('GET /streams', () => {
     expect(response.statusCode).toBe(400)
     expect(response.body.message).toBe('Validation errors: Parameter \'permission\' should be one of these values: C, R, U, D.')
   })
+
+  test('country name works correct for stream coordinates', async () => {
+    const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB' }
+    await models.Stream.create(stream)
+
+    const response = await request(app).get('/').query({ name: 'Jaguar Station' })
+
+    const body = response.body[0]
+    expect(response.statusCode).toBe(200)
+    expect(body.id).toBe(stream.id)
+    expect(body.latitude).toBe(stream.latitude)
+    expect(body.longitude).toBe(stream.longitude)
+    expect(body.country_name).toBe('United Kingdom')
+  })
 })

@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^5.2.0",
+    "@rapideditor/country-coder": "^5.2.2",
     "@rfcx/message-queue": "^1.0.8",
     "@tmcw/togeojson": "^4.5.0",
     "archiver": "4.0.1",

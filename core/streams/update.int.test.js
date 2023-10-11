@@ -201,4 +201,48 @@ describe('PATCH /streams/:id', () => {
     expect(streamUpdated.longitude).toBe(newLon)
     expect(streamUpdated.timezone).toBe(stream.timezone)
   })
+
+  test('country code works well for updated stream', async () => {
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
+
+    const requestBody = { latitude: 52.775435, longitude: 23.9068233 }
+    const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+    expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.countryCode).toBe('PL')
+  })
+
+  test('country code is not changed for undefined lat', async () => {
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
+
+    const requestBody = { latitude: undefined, longitude: -4.5 }
+    const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+    expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.countryCode).toBe('GB')
+  })
+
+  test('country code is not changed for null lat', async () => {
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
+
+    const requestBody = { latitude: null, longitude: -4.5 }
+    const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
+    expect(response2.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.countryCode).toBe('GB')
+  })
+
+  test('country code is null for coordinates somewhere in the ocean', async () => {
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
+
+    const requestBody = { latitude: 40, longitude: -40 }
+    const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
+    expect(response2.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.countryCode).toBe(null)
+  })
 })
