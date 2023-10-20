@@ -7,6 +7,9 @@ const { WAITING, RUNNING, DONE, CANCELLED, ERROR } = require('./classifier-job-s
 const defaultMessageQueue = require('../../common/message-queue/sqs')
 const { CLASSIFIER_JOB_FINISHED } = require('../../common/message-queue/event-names')
 
+const isEnabledOrig = defaultMessageQueue.isEnabled
+const publishOrig = defaultMessageQueue.publish
+
 // Test data
 const CLASSIFIER_1 = { id: 831, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
 const CLASSIFIERS = [CLASSIFIER_1]
@@ -73,6 +76,8 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
+  defaultMessageQueue.isEnabled = isEnabledOrig
+  defaultMessageQueue.publish = publishOrig
   await models.sequelize.close()
 })
 
