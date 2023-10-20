@@ -3,12 +3,20 @@ jest.mock('../../roles/dao', () => { return {} })
 jest.mock('../../../common/message-queue/sqs')
 const defaultMessageQueue = require('../../../common/message-queue/sqs')
 
+const isEnabledOrig = defaultMessageQueue.isEnabled
+const publishOrig = defaultMessageQueue.publish
+
 const service = require('.')
 const { SEGMENT_CREATED } = require('../../../common/message-queue/event-names')
 
 beforeEach(() => {
   defaultMessageQueue.isEnabled = jest.fn().mockReturnValue(true)
   defaultMessageQueue.publish = jest.fn().mockReturnValue(Promise.resolve())
+})
+
+afterAll(() => {
+  defaultMessageQueue.isEnabled = isEnabledOrig
+  defaultMessageQueue.publish = publishOrig
 })
 
 test('Create segment not queued when default queue not enabled', async () => {
