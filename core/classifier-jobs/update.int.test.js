@@ -4,6 +4,8 @@ const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../
 const request = require('supertest')
 const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
 const { WAITING, RUNNING, DONE, CANCELLED, ERROR } = require('./classifier-job-status')
+const defaultMessageQueue = require('../../common/message-queue/sqs')
+const { CLASSIFIER_JOB_FINISHED } = require('../../common/message-queue/event-names')
 
 // Test data
 const CLASSIFIER_1 = { id: 831, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
@@ -62,6 +64,8 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await seedTestData()
+  defaultMessageQueue.isEnabled = jest.fn().mockReturnValue(true)
+  defaultMessageQueue.publish = jest.fn().mockReturnValue(Promise.resolve())
 })
 
 afterEach(async () => {
@@ -134,6 +138,22 @@ describe('PATCH /classifier-jobs/:id', () => {
         expect(response2.statusCode).toBe(200)
         expect(jobUpdated1.completedAt).toBeTruthy()
         expect(jobUpdated2.completedAt).toBeTruthy()
+      })
+
+      test(`sends CLASSIFIER_JOB_FINISHED event when status becomes DONE (${DONE})`, async () => {
+        // Arrange
+        const jobUpdate = { status: DONE }
+
+        // Act
+        const response = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+
+        const jobUpdated = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+
+        // Assert
+        expect(response.statusCode).toBe(200)
+        expect(jobUpdated.completedAt).toBeTruthy()
+        expect(defaultMessageQueue.publish).toHaveBeenCalledTimes(1)
+        expect(defaultMessageQueue.publish).toHaveBeenCalledWith(CLASSIFIER_JOB_FINISHED, { jobId: `${jobUpdated.id}` })
       })
 
       test.each(Object.entries(CLEAR_COMPLETE_AT_STATUS))('clears completed_at when status becomes %s (%s)', async (label, status) => {
@@ -212,52 +232,6 @@ describe('PATCH /classifier-jobs/:id', () => {
         expect(response.statusCode).toBe(200)
         expect(jobUpdated.status).toBe(WAITING)
       })
-    })
-
-    test('calculates and saves classifier-job-summary after changing status to DONE', async () => {
-      // Arrange
-      const jobUpdate = { status: DONE }
-
-      await models.Detection.create({ classifierJobId: JOB_RUNNING.id, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.99 })
-      await models.Detection.create({ classifierJobId: JOB_RUNNING.id, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.99 })
-      await models.Detection.create({ classifierJobId: JOB_RUNNING.id, streamId: STREAM_1.id, classificationId: CLASSIFICATION_3.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.000001 })
-      await models.Detection.create({ classifierJobId: JOB_DONE.id, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.99 })
-      await models.Detection.create({ streamId: STREAM_1.id, classificationId: CLASSIFICATION_3.id, classifierId: CLASSIFIER_1.id, start: '2022-01-01T00:00:00.000Z', end: '2022-01-01T00:00:01.000Z', confidence: 0.99 })
-
-      expect((await models.ClassifierJobSummary.findAll()).length).toBe(0)
-      // Act
-      const response = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
-      const jobUpdated = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
-
-      const classifierJobSummaries = (await models.ClassifierJobSummary.findAll()).sort((a, b) => a.classificationId < b.classificationId)
-      // Assert
-      expect(response.statusCode).toBe(200)
-      expect(jobUpdated.status).toBe(DONE)
-      expect(classifierJobSummaries.length).toBe(4)
-      expect(classifierJobSummaries[0].classifierJobId).toBe(JOB_RUNNING.id)
-      expect(classifierJobSummaries[0].classificationId).toBe(CLASSIFICATION_1.id)
-      expect(classifierJobSummaries[0].total).toBe(1)
-      expect(classifierJobSummaries[0].confirmed).toBe(0)
-      expect(classifierJobSummaries[0].rejected).toBe(0)
-      expect(classifierJobSummaries[0].uncertain).toBe(0)
-      expect(classifierJobSummaries[1].classifierJobId).toBe(JOB_RUNNING.id)
-      expect(classifierJobSummaries[1].classificationId).toBe(CLASSIFICATION_2.id)
-      expect(classifierJobSummaries[1].total).toBe(1)
-      expect(classifierJobSummaries[1].confirmed).toBe(0)
-      expect(classifierJobSummaries[1].rejected).toBe(0)
-      expect(classifierJobSummaries[1].uncertain).toBe(0)
-      expect(classifierJobSummaries[2].classifierJobId).toBe(JOB_RUNNING.id)
-      expect(classifierJobSummaries[2].classificationId).toBe(CLASSIFICATION_3.id)
-      expect(classifierJobSummaries[2].total).toBe(1)
-      expect(classifierJobSummaries[2].confirmed).toBe(0)
-      expect(classifierJobSummaries[2].rejected).toBe(0)
-      expect(classifierJobSummaries[2].uncertain).toBe(0)
-      expect(classifierJobSummaries[3].classifierJobId).toBe(JOB_RUNNING.id)
-      expect(classifierJobSummaries[3].classificationId).toBe(CLASSIFICATION_4.id)
-      expect(classifierJobSummaries[3].total).toBe(0)
-      expect(classifierJobSummaries[3].confirmed).toBe(0)
-      expect(classifierJobSummaries[3].rejected).toBe(0)
-      expect(classifierJobSummaries[3].uncertain).toBe(0)
     })
   })
 

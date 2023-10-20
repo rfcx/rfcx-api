@@ -5,7 +5,8 @@ const { hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { ForbiddenError, EmptyResultError, ValidationError } = require('../../../common/error-handling/errors')
 const { CANCELLED, DONE, ERROR, WAITING } = require('../classifier-job-status')
 const { get } = require('./get')
-const { updateSummary } = require('./summary')
+const messageQueue = require('../../../common/message-queue/sqs')
+const { CLASSIFIER_JOB_FINISHED } = require('../../../common/message-queue/event-names')
 
 const ALLOWED_TARGET_STATUSES = [CANCELLED, WAITING]
 const ALLOWED_SOURCE_STATUSES = [CANCELLED, WAITING, ERROR]
@@ -74,8 +75,18 @@ async function update (id, newJob, options = {}) {
     await dao.update(id, newJob, { transaction })
 
     if (newJob.status === DONE) {
-      await updateSummary(id, { transaction })
+      await notify(id)
     }
+  })
+}
+
+function notify (id) {
+  if (!messageQueue.isEnabled()) {
+    return
+  }
+  const message = { jobId: id }
+  return messageQueue.publish(CLASSIFIER_JOB_FINISHED, message).catch((e) => {
+    console.error('Classifier job bl -> publish failed', e.message || e)
   })
 }
 

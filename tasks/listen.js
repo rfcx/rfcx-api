@@ -1,5 +1,6 @@
-const { SEGMENT_CREATED } = require('../common/message-queue/event-names')
+const { SEGMENT_CREATED, CLASSIFIER_JOB_FINISHED } = require('../common/message-queue/event-names')
 const segmentCreated = require('./segment-created')
+const classifierJobFinished = require('./classifier-job-finished')
 
 /**
  * Listen for new messages on the queue and process
@@ -7,7 +8,8 @@ const segmentCreated = require('./segment-created')
  */
 function listen (messageQueue) {
   const tasks = {
-    [SEGMENT_CREATED]: segmentCreated
+    [SEGMENT_CREATED]: segmentCreated,
+    [CLASSIFIER_JOB_FINISHED]: classifierJobFinished
   }
 
   for (const [eventName, eventTask] of Object.entries(tasks)) {
