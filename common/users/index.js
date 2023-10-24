@@ -14,7 +14,14 @@ function fillUserData (data) {
 
 function findOrCreateUser (defaults) {
   fillUserData(defaults)
-  const where = { [Sequelize.Op.or]: { guid: defaults.guid, email: defaults.email } }
+  const where = {
+    [Sequelize.Op.or]: {
+      guid: defaults.guid,
+      email: {
+        [Sequelize.Op.iLike]: defaults.email
+      }
+    }
+  }
   return User
     .findOrCreate({ where, defaults })
     .spread((user, created) => {
