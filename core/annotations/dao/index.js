@@ -11,8 +11,6 @@ const { getAccessibleObjectsIDs, STREAM } = require('../../roles/dao')
  * @param {string} filters.streamId
  * @param {string} filters.start
  * @param {string} filters.end
- * @param {boolean} filters.isManual Whether annotation was drawn or created as detection review
- * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
  * @param {boolean} filters.streamsOnlyPublic
  * @param {object} filters.user
  * @param {string[]} filters.classifications
@@ -26,9 +24,7 @@ async function defaultQueryOptions (filters, options = {}) {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(filters.start).valueOf(),
       [models.Sequelize.Op.lt]: moment.utc(filters.end).valueOf()
-    },
-    is_manual: !!filters.isManual,
-    ...filters.isPositive !== undefined && { is_positive: filters.isPositive }
+    }
   }
   if (filters.streamId !== undefined) {
     condition.stream_id = filters.streamId
@@ -76,8 +72,6 @@ function formatFull (annotation) {
  * @param {string} filters.streamId
  * @param {string} filters.start
  * @param {string} filters.end
- * @param {boolean} filters.isManual Whether annotation was drawn or created as detection review
- * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
  * @param {boolean} filters.streamsOnlyPublic
  * @param {object} filters.user
  * @param {string | number} filters.streamsOnlyCreatedBy
@@ -89,14 +83,6 @@ function formatFull (annotation) {
  */
 async function query (filters, options = {}) {
   const queryOptions = await defaultQueryOptions(filters, options)
-  if (filters.isManual === false) {
-    queryOptions.include.push({
-      as: 'created_by',
-      model: models.User,
-      attributes: models.User.attributes.lite
-    })
-    queryOptions.attributes.push('is_positive')
-  }
   return models.Annotation.findAll(queryOptions)
 }
 
@@ -106,8 +92,6 @@ async function query (filters, options = {}) {
  * @param {string} filters.streamId
  * @param {string} filters.start
  * @param {string} filters.end
- * @param {boolean} filters.isManual Whether annotation was drawn or created as detection review
- * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
  * @param {boolean} filters.streamsOnlyPublic
  * @param {object} filters.user
  * @param {number} filters.createdBy
@@ -137,21 +121,19 @@ async function timeAggregatedQuery (filters, options = {}) {
 }
 
 function create (annotation) {
-  const { streamId, start, end, classificationId, frequencyMin, frequencyMax, userId, isManual, isPositive } = annotation
+  const { streamId, start, end, classificationId, frequencyMin, frequencyMax, userId } = annotation
   const where = {
     start,
     end,
     stream_id: streamId,
     classification_id: classificationId,
-    created_by_id: userId,
-    is_manual: isManual
+    created_by_id: userId
   }
   const defaults = {
     ...where,
     frequency_min: frequencyMin,
     frequency_max: frequencyMax,
-    updated_by_id: userId,
-    is_positive: isPositive
+    updated_by_id: userId
   }
   return models.Annotation.findOrCreate({ where, defaults }).spread((annotation, created) => formatFull(annotation))
 }
@@ -194,8 +176,7 @@ function update (annotationId, start, end, classificationId, frequencyMin, frequ
           frequency_min: frequencyMin,
           frequency_max: frequencyMax,
           updated_by_id: userId,
-          updated_at: new Date(),
-          ...isPositive !== undefined && { is_positive: isPositive }
+          updated_at: new Date()
         }, { transaction, silent: true })
       })
     })
