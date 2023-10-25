@@ -33,14 +33,6 @@ const { hasStreamPermission } = require('../../common/middleware/authorization/r
  *         description: List of clasification identifiers
  *         in: query
  *         type: array
- *       - name: is_manual
- *         description: Limit results to manual annotation
- *         in: query
- *         type: boolean
- *       - name: is_positive
- *         description: Limit results to a type of annotation ( true for true positive or false for false positive)
- *         in: query
- *         type: boolean
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -73,17 +65,13 @@ router.get('/:id/annotations', hasStreamPermission('R'), function (req, res) {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classifications').optional().toArray()
-  params.convert('is_manual').optional().toBoolean()
-  params.convert('is_positive').optional().toBoolean()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
 
   return params.validate()
     .then(() => {
-      const isManual = convertedParams.is_manual
-      const isPositive = convertedParams.is_positive
       const { start, end, classifications, limit, offset } = convertedParams
-      return dao.query({ start, end, classifications, streamId, isManual, isPositive, user }, { limit, offset })
+      return dao.query({ start, end, classifications, streamId, user }, { limit, offset })
     })
     .then((annotations) => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
@@ -135,13 +123,11 @@ router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
   params.convert('classification').toString()
   params.convert('frequency_min').optional().toInt()
   params.convert('frequency_max').optional().toInt()
-  params.convert('is_manual').toBoolean().default(true)
-  params.convert('is_positive').toBoolean().default(true)
 
   return params.validate()
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
-      const { start, end, frequency_min, frequency_max, is_manual, is_positive } = convertedParams // eslint-disable-line camelcase
+      const { start, end, frequency_min, frequency_max } = convertedParams // eslint-disable-line camelcase
       const annotation = {
         streamId,
         classificationId,
@@ -149,9 +135,7 @@ router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
         start,
         end,
         frequencyMin: frequency_min,
-        frequencyMax: frequency_max,
-        isManual: is_manual,
-        isPositive: is_positive
+        frequencyMax: frequency_max
       }
       return dao.create(annotation)
     })

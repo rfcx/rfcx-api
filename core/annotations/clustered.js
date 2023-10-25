@@ -102,8 +102,6 @@ router.get('/', (req, res) => {
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
   params.convert('field').default('id').isEqualToAny(models.Annotation.attributes.full)
-  params.convert('is_manual').optional().toBoolean()
-  params.convert('is_positive').optional().toBoolean()
   params.convert('descending').default(false).toBoolean()
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()
@@ -118,16 +116,14 @@ router.get('/', (req, res) => {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      const { start, end, interval, aggregate, field, is_manual, is_positive, descending, limit, offset } = convertedParams // eslint-disable-line camelcase
+      const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams // eslint-disable-line camelcase
       const streamsOnlyPublic = convertedParams.streams_public
       const annotation = {
         start,
         end,
         streamId,
         user,
-        createdBy,
-        isManual: is_manual,
-        isPositive: is_positive
+        createdBy
       }
       return dao.timeAggregatedQuery(
         annotation,

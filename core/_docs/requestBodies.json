@@ -17,23 +17,11 @@
       },
       "frequency_min": {
         "type": "integer",
-        "description": "Required if is_manual is not provided or set to false",
         "example": 1530
       },
       "frequency_max": {
         "type": "integer",
-        "description": "Required if is_manual is not provided or set to false",
         "example": 4010
-      },
-      "is_manual": {
-        "type": "boolean",
-        "description": "An annotation which was suggested to user by a system (e.g. detection review)",
-        "example": true
-      },
-      "is_positive": {
-        "type": "boolean",
-        "description": "Whether this annotation represents absence of specified classification",
-        "example": true
       }
     },
     "required": [

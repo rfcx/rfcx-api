@@ -40,14 +40,6 @@ function isUuid (str) {
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
- *       - name: is_manual
- *         description: Limit results to manual annotation
- *         in: query
- *         type: boolean
- *       - name: is_positive
- *         description: Limit results to a type of annotation ( true for true positive or false for false positive)
- *         in: query
- *         type: boolean
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -78,16 +70,12 @@ router.get('/', (req, res) => {
   params.convert('end').toMomentUtc()
   params.convert('stream_id').optional().toString()
   params.convert('classifications').optional().toArray()
-  params.convert('is_manual').optional().toBoolean()
-  params.convert('is_positive').optional().toBoolean()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
 
   return params.validate()
     .then(async () => {
       const streamId = convertedParams.stream_id
-      const isManual = convertedParams.is_manual
-      const isPositive = convertedParams.is_positive
       if (streamId) {
         const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
         if (!allowed) {
@@ -95,7 +83,7 @@ router.get('/', (req, res) => {
         }
       }
       const { start, end, classifications, limit, offset } = convertedParams
-      return dao.query({ start, end, streamId, classifications, isManual, isPositive, user }, { limit, offset })
+      return dao.query({ start, end, streamId, classifications, user }, { limit, offset })
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
