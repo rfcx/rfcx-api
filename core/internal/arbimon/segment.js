@@ -8,13 +8,13 @@ const { sequelize } = require('../../_models')
 /**
  * @swagger
  *
- * /internal/arbimon/segment:
+ * /internal/arbimon/segments:
  *   patch:
  *     summary: Update segments and source files
  *     tags:
  *       - internal
  *     requestBody:
- *       description: Stream attributes and segments data
+ *       description: Stream ids and segments start
  *       required: true
  *       content:
  *         application/x-www-form-urlencoded:
@@ -35,43 +35,34 @@ const { sequelize } = require('../../_models')
  *       404:
  *         description: Segment not found
  */
-router.patch('/streams/:externalId', (req, res) => {
+router.patch('/segments', (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
-  params.convert('segment_id').toArray()
-  params.convert('segment_start').toArray()
   params.convert('new_stream_id').toString()
-  params.convert('old_segment_id').toString()
+  params.convert('stream_start')
 
   sequelize.transaction()
     .then((transaction) => {
       return params.validate()
         .then(async () => {
-          return await streamSegmentDao.findByStreamAndStarts(convertedParams.old_segment_id, convertedParams.segment_start.map(start => start.toISOString()), {
-            transaction,
-            fields: ['id', 'stream_id', 'start', 'stream_source_file_id']
-          })
-        })
-        .then(async (existingSegments) => {
-          if (!existingSegments.length) {
+          const streamObj = convertedParams.stream_start
+          if (!streamObj || !Object.values(streamObj)) {
             throw new Error('No segments found')
           }
-          await streamSegmentDao.updateByStreamAndStarts(convertedParams.new_stream_id, existingSegments.map(s => s.start.toISOString()), { availability: 1 }, { transaction })
-          return existingSegments
-        })
-        .then(async (existingSegments) => {
-          const filter = {
-            id: existingSegments.map(segment => segment.stream_source_file_id)
-          }
-          return streamSourceFileDao.query(filter, {
+          return await streamSegmentDao.findByMultipleStreamsAndStarts(streamObj, {
             transaction,
-            fields: ['id']
+            fields: ['stream_source_file_id']
           })
         })
         .then(async (existingSourceFilesId) => {
+          const streamObj = convertedParams.stream_start
           if (!existingSourceFilesId.length) {
             throw new Error('No source files found')
           }
+          await streamSegmentDao.updateByMultipleStreamsAndStarts({ stream_id: convertedParams.new_stream_id }, streamObj, { transaction })
+          return existingSourceFilesId
+        })
+        .then(async (existingSourceFilesId) => {
           await streamSourceFileDao.updateById({ stream_id: convertedParams.new_stream_id }, existingSourceFilesId, { transaction })
           await transaction.commit()
           return res.sendStatus(200)

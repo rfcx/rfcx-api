@@ -33,7 +33,8 @@ module.exports = {
   ],
   arbimon: [
     require('./arbimon/stream'),
-    require('./arbimon/project')
+    require('./arbimon/project'),
+    require('./arbimon/segment')
   ],
   'ai-hub': [
     require('./ai-hub')
