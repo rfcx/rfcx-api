@@ -69,7 +69,7 @@ router.patch('/segments', (req, res) => {
         })
         .catch((err) => {
           transaction.rollback()
-          httpErrorHandler(req, res, 'Failed creating stream source file and segments')(err)
+          httpErrorHandler(req, res, 'Failed update stream source file and segments')(err)
         })
     })
 })
