@@ -754,5 +754,24 @@
         "example": "10"
       }
     }
+  },
+  "ArbimonRecordingsDeleteData": {
+    "type": "array",
+    "items": {
+      "stream": {
+        "type": "string",
+        "description": "Stream identifier",
+        "example": "3sw1acjc6n5y"
+      },
+      "starts": {
+        "type": "array",
+        "description": "Array of start days",
+        "example": "['2023-07-24T06:30:00.000Z']"
+      }
+    },
+    "required": [
+      "stream",
+      "starts"
+    ]
   }
 }

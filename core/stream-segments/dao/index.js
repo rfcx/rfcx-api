@@ -194,64 +194,28 @@ function findOrCreate (where, defaults, options = {}) {
  */
 function findByStreamAndStarts (streamId, starts, options = {}) {
   const transaction = options.transaction
+  const where = getWhereForStreamAndStarts(streamId, starts)
+  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a)) : StreamSegment.attributes.lite
+  return StreamSegment.findAll({ where, attributes, transaction })
+    .catch((e) => {
+      console.error('Stream segment service -> findByStreamAndStarts -> error', e)
+      throw e
+    })
+}
+
+function getWhereForStreamAndStarts (streamId, starts) {
+  const dates = starts.map(s => new Date(s).valueOf())
+  const maxDate = new Date(Math.max(...dates))
+  const minDate = new Date(Math.min(...dates))
   const where = {
     stream_id: streamId,
     start: {
+      [Sequelize.Op.gte]: minDate.toISOString(),
+      [Sequelize.Op.lte]: maxDate.toISOString(),
       [Sequelize.Op.in]: starts
     }
   }
-  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a)) : StreamSegment.attributes.lite
-  return StreamSegment.findAll({ where, attributes, transaction })
-    .catch((e) => {
-      console.error('Stream segment service -> findByStreamAndStarts -> error', e)
-      throw e
-    })
-}
-
-function getWhereConditionForMultipleStreams (streamObj) {
-  let where
-  for (const key in streamObj) {
-    const maxDate = new Date(Math.max(...streamObj[key]))
-    const minDate = new Date(Math.min(...streamObj[key]))
-    where[Sequelize.Op.or] = {
-      stream_id: key,
-      start: {
-        [Sequelize.Op.gte]: minDate.toISOString(),
-        [Sequelize.Op.lte]: maxDate.toISOString(),
-        [Sequelize.Op.in]: streamObj[key].map(start => start.toISOString())
-      }
-    }
-  }
   return where
-}
-
-/**
- * Find all segments belonging to a stream within specified start array
- * @param {any} streamObj Stream ids and array of segments start
- * @param {*} options
- * @param {Transaction} options.transaction Perform within given transaction
- */
-function findByMultipleStreamsAndStarts (streamObj, options = {}) {
-  const transaction = options.transaction
-  const where = getWhereConditionForMultipleStreams(streamObj)
-  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a)) : StreamSegment.attributes.lite
-  return StreamSegment.findAll({ where, attributes, transaction })
-    .catch((e) => {
-      console.error('Stream segment service -> findByStreamAndStarts -> error', e)
-      throw e
-    })
-}
-
-/**
- * Update all segments belonging to streams within specified start array
- * @param {any} streamObj Stream ids and array of segments start
- * @param {*} options
- * @param {Transaction} options.transaction Perform within given transaction
- */
-function updateByMultipleStreamsAndStarts (data, streamObj, options = {}) {
-  const transaction = options.transaction
-  const where = getWhereConditionForMultipleStreams(streamObj)
-  return StreamSegment.update(data, { where, transaction })
 }
 
 /**
@@ -263,12 +227,7 @@ function updateByMultipleStreamsAndStarts (data, streamObj, options = {}) {
  */
 function updateByStreamAndStarts (streamId, starts, data, options = {}) {
   const transaction = options.transaction
-  const where = {
-    stream_id: streamId,
-    start: {
-      [Sequelize.Op.in]: starts
-    }
-  }
+  const where = getWhereForStreamAndStarts(streamId, starts)
   return StreamSegment.update(data, { where, transaction })
 }
 
@@ -407,9 +366,7 @@ module.exports = {
   create,
   findOrCreate,
   findByStreamAndStarts,
-  findByMultipleStreamsAndStarts,
   updateByStreamAndStarts,
-  updateByMultipleStreamsAndStarts,
   update,
   notify,
   getStreamCoverage,
