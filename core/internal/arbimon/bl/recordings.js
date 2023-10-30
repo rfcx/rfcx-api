@@ -5,16 +5,11 @@ const { sequelize } = require('../../../_models')
 const TRASHES_STREAM_ID = process.env.TRASHES_STREAM_ID
 
 async function updateBatch (params) {
-  const transaction = await sequelize.transaction()
-  try {
+  return sequelize.transaction(async (transaction) => {
     const sourceFiles = await findMultipleSourceFiles(params, { transaction, fields: ['stream_source_file_id'] })
     await updateSegmentsBatch(TRASHES_STREAM_ID, params, { transaction })
     await streamSourceFileDao.updateById({ stream_id: TRASHES_STREAM_ID }, sourceFiles, { transaction })
-    await transaction.commit()
-  } catch (e) {
-    console.info('updateBatch error', e)
-    transaction.rollback()
-  }
+  })
 }
 
 /**
@@ -24,12 +19,10 @@ async function updateBatch (params) {
  * @param {Transaction} options.transaction Perform within given transaction
  */
 async function findMultipleSourceFiles (streams, options = {}) {
-  const transaction = options.transaction
-  const fields = options.fields
   let sourceFiles = []
   for (const s of streams) {
-    const ids = await streamSegmentDao.findByStreamAndStarts(s.stream, s.starts, { transaction, fields })
-    sourceFiles = sourceFiles.concat(ids.map(id => id.stream_source_file_id))
+    const segments = await streamSegmentDao.findByStreamAndStarts(s.stream, s.starts, options)
+    sourceFiles = [...sourceFiles, ...segments.map(s => s.stream_source_file_id)]
   }
   return sourceFiles
 }

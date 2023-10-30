@@ -15,9 +15,6 @@ const { updateBatch } = require('./bl/recordings')
  *       description: Array of objects stream and start
  *       required: true
  *       content:
- *         application/x-www-form-urlencoded:
- *           schema:
- *             $ref: '#/components/requestBodies/ArbimonRecordingsDeleteData'
  *         application/json:
  *           schema:
  *             $ref: '#/components/requestBodies/ArbimonRecordingsDeleteData'

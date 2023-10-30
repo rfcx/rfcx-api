@@ -204,15 +204,19 @@ function findByStreamAndStarts (streamId, starts, options = {}) {
     })
 }
 
+function getISOString (date) {
+  return moment.utc(date).toISOString()
+}
+
 function getWhereForStreamAndStarts (streamId, starts) {
-  const dates = starts.map(s => moment.utc(s).valueOf())
-  const maxDate = moment.utc(Math.max(...dates)).toISOString()
-  const minDate = moment.utc(Math.min(...dates)).toISOString()
+  const dates = starts.map(s => moment.utc(s).valueOf()).sort((a, b) => {
+    return a - b
+  })
   const where = {
     stream_id: streamId,
     start: {
-      [Sequelize.Op.gte]: minDate,
-      [Sequelize.Op.lte]: maxDate,
+      [Sequelize.Op.gte]: getISOString(dates[0]),
+      [Sequelize.Op.lte]: getISOString(dates[dates.length - 1]),
       [Sequelize.Op.in]: starts
     }
   }
