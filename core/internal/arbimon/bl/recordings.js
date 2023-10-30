@@ -35,9 +35,8 @@ async function findMultipleSourceFiles (streams, options = {}) {
  * @param {Transaction} options.transaction Perform within given transaction
  */
 async function updateSegmentsBatch (trashesStreamId, streams, options = {}) {
-  const transaction = options.transaction
   for (const s of streams) {
-    await streamSegmentDao.updateByStreamAndStarts(s.stream, s.starts, { stream_id: trashesStreamId }, { transaction })
+    await streamSegmentDao.updateByStreamAndStarts(s.stream, s.starts, { stream_id: trashesStreamId }, options)
   }
 }
 
