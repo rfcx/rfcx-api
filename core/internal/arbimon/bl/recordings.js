@@ -6,37 +6,36 @@ const TRASHES_STREAM_ID = process.env.TRASHES_STREAM_ID
 
 async function updateBatch (params) {
   return sequelize.transaction(async (transaction) => {
-    const sourceFiles = await findMultipleSourceFiles(params, { transaction, fields: ['stream_source_file_id'] })
-    await updateSegmentsBatch(TRASHES_STREAM_ID, params, { transaction })
+    const sourceFiles = await findSourceFiles(params, { transaction })
+    await softDeleteSegmentsBatch(TRASHES_STREAM_ID, params, { transaction })
     await streamSourceFileDao.updateById({ stream_id: TRASHES_STREAM_ID }, sourceFiles, { transaction })
   })
 }
 
 /**
- * Find all segments belonging to a stream within specified start array
- * @param {any} streams Stream ids and array of segments start
+ * Find all source file ids belonging to a stream within specified start array
+ * @param {object[]} arr Array of objects with stream ids and starts
  * @param {*} options
  * @param {Transaction} options.transaction Perform within given transaction
  */
-async function findMultipleSourceFiles (streams, options = {}) {
+async function findSourceFiles (arr, options = {}) {
   let sourceFiles = []
-  for (const s of streams) {
-    const segments = await streamSegmentDao.findByStreamAndStarts(s.stream, s.starts, options)
+  for (const s of arr) {
+    const segments = await streamSegmentDao.findByStreamAndStarts(s.stream, s.starts, { ...options, fields: ['stream_source_file_id'] })
     sourceFiles = [...sourceFiles, ...segments.map(s => s.stream_source_file_id)]
   }
   return sourceFiles
 }
 
 /**
- * Update all segments belonging to streams within specified start array
- * @param {string} trashesStreamId trashes stream id
+ * Move all segments belonging to streams within specified start array to "trash" array
  * @param {oblect} streams Stream ids and array of segments start
  * @param {*} options
  * @param {Transaction} options.transaction Perform within given transaction
  */
-async function updateSegmentsBatch (trashesStreamId, streams, options = {}) {
+async function softDeleteSegmentsBatch (streams, options = {}) {
   for (const s of streams) {
-    await streamSegmentDao.updateByStreamAndStarts(s.stream, s.starts, { stream_id: trashesStreamId }, options)
+    await streamSegmentDao.updateByStreamAndStarts(s.stream, s.starts, { stream_id: TRASHES_STREAM_ID }, options)
   }
 }
 
