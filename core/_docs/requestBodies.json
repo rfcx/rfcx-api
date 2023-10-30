@@ -755,9 +755,9 @@
       }
     }
   },
-  "ArbimonRecordingsDeleteData": {
-    "type": "array",
-    "items": {
+  "ArbimonRecording": {
+    "type": "object",
+    "properties": {
       "stream": {
         "type": "string",
         "description": "Stream identifier",
@@ -765,6 +765,9 @@
       },
       "starts": {
         "type": "array",
+        "items": {
+          "type": "string"
+        },
         "description": "Array of start days",
         "example": "['2023-07-24T06:30:00.000Z']"
       }
@@ -773,5 +776,11 @@
       "stream",
       "starts"
     ]
+  },
+  "ArbimonRecordingsDeleteData": {
+    "type": "array",
+    "items": {
+      "$ref": "#/components/requestBodies/ArbimonRecording"
+    }
   }
 }

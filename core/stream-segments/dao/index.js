@@ -4,6 +4,7 @@ const messageQueue = require('../../../common/message-queue/sqs')
 const { SEGMENT_CREATED } = require('../../../common/message-queue/event-names')
 const { ValidationError, EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
+const moment = require('moment-timezone')
 const Op = Sequelize.Op
 
 const availableIncludes = [
@@ -204,14 +205,14 @@ function findByStreamAndStarts (streamId, starts, options = {}) {
 }
 
 function getWhereForStreamAndStarts (streamId, starts) {
-  const dates = starts.map(s => new Date(s).valueOf())
-  const maxDate = new Date(Math.max(...dates))
-  const minDate = new Date(Math.min(...dates))
+  const dates = starts.map(s => moment.utc(s).valueOf())
+  const maxDate = moment.utc(Math.max(...dates)).toISOString()
+  const minDate = moment.utc(Math.min(...dates)).toISOString()
   const where = {
     stream_id: streamId,
     start: {
-      [Sequelize.Op.gte]: minDate.toISOString(),
-      [Sequelize.Op.lte]: maxDate.toISOString(),
+      [Sequelize.Op.gte]: minDate,
+      [Sequelize.Op.lte]: maxDate,
       [Sequelize.Op.in]: starts
     }
   }
