@@ -11,6 +11,9 @@ process.env.TRASHES_STREAM_ID = '1delete6y3yb'
 let stream, trashesStream, audioFileFormat, audioCodec, fileExtension, testPayload, testRequestData, audioFileFormatId, audioCodecId, fileExtensionId
 resetTestData()
 
+beforeEach(async () => {
+  await commonSetup()
+})
 beforeAll(async () => {
   muteConsole('warn')
 })
@@ -23,7 +26,7 @@ afterAll(async () => {
 })
 
 function resetTestData () {
-  stream = { id: 'abcdsaqwery1', name: 'my stream', createdById: seedValues.primaryUserId }
+  stream = { id: 'abcdsaqwery1', name: 'test stream', createdById: seedValues.primaryUserId }
   trashesStream = { id: '1delete6y3yb', name: 'trashes stream', createdById: seedValues.primaryUserId }
   audioFileFormat = { value: 'flac' }
   audioCodec = { value: 'flac' }
@@ -48,9 +51,8 @@ function resetTestData () {
     ]
   }
   testRequestData = [{
-    stream: 'abcdsaqwery1',
-    starts: ['2021-04-18T12:12:00.000Z']
-
+    stream: stream.id,
+    starts: [testPayload.stream_segments[0].start]
   }]
 }
 
@@ -60,20 +62,118 @@ async function commonSetup () {
   audioFileFormatId = (await models.AudioFileFormat.findOrCreate({ where: audioFileFormat }))[0].id
   audioCodecId = (await models.AudioCodec.findOrCreate({ where: audioCodec }))[0].id
   fileExtensionId = (await models.FileExtension.findOrCreate({ where: fileExtension }))[0].id
+  const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+  await models.StreamSegment.create({ ...testPayload.stream_segments[0], stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile.id })
 }
 
 describe('DELETE internal/arbimon/recordings', () => {
-  test('stream_source_file and stream_segments is deleted', async () => {
-    await commonSetup()
-    const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
-    await models.StreamSegment.create({ ...testPayload.stream_segments[0], stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile.id })
+  test('happy path', async () => {
+    const response = await request(app).delete('/recordings').send(testRequestData)
+
+    expect(response.statusCode).toBe(200)
+  })
+  test('can set all fields', async () => {
+    const response = await request(app).delete('/recordings').send(testRequestData)
+
+    const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
+    const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+
+    expect(response.statusCode).toBe(200)
+    expect(streamSourceFiles.length).toBe(0)
+    expect(streamSegments.length).toBe(0)
+  })
+  test('can delete 1 recording', async () => {
+    const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T12-11-11.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74211', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T13:12:00.000Z', end: '2021-04-18T13:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile.id })
+    const response = await request(app).delete('/recordings').send(testRequestData)
+
+    const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
+    const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+
+    expect(response.statusCode).toBe(200)
+    expect(streamSourceFiles.length).toBe(1)
+    expect(streamSegments.length).toBe(1)
+  })
+  test('can delete 2 recordings', async () => {
+    const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T12-11-11.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74211', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T13:12:00.000Z', end: '2021-04-18T13:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile.id })
+    const sourceFile2 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T13-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74212', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T14:12:00.000Z', end: '2021-04-18T14:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile2.id })
+    testRequestData[0].starts.push('2021-04-18T14:12:00.000Z')
 
     const response = await request(app).delete('/recordings').send(testRequestData)
 
     const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
     const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+
     expect(response.statusCode).toBe(200)
-    expect(streamSourceFiles.length).toBe(0)
-    expect(streamSegments.length).toBe(0)
+    expect(streamSourceFiles.length).toBe(1)
+    expect(streamSegments.length).toBe(1)
+  })
+  test('can delete 3 recordings', async () => {
+    const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T12-11-11.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74211', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T13:12:00.000Z', end: '2021-04-18T13:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile.id })
+    const sourceFile2 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T13-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74212', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T14:12:00.000Z', end: '2021-04-18T14:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile2.id })
+    const sourceFile3 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T14-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74213', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T15:12:00.000Z', end: '2021-04-18T15:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile3.id })
+    testRequestData[0].starts.push('2021-04-18T14:12:00.000Z', '2021-04-18T15:12:00.000Z')
+
+    const response = await request(app).delete('/recordings').send(testRequestData)
+
+    const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
+    const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+
+    expect(response.statusCode).toBe(200)
+    expect(streamSourceFiles.length).toBe(1)
+    expect(streamSegments.length).toBe(1)
+  })
+  test('can delete recordings from different streams', async () => {
+    const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T12-11-11.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74211', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T13:12:00.000Z', end: '2021-04-18T13:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile.id })
+    const testStream2 = { id: '1delete6y5yb', name: 'test stream 2', createdById: seedValues.primaryUserId }
+    await models.Stream.findOrCreate({ where: testStream2 })
+    const sourceFile2 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T13-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74212', stream_id: testStream2.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T14:12:00.000Z', end: '2021-04-18T14:13:00.000Z', stream_id: testStream2.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile2.id })
+    const sourceFile3 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T14-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74213', stream_id: testStream2.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T15:12:00.000Z', end: '2021-04-18T15:13:00.000Z', stream_id: testStream2.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile3.id })
+    testRequestData.push({
+      stream: testStream2.id,
+      starts: ['2021-04-18T14:12:00.000Z']
+    })
+
+    const response = await request(app).delete('/recordings').send(testRequestData)
+
+    const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: [stream.id, testStream2.id] } })
+    const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: [stream.id, testStream2.id] } })
+
+    expect(response.statusCode).toBe(200)
+    expect(streamSourceFiles.length).toBe(2)
+    expect(streamSegments.length).toBe(2)
+  })
+  test('doesnt work for not correct dates', async () => {
+    testRequestData[0].starts = '20210418_121200'
+    const response = await request(app).delete('/recordings').send(testRequestData)
+
+    expect(response.statusCode).toBe(500)
+  })
+  test('doesnt work for not existing dates', async () => {
+    testRequestData[0].starts = '2021-02-18T13:12:00.000Z'
+    const response = await request(app).delete('/recordings').send(testRequestData)
+
+    const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
+    const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+
+    expect(response.statusCode).toBe(200)
+    expect(streamSourceFiles.length).toBe(1)
+    expect(streamSegments.length).toBe(1)
+  })
+  test('doesnt work for not correct fields', async () => {
+    const response = await request(app).delete('/recordings').send({
+      streams: stream.id,
+      start: [testPayload.stream_segments[0].start]
+    })
+
+    expect(response.statusCode).toBe(500)
   })
 })

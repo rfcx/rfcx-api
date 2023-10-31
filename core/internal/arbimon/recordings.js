@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const ArrayConverter = require('../../../common/converter/array')
-const { updateBatch } = require('./bl/recordings')
+const { softDeleteRecordings } = require('./bl/recordings')
 
 /**
  * @swagger
@@ -20,8 +20,8 @@ const { updateBatch } = require('./bl/recordings')
  *             $ref: '#/components/requestBodies/ArbimonRecordingsDeleteData'
  *     responses:
  *       200:
- *         description: Updated
- *       400:
+ *         description: Deleted
+ *       500:
  *         description: Invalid parameters
  */
 router.delete('/recordings', (req, res) => {
@@ -31,10 +31,10 @@ router.delete('/recordings', (req, res) => {
 
   return converter.validate()
     .then(async (params) => {
-      await updateBatch(params)
+      await softDeleteRecordings(params)
       return res.sendStatus(200)
     })
-    .catch(httpErrorHandler(req, res, 'Failed update stream source file and segments'))
+    .catch(httpErrorHandler(req, res, 'Failed to soft delete recordings'))
 })
 
 module.exports = router

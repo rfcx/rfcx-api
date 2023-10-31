@@ -261,7 +261,7 @@ function calcAvailability (segments) {
  * @returns {StreamSourceFile}
  * @throws EmptyResultError when segment not found
  */
-async function updateById (data, existingSourceFilesId, options = {}) {
+async function updateByIds (data, existingSourceFilesId, options = {}) {
   const transaction = options.transaction
   return await StreamSourceFile.update(data, { where: { id: existingSourceFilesId }, transaction })
 }
@@ -276,5 +276,5 @@ module.exports = {
   transformMetaAttr,
   format,
   calcAvailability,
-  updateById
+  updateByIds
 }
