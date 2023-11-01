@@ -15,7 +15,7 @@ spec:
       containers:
         - name: core-tasks
           image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-tasks:latest
-          args: ["npm", "run", "start:tasks"]
+          args: ["yarn", "start:tasks"]
           envFrom:
             - secretRef:
                 name: core-secrets
