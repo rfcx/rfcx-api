@@ -52,6 +52,10 @@ jobs:
           --health-retries 5
 
     steps:
+      # v4 (4.1.1) @ Oct 2023 https://github.com/actions/checkout/tags
+      - name: 'Setup: Git checkout'
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+
       - name: 'Setup: Node'
         # v4 (4.0.0) @ Oct 2023 https://github.com/actions/setup-node/tags
         uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
@@ -59,10 +63,6 @@ jobs:
           node-version: '20.9.0'
           cache: 'yarn'
           # cache-dependency-path: 'app/yarn.lock'
-
-      # v4 (4.1.1) @ Oct 2023 https://github.com/actions/checkout/tags
-      - name: 'Setup: Git checkout'
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
       - name: 'Setup: Database init scripts'
         run: |
