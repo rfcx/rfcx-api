@@ -22,8 +22,8 @@ FROM base as build
 
 # Dependencies
 WORKDIR /app
-COPY package.json package-lock.json /app/
-RUN npm ci
+COPY package.json yarn.lock /app/
+RUN yarn --production --frozen-lockfile
 
 # Application code (TODO move core and noncore below)
 COPY common /app/common
@@ -33,19 +33,19 @@ COPY noncore /app/noncore
 # -- Core --
 FROM build as core-api
 EXPOSE 8080
-CMD ["npm", "run", "start:core"]
+CMD ["yarn", "start:core"]
 
 FROM build as core-tasks
 COPY tasks /app/tasks
-CMD ["npm", "run", "start:tasks"]
+CMD ["yarn", "start:tasks"]
 
 
 # -- Non-core --
 FROM build as noncore-api
 EXPOSE 8080
-CMD ["npm", "run", "start:noncore"]
+CMD ["yarn", "start:noncore"]
 
 FROM build as noncore-mqtt
 COPY mqtt /app/mqtt
 EXPOSE 8080
-CMD ["npm", "run", "start:mqtt"]
+CMD ["yarn", "start:mqtt"]
