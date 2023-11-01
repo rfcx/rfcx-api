@@ -58,7 +58,7 @@ jobs:
         with:
           node-version: '20.9.0'
           cache: 'yarn'
-          cache-dependency-path: yarn.lock
+          cache-dependency-path: 'app/yarn.lock'
 
       # v4 (4.1.1) @ Oct 2023 https://github.com/actions/checkout/tags
       - name: 'Setup: Git checkout'
