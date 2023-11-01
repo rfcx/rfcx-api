@@ -46,7 +46,7 @@ async function findSourceFiles (arr, options = {}) {
  */
 async function softDeleteSourceFilesBatch (arr, options = {}) {
   const ids = await findSourceFiles(arr, options)
-  await streamSourceFileDao.updateByIds({ stream_id: TRASHES_STREAM_ID }, ids, options)
+  await streamSourceFileDao.updateByIds(ids, { stream_id: TRASHES_STREAM_ID }, options)
 }
 
 module.exports = {
