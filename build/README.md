@@ -10,7 +10,7 @@
    ```
    aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 887044485231.dkr.ecr.eu-west-1.amazonaws.com
    ```
-   
+
 2. Build the image
    ```
    docker build -t core-api -f build/Dockerfile .
@@ -24,6 +24,11 @@
 4. Deploy the API
    ```
    kubectl apply -f build/development
+   ```
+
+In case you want to run the app locally
+   ```
+   docker run -p 8080:8080 -it --rm core-api
    ```
 
 ### Update

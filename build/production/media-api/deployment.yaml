@@ -15,7 +15,7 @@ spec:
       containers:
       - name: media-api
         image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-api:latest
-        args: ["npm", "run", "start:core"]
+        args: ["yarn", "start:core"]
         envFrom:
         - secretRef:
             name: core-secrets
