@@ -1,3 +1,5 @@
+process.env.TRASHES_STREAM_ID = '1delete6y3yb'
+
 const request = require('supertest')
 const routes = require('../routes')
 const models = require('../../_models')
@@ -5,8 +7,6 @@ const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../
 const app = expressApp()
 
 app.use('/', routes.arbimon)
-
-process.env.TRASHES_STREAM_ID = '1delete6y3yb'
 
 let stream, trashesStream, audioFileFormat, audioCodec, fileExtension, testPayload, testRequestData, audioFileFormatId, audioCodecId, fileExtensionId
 resetTestData()
