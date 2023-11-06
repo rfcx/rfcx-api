@@ -231,7 +231,7 @@ function getWhereForStreamAndStarts (streamId, starts) {
  * @param {Transaction} options.transaction Perform within given transaction
  */
 function updateByStreamAndStarts (streamId, starts, data, options = {}) {
-  const { transaction } = options.transaction
+  const transaction = options.transaction
   const where = getWhereForStreamAndStarts(streamId, starts)
   return StreamSegment.update(data, { where, transaction })
 }
