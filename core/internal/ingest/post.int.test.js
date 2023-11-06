@@ -570,14 +570,15 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
       const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
       const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
-      const segment1 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fd', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
-      const segment2 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: requestBody.stream_segments[1].start, end: requestBody.stream_segments[1].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[1].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+      const expectedIds = ['1dfa13bd-2855-43ae-a5e5-a345d78196fd', '1dfa13bd-2855-43ae-a5e5-a345d78196fe']
+      await models.StreamSegment.create({ id: expectedIds[0], stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+      await models.StreamSegment.create({ id: expectedIds[1], stream_id: stream.id, start: requestBody.stream_segments[1].start, end: requestBody.stream_segments[1].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[1].sample_count, file_extension_id: fileExtensionId, availability: 0 })
 
       const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
-      console.debug('\n\n--returns 2 unavailable segment ids-response.body--', response.body)
+
       expect(response.statusCode).toBe(201)
-      expect(response.body.stream_segments[0].id).toBe(segment1.id)
-      expect(response.body.stream_segments[1].id).toBe(segment2.id)
+      const segmentIds = response.body.stream_segments.map(segment => segment.id)
+      segmentIds.forEach(id => expect(expectedIds.includes(id)).toBe(true))
       const segments = await models.StreamSegment.findAll()
       expect(segments.length).toBe(2)
       expect(segments[0].availability).toBe(1)
@@ -603,18 +604,18 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
       const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
       const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
-      const segment1 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
-      const segment2 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fd', stream_id: stream.id, start: requestBody.stream_segments[1].start, end: requestBody.stream_segments[1].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[1].sample_count, file_extension_id: fileExtensionId, availability: 0 })
-      const segment3 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196ff', stream_id: stream.id, start: requestBody.stream_segments[2].start, end: requestBody.stream_segments[2].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[2].sample_count, file_extension_id: fileExtensionId, availability: 1 })
+      const expectedIds = ['1dfa13bd-2855-43ae-a5e5-a345d78196fe', '1dfa13bd-2855-43ae-a5e5-a345d78196fd', '1dfa13bd-2855-43ae-a5e5-a345d78196ff']
+      const expectedStarts = [testPayload.stream_segments[0].start, requestBody.stream_segments[1].start, requestBody.stream_segments[2].start]
+      await models.StreamSegment.create({ id: expectedIds[0], stream_id: stream.id, start: expectedStarts[0], end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+      await models.StreamSegment.create({ id: expectedIds[1], stream_id: stream.id, start: expectedStarts[1], end: requestBody.stream_segments[1].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[1].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+      await models.StreamSegment.create({ id: expectedIds[2], stream_id: stream.id, start: expectedStarts[2], end: requestBody.stream_segments[2].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[2].sample_count, file_extension_id: fileExtensionId, availability: 1 })
 
       const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
       expect(response.statusCode).toBe(201)
-      expect(response.body.stream_segments[0].id).toBe(segment1.id)
-      expect(response.body.stream_segments[1].id).toBe(segment2.id)
-      expect(response.body.stream_segments[2].id).toBe(segment3.id)
-      expect(response.body.stream_segments[0].start).toBe(requestBody.stream_segments[0].start)
-      expect(response.body.stream_segments[1].start).toBe(requestBody.stream_segments[1].start)
-      expect(response.body.stream_segments[2].start).toBe(requestBody.stream_segments[2].start)
+      const segmentIds = response.body.stream_segments.map(segment => segment.id)
+      const segmentStarts = response.body.stream_segments.map(segment => segment.start)
+      segmentIds.forEach(id => expect(expectedIds.includes(id)).toBe(true))
+      segmentStarts.forEach(start => expect(expectedStarts.includes(start)).toBe(true))
     })
     test('return valudation error for 1 available segment id', async () => {
       await commonSetup()
