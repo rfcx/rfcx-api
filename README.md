@@ -8,21 +8,25 @@ The reposititory consists of several services sharing a common base: Core API, C
 
 ## Quick start (Core API)
 
-Requirements: Node 16, Docker, psql
+Requirements:
+- Node 20.9.0 (can be installed via `nvm` module and `.nvmrc` file)
+- yarn
+- Docker
+- psql
 
-1. Install dependencies `npm i`
+1. Install dependencies `yarn`
 
 2. Copy config file `cp common/config/env_vars.js.sample common/config/env_vars.js`
 
-3. Start the db, run migrations and seeds `npm run serve-db:core`
+3. Start the db, run migrations and seeds `yarn serve-db:core`
 
-4. Run the Core API in local dev mode `npm run dev:core`
+4. Run the Core API in local dev mode `yarn dev:core`
 
 5. Navigate to the API docs http://localhost:8080/docs/
 
-6. Start the test db `npm run serve-db:test`
+6. Start the test db `yarn serve-db:test`
 
-7. Make sure your tests are passing `npm run test`
+7. Make sure your tests are passing `yarn test`
 
 
 ## Project configuration for local development
@@ -52,19 +56,19 @@ Clone and copy `./common/config/env_vars.js.sample` into `./common/config/env_va
 Install dependencies:
 
 ```
-npm i
+yarn
 ```
 
 We can use docker-compose to run a local Timescale database and other services. You can use `docker compose up -d` or `docker compose down`, or simply:
 
 ```
-npm run serve:core
+yarn serve:core
 ```
 
 Or for noncore:
 
 ```
-npm run serve:noncore
+yarn serve:noncore
 ```
 
 For some users that have a local database driver installed on port 5432, the command up top might not work because it's trying to access your local database. Please change your local database port before trying to run the command again.
@@ -76,13 +80,13 @@ For some users that have a local database driver installed on port 5432, the com
 For MySQL (noncore):
 
 ```
-npm run migrate:noncore
+yarn migrate:noncore
 ```
 
 For TimescaleDB (core):
 
 ```
-npm run migrate:core
+yarn migrate:core
 ```
 
 ### Seed the database
@@ -114,20 +118,20 @@ tr -d "\r" < file
 To run the core API with auto-reload:
 
 ```
-npm run dev:core
+yarn dev:core
 ```
 
 Similarly, for the non-core API (only v1/v2 endpoints, without core):
 
 ```
-npm run dev:noncore
+yarn dev:noncore
 ```
 
 Without live reload (how it runs in production):
 
 ```
-npm start:core
-npm start:noncore
+yarn start:core
+yarn start:noncore
 ```
 
 ### MQTT API
@@ -135,7 +139,7 @@ npm start:noncore
 To start the MQTT client and API, open another terminal then:
 
 ```
-npm run start:mqtt
+yarn start:mqtt
 ```
 
 ## Testing
@@ -147,13 +151,13 @@ This project uses [Jest](https://jestjs.io) for testing and [ESLint](https://esl
 Run ESLint:
 
 ```
-npm run lint
+yarn lint
 ```
 
 Fix all fixable errors:
 
 ```
-npm run lint-fix
+yarn lint-fix
 ```
 
 Recommend developers to setup ESLint in their IDE. For VS Code, settings are included in the workspace settings already and lint/format automatically when the the [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) is installed.
@@ -167,13 +171,13 @@ In general, unit tests should be saved alongside the code files that they apply 
 Run all unit tests:
 
 ```
-npm run test:unit
+yarn test:unit
 ```
 
 Run a specific test suite (matching a pattern, e.g. any file containing `array` in the file path):
 
 ```
-npm run test:unit array
+yarn test:unit array
 ```
 
 When targeting a specific test suite, to run a single test case you can temporarily add `.only` to the case:
@@ -191,23 +195,23 @@ To run all the integration tests, you will need to have a test database running.
 To start a test database (requires Docker to be running):
 
 ```
-npm run serve-db:test
+yarn serve-db:test
 ```
 
 Run all the integration tests:
 
 ```
-npm run test:int
+yarn test:int
 ```
 
 Similar to unit tests, you can run individual test suites (matching a pattern):
 
 ```
-npm run test:int classifier-jobs/dequeue
+yarn test:int classifier-jobs/dequeue
 ```
 
 If you want to run unit and integration tests together then:
 
 ```
-npm test
+yarn test
 ```
