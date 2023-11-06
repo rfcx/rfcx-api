@@ -574,6 +574,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       const segment2 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: requestBody.stream_segments[1].start, end: requestBody.stream_segments[1].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[1].sample_count, file_extension_id: fileExtensionId, availability: 0 })
 
       const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      console.debug('\n\n--returns 2 unavailable segment ids-response.body--', response.body)
       expect(response.statusCode).toBe(201)
       expect(response.body.stream_segments[0].id).toBe(segment1.id)
       expect(response.body.stream_segments[1].id).toBe(segment2.id)
