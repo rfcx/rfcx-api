@@ -151,15 +151,15 @@ describe('DELETE internal/arbimon/recordings', () => {
     expect(streamSourceFiles.length).toBe(2)
     expect(streamSegments.length).toBe(2)
   })
-  test('cam delete recordings from any one stream, but the streams has overlapping starts', async () => {
+  test('can delete recordings from any one stream, but the streams has the same starts', async () => {
     const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T12-11-11.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74211', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
     await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T13:12:00.000Z', end: '2021-04-18T13:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile.id })
     const testStream2 = { id: '1delete6y5yb', name: 'test stream 2', createdById: seedValues.primaryUserId }
     await models.Stream.create(testStream2)
     const sourceFile2 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T13-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74212', stream_id: testStream2.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
-    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T12:12:00.000Z', end: '2021-04-18T14:13:00.000Z', stream_id: testStream2.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile2.id })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T12:12:00.000Z', end: '2021-04-18T12:13:00.000Z', stream_id: testStream2.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile2.id })
     const sourceFile3 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T14-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74213', stream_id: testStream2.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
-    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T13:12:00.000Z', end: '2021-04-18T15:13:00.000Z', stream_id: testStream2.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile3.id })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T13:12:00.000Z', end: '2021-04-18T13:13:00.000Z', stream_id: testStream2.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile3.id })
     testRequestData[0].starts.push('2021-04-18T13:12:00.000Z')
     console.debug(testRequestData)
     const response = await request(app).delete('/recordings').send(testRequestData)
