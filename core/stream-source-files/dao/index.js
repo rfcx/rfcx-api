@@ -253,6 +253,19 @@ function calcAvailability (segments) {
   return 1
 }
 
+/**
+ * Update stream source files by ids
+ *
+ * @param {string[]} id
+ * @param {Transaction} options.transaction Perform in the given Sequelize transaction
+ * @returns {StreamSourceFile}
+ * @throws EmptyResultError when segment not found
+ */
+async function updateByIds (existingSourceFilesId, data, options = {}) {
+  const transaction = options.transaction
+  return await StreamSourceFile.update(data, { where: { id: existingSourceFilesId }, transaction })
+}
+
 module.exports = {
   get,
   create,
@@ -262,5 +275,6 @@ module.exports = {
   findOrCreateRelationships,
   transformMetaAttr,
   format,
-  calcAvailability
+  calcAvailability,
+  updateByIds
 }

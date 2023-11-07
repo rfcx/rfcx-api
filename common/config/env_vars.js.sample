@@ -99,6 +99,8 @@ exports.env = {
   // NEW_RELIC_APP_NAME: 'Core API Dev',
   // NEW_RELIC_LOG_LEVEL: 'warn',
 
-  // STREAM_TOKEN_SALT: "any_random_string"
+  // STREAM_TOKEN_SALT: "any_random_string",
+
+  // TRASHES_STREAM_ID: 'trashes00000'
 
 }
