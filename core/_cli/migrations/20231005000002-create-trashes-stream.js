@@ -11,8 +11,8 @@ module.exports = {
   },
   down: (queryInterface) => {
     return queryInterface.sequelize.transaction(async transaction => {
-      await queryInterface.sequelize.query('DELETE FROM users WHERE email = "internal-trashes@rfcx.org"', { transaction })
       await queryInterface.sequelize.query('DELETE FROM streams WHERE id = "trashes00000"', { transaction })
+      await queryInterface.sequelize.query('DELETE FROM users WHERE email = "internal-trashes@rfcx.org"', { transaction })
     })
   }
 }
