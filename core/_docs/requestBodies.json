@@ -754,5 +754,33 @@
         "example": "10"
       }
     }
+  },
+  "ArbimonRecordingDeleteDataItem": {
+    "type": "object",
+    "properties": {
+      "stream": {
+        "type": "string",
+        "description": "Stream identifier",
+        "example": "3sw1acjc6n5y"
+      },
+      "starts": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Array of start days",
+        "example": "['2023-07-24T06:30:00.000Z', '2023-07-24T06:31:00.000Z', '2023-07-24T06:32:00.000Z']"
+      }
+    },
+    "required": [
+      "stream",
+      "starts"
+    ]
+  },
+  "ArbimonRecordingDeleteData": {
+    "type": "array",
+    "items": {
+      "$ref": "#/components/requestBodies/ArbimonRecording"
+    }
   }
 }

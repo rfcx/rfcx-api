@@ -4,6 +4,7 @@ const messageQueue = require('../../../common/message-queue/sqs')
 const { SEGMENT_CREATED } = require('../../../common/message-queue/event-names')
 const { ValidationError, EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
+const moment = require('moment-timezone')
 const Op = Sequelize.Op
 
 const availableIncludes = [
@@ -194,18 +195,32 @@ function findOrCreate (where, defaults, options = {}) {
  */
 function findByStreamAndStarts (streamId, starts, options = {}) {
   const transaction = options.transaction
-  const where = {
-    stream_id: streamId,
-    start: {
-      [Sequelize.Op.in]: starts
-    }
-  }
+  const where = getWhereForStreamAndStarts(streamId, starts)
   const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a)) : StreamSegment.attributes.lite
   return StreamSegment.findAll({ where, attributes, transaction })
     .catch((e) => {
       console.error('Stream segment service -> findByStreamAndStarts -> error', e)
       throw e
     })
+}
+
+function getISOString (date) {
+  return moment.utc(date).toISOString()
+}
+
+function getWhereForStreamAndStarts (streamId, starts) {
+  const dates = starts.map(s => moment.utc(s).valueOf()).sort((a, b) => {
+    return a - b
+  })
+  const where = {
+    stream_id: streamId,
+    start: {
+      [Sequelize.Op.gte]: getISOString(dates[0]),
+      [Sequelize.Op.lte]: getISOString(dates[dates.length - 1]),
+      [Sequelize.Op.in]: starts
+    }
+  }
+  return where
 }
 
 /**
@@ -217,12 +232,7 @@ function findByStreamAndStarts (streamId, starts, options = {}) {
  */
 function updateByStreamAndStarts (streamId, starts, data, options = {}) {
   const transaction = options.transaction
-  const where = {
-    stream_id: streamId,
-    start: {
-      [Sequelize.Op.in]: starts
-    }
-  }
+  const where = getWhereForStreamAndStarts(streamId, starts)
   return StreamSegment.update(data, { where, transaction })
 }
 
