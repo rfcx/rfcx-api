@@ -5,7 +5,7 @@
 module.exports = {
   up: (queryInterface) => {
     return queryInterface.sequelize.transaction(async transaction => {
-      const userId = await queryInterface.sequelize.query('insert into users (firstname, lastname, email) values ("Internal", "Trashes", "internal-trashes@rfcx.org") returning id;', { transaction })
+      const [userId] = await queryInterface.sequelize.query('insert into users (firstname, lastname, email) values ("Internal", "Trashes", "internal-trashes@rfcx.org") returning id;', { transaction })
       return queryInterface.sequelize.query(`insert into streams (id, name, created_by_id) values ('trashes00000', 'Trashes', ${userId})`, { transaction })
     })
   },
