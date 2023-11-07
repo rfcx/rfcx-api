@@ -1,4 +1,4 @@
-process.env.TRASHES_STREAM_ID = '1delete6y3yb'
+process.env.TRASHES_STREAM_ID = 'trashes00000'
 
 const request = require('supertest')
 const routes = require('../routes')
@@ -27,7 +27,7 @@ afterAll(async () => {
 
 function resetTestData () {
   stream = { id: 'abcdsaqwery1', name: 'test stream', createdById: seedValues.primaryUserId }
-  trashesStream = { id: '1delete6y3yb', name: 'trashes stream', createdById: seedValues.primaryUserId }
+  trashesStream = { id: 'trashes00000', name: 'trashes stream', createdById: seedValues.primaryUserId }
   audioFileFormat = { value: 'flac' }
   audioCodec = { value: 'flac' }
   fileExtension = { value: '.flac' }

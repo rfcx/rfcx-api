@@ -101,6 +101,6 @@ exports.env = {
 
   // STREAM_TOKEN_SALT: "any_random_string",
 
-  // TRASHES_STREAM_ID: ''
+  // TRASHES_STREAM_ID: 'trashes00000'
 
 }
