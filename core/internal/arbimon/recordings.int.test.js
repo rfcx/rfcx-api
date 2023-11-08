@@ -15,7 +15,7 @@ beforeEach(async () => {
   await commonSetup()
 })
 beforeAll(async () => {
-  muteConsole('warn')
+  muteConsole()
 })
 afterEach(async () => {
   await truncateNonBase(models)
@@ -161,7 +161,6 @@ describe('DELETE internal/arbimon/recordings', () => {
     const sourceFile3 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T14-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74213', stream_id: testStream2.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
     await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T13:12:00.000Z', end: '2021-04-18T13:13:00.000Z', stream_id: testStream2.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile3.id })
     testRequestData[0].starts.push('2021-04-18T13:12:00.000Z')
-    console.debug(testRequestData)
     const response = await request(app).delete('/recordings').send(testRequestData)
 
     const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: [stream.id, testStream2.id] } })
