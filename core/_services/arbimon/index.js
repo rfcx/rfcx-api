@@ -14,7 +14,24 @@ function createProject (project, idToken) {
   body.external_id = project.id
   const options = {
     method: 'POST',
-    url: `${arbimonBaseUrl}api/integration/projects`,
+    url: `${arbimonBaseUrl}legacy-api/integration/projects`,
+    headers: {
+      Authorization: idToken,
+      'Content-Type': 'application/json'
+    },
+    body,
+    json: true
+  }
+
+  return rp(options).catch(rpErrorHandler)
+}
+
+function updateProject (opts, idToken) {
+  const body = {};
+  ['name', 'description'].forEach((attr) => { body[attr] = opts[attr] })
+  const options = {
+    method: 'PATCH',
+    url: `${arbimonBaseUrl}legacy-api/integration/projects/${opts.id}`,
     headers: {
       Authorization: idToken,
       'Content-Type': 'application/json'
@@ -38,7 +55,7 @@ function createSite (stream, idToken) {
   }
   const options = {
     method: 'POST',
-    url: `${arbimonBaseUrl}api/integration/sites`,
+    url: `${arbimonBaseUrl}legacy-api/integration/sites`,
     headers: {
       Authorization: idToken,
       'Content-Type': 'application/json'
@@ -55,7 +72,7 @@ function updateSite (opts, idToken) {
   ['name', 'latitude', 'longitude', 'altitude', 'project_id'].forEach((attr) => { body[attr] = opts[attr] })
   const options = {
     method: 'PATCH',
-    url: `${arbimonBaseUrl}api/integration/sites/${opts.id}`,
+    url: `${arbimonBaseUrl}legacy-api/integration/sites/${opts.id}`,
     headers: {
       Authorization: idToken,
       'Content-Type': 'application/json'
@@ -70,7 +87,7 @@ function updateSite (opts, idToken) {
 function deleteSite (id, idToken) {
   const options = {
     method: 'DELETE',
-    url: `${arbimonBaseUrl}api/integration/sites/${id}`,
+    url: `${arbimonBaseUrl}legacy-api/integration/sites/${id}`,
     headers: {
       Authorization: idToken,
       'Content-Type': 'application/json'
@@ -178,7 +195,7 @@ function createUser (user, idToken) {
   ['firstname', 'lastname', 'email', 'guid', 'user_id', 'picture'].forEach((attr) => { body[attr] = user[attr] })
   const options = {
     method: 'POST',
-    url: `${arbimonBaseUrl}api/integration/users`,
+    url: `${arbimonBaseUrl}legacy-api/integration/users`,
     headers: {
       'Content-Type': 'application/json'
     },
@@ -196,6 +213,7 @@ function createUser (user, idToken) {
 module.exports = {
   isEnabled,
   createProject,
+  updateProject,
   createSite,
   updateSite,
   deleteSite,

@@ -1,6 +1,6 @@
 const { Stream, Project, User, Organization, Sequelize } = require('../../_models')
 const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
-const { hasPermission, getAccessibleObjectsIDs, PROJECT, ORGANIZATION, READ, CREATE, UPDATE, DELETE } = require('../../roles/dao')
+const { hasPermission, getAccessibleObjectsIDs, PROJECT, ORGANIZATION, READ, CREATE, DELETE } = require('../../roles/dao')
 const { randomId } = require('../../../common/crypto/random')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -144,16 +144,13 @@ async function query (filters, options = {}) {
  * @param {boolean} project.is_partner
  * @param {integer} project.external_id
  * @param {*} options
- * @param {number} options.updatableBy Update only if project is updatable by the given user id
- * @throws EmptyResultError when project not found
- * @throws ForbiddenError when `updatableBy` user does not have update permission on the project
+ * @param {object} options.transaction Sequelize transaction object
  */
 async function update (id, project, options = {}) {
-  if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, PROJECT))) {
-    throw new ForbiddenError()
-  }
+  const { transaction } = options
   return Project.update(project, {
-    where: { id }
+    where: { id },
+    transaction
   })
 }
 
