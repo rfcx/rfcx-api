@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const { update } = require('./dao')
+const { update } = require('./bl')
 const Converter = require('../../common/converter')
 
 /**
@@ -37,8 +37,10 @@ const Converter = require('../../common/converter')
 module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const updatableBy = user.is_super || user.has_system_role ? undefined : user.id
+  const requestSource = req.headers.source
+  const idToken = req.headers.authorization
   const id = req.params.id
-  const options = { updatableBy }
+  const options = { updatableBy, requestSource, idToken }
 
   const converter = new Converter(req.body, {}, true)
   converter.convert('name').optional().toString()

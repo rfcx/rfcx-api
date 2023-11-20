@@ -37,22 +37,22 @@ async function migrate (sequelize, Sequelize, table = '"SequelizeMeta"') {
   sequelize.queryInterface.sequelize.query = query
 }
 
-const primaryUserId = 1
+const primaryUserId = 2
 const primaryUserGuid = 'b7cc2c4e-bea3-11ed-afa1-0242ac120001'
 const primaryUserEmail = 'jb@astonmartin.com'
 const primaryUserFirstname = 'James'
 const primaryUserLastname = 'Bond'
-const otherUserId = 2
+const otherUserId = 3
 const otherUserGuid = 'b7cc2c4e-bea3-11ed-afa1-0242ac120002'
 const otherUserEmail = 'em@astonmartin.com'
 const otherUserFirstname = 'Eve'
 const otherUserLastname = 'Moneypenny'
-const anotherUserId = 3
+const anotherUserId = 4
 const anotherUserGuid = 'b7cc2c4e-bea3-11ed-afa1-0242ac120003'
 const anotherUserEmail = 'big@bobby.com'
 const anotherUserFirstname = 'Big'
 const anotherUserLastname = 'Bobby'
-const differentUserId = 4
+const differentUserId = 5
 const differentUserGuid = 'b7cc2c4e-bea3-11ed-afa1-0242ac120004'
 const differentUserEmail = 'slim@shady.com'
 const differentUserFirstname = 'Slim'
