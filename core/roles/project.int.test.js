@@ -58,9 +58,9 @@ describe('GET /projects/:id/users', () => {
     expect(response.body[0].lastname).toBe('Bond')
     expect(response.body[0].email).toBe('jb@astonmartin.com')
     expect(response.body[0].role).toBe('Member')
-    expect(response.body[0].permissions[0]).toBe('C')
-    expect(response.body[0].permissions[1]).toBe('R')
-    expect(response.body[0].permissions[2]).toBe('U')
+    expect(response.body[0].permissions.includes('C')).toBeTruthy()
+    expect(response.body[0].permissions.includes('R')).toBeTruthy()
+    expect(response.body[0].permissions.includes('U')).toBeTruthy()
   })
 })
 

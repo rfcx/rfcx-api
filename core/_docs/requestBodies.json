@@ -714,6 +714,24 @@
       "name"
     ]
   },
+  "UserUpdate": {
+    "type": "object",
+    "properties": {
+      "firstname": {
+        "type": "string",
+        "example": "John"
+      },
+      "lastname": {
+        "type": "string",
+        "example": "Doe"
+      },
+      "picture": {
+        "type": "string",
+        "example": "http://some.picture.jpg"
+      }
+    },
+    "required": []
+  },
   "User": {
     "type": "object",
     "properties": {
