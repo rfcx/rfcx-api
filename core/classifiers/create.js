@@ -62,12 +62,7 @@ module.exports = async (req, res) => {
 
     // Get the classification ids for each output (or error if not found)
     const outputMappings = params.classificationValues.map(parseClassifierOutputMapping)
-    let serverIds = {}
-    try {
-      serverIds = await getIds(outputMappings.map(value => value.to))
-    } catch (_) {
-      throw new ValidationError('Classification values not found')
-    }
+    const serverIds = await getIds(outputMappings.map(value => value.to))
     const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to] }))
 
     const createdById = req.rfcx.auth_token_info.id

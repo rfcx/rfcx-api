@@ -55,17 +55,22 @@ function getId (value) {
  * @param {Array<String>} values An array of classification values
  * @returns {Promise<Object>} Object that maps values to ids
  */
-function getIds (values) {
-  // TODO use a single db query
-  return Promise.all(values.map(value => getId(value)))
-    .then(ids => {
-      // Combine 2 arrays into a map
-      const mapping = {}
-      for (let i = 0; i < ids.length; i++) {
-        mapping[values[i]] = ids[i]
-      }
-      return mapping
-    })
+async function getIds (values) {
+  const classifications = await models.Classification.findAll({
+    where: { value: { [models.Sequelize.Op.in]: values } },
+    attributes: ['id', 'value']
+  })
+  const classificationsReduced = classifications.reduce((acc, cur) => {
+    acc[cur.value] = cur.id
+    return acc
+  }, {})
+  return values.reduce((acc, value) => {
+    if (classificationsReduced[value] === undefined) {
+      throw new EmptyResultError(`Classification "${value}" does not exist`)
+    }
+    acc[value] = classificationsReduced[value]
+    return acc
+  }, {})
 }
 
 async function queryClassificationIdsForClassifiers (allClassifiers, classifiers) {
