@@ -3,7 +3,7 @@ FROM node:20.9.0 as base
 
 COPY --from=0 / /
 
-RUN apt update && apt install -y sox pngcrush imagemagick
+RUN apt update && apt install -y sox libsox-fmt-mp3 pngcrush imagemagick
 
 WORKDIR /tmp
 RUN rm -rf /var/lib/apt/lists/* && \
