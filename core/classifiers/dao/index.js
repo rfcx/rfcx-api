@@ -157,7 +157,7 @@ function create (attrs) {
       classificationId: output.id,
       outputClassName: output.className
     }))
-    await Promise.all(outputsData.map(output => models.ClassifierOutput.create(output, { transaction })))
+    await models.ClassifierOutput.bulkCreate(outputsData, { transaction })
 
     // Create the active projects and streams
     if (attrs.activeProjects) {

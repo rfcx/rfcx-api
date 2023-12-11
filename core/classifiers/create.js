@@ -66,7 +66,7 @@ module.exports = async (req, res) => {
     try {
       serverIds = await getIds(outputMappings.map(value => value.to))
     } catch (_) {
-      throw new ValidationError('Classification values not found')
+      throw new ValidationError(_.message)
     }
     const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to] }))
 
