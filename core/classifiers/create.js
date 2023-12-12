@@ -60,6 +60,7 @@ module.exports = async (req, res) => {
       modelUrl = await upload(file)
     }
 
+    console.log('\n\nbefore mappings\n\n')
     // Get the classification ids for each output (or error if not found)
     const outputMappings = params.classificationValues.map(parseClassifierOutputMapping)
     let serverIds = {}
@@ -69,6 +70,7 @@ module.exports = async (req, res) => {
       throw new ValidationError(_.message)
     }
     const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to] }))
+    console.log('\n\nafter mappings\n\n')
 
     const createdById = req.rfcx.auth_token_info.id
     const classifier = {
@@ -83,7 +85,9 @@ module.exports = async (req, res) => {
       activeStreams: params.activeStreams
     }
 
+    console.log('\n\nbefore creation\n\n')
     const result = await dao.create(classifier)
+    console.log('\n\nafter creation\n\n')
 
     res.location(`${req.baseUrl}${req.path}${result.id}`).sendStatus(201)
   } catch (err) {
