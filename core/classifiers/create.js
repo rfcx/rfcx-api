@@ -40,6 +40,7 @@ const { upload } = require('./dao/upload')
  */
 module.exports = async (req, res) => {
   try {
+    console.log('\n\nin classifier create\n\n')
     const converter = new Converter(req.body, {}, true)
     converter.convert('name').toString()
     converter.convert('version').toInt()
