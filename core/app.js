@@ -12,55 +12,10 @@ const internalRoutes = require('./internal/routes')
 
 const app = express()
 
-const a1 = function (req, res, next) {
-  console.log('\n\n111', req.method, req.url, '\n\n')
-  next()
-}
-const a2 = function (req, res, next) {
-  console.log('\n\n222', req.method, req.url, '\n\n')
-  next()
-}
-const a3 = function (req, res, next) {
-  console.log('\n\n333', req.method, req.url, '\n\n')
-  next()
-}
-const a4 = function (req, res, next) {
-  console.log('\n\n444', req.method, req.url, '\n\n')
-  next()
-}
-const a5 = function (req, res, next) {
-  console.log('\n\n555', req.method, req.url, '\n\n')
-  next()
-}
-const a6 = function (req, res, next) {
-  console.log('\n\n666', req.method, req.url, '\n\n')
-  next()
-}
-const a7 = function (req, res, next) {
-  console.log('\n\n777', req.method, req.url, '\n\n')
-  next()
-}
-const a8 = function (req, res, next) {
-  console.log('\n\n888', req.method, req.url, '\n\n')
-  next()
-}
-app.use(a1)
-app.use(addRequestId({ attributeName: 'guid' })) // TODO Still needed?
-app.use(a2)
+app.use(addRequestId({ attributeName: 'guid' }))
 app.use(cors()) // TODO Should we limit which routes need cors?
-app.use(a3)
-// app.use(logging, metrics)
-app.use(logging)
-app.use(a4)
-app.use(metrics)
-app.use(a5)
-// app.use(urlEncoded, json, multipartFile)
-app.use(urlEncoded)
-app.use(a6)
-app.use(json)
-app.use(a7)
-app.use(multipartFile.any())
-app.use(a8)
+app.use(logging, metrics)
+app.use(urlEncoded, json, multipartFile)
 
 // Main routes
 for (const routeName in coreRoutes) {
