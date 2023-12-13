@@ -15,7 +15,7 @@ const app = express()
 app.use(addRequestId({ attributeName: 'guid' }))
 app.use(cors())
 app.use(logging, metrics)
-app.use(urlEncoded, json, multipartFile)
+app.use(urlEncoded, json, multipartFile.any())
 
 // Main routes
 const versionedRoutes = { v1: v1Routes, v2: v2Routes }

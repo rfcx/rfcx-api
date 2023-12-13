@@ -10,7 +10,7 @@ const app = express()
 // Middleware
 app.use(cors())
 app.use(logging, metrics)
-app.use(urlEncoded, json, multipartFile)
+app.use(urlEncoded, json, multipartFile.any())
 
 // Enable documentation
 app.use('/docs', require('./_docs'))
