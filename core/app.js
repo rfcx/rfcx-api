@@ -12,11 +12,6 @@ const internalRoutes = require('./internal/routes')
 
 const app = express()
 
-const aaa = function (req, res, next) {
-  console.log('\n\nurl', req.method, req.url, '\n\n')
-  next()
-}
-app.use(aaa)
 app.use(addRequestId({ attributeName: 'guid' })) // TODO Still needed?
 app.use(cors()) // TODO Should we limit which routes need cors?
 app.use(logging, metrics)
