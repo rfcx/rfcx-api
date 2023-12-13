@@ -15,7 +15,7 @@ const app = express()
 app.use(addRequestId({ attributeName: 'guid' }))
 app.use(cors()) // TODO Should we limit which routes need cors?
 app.use(logging, metrics)
-app.use(urlEncoded, json, multipartFile)
+app.use(urlEncoded, json, multipartFile.any())
 
 // Main routes
 for (const routeName in coreRoutes) {
