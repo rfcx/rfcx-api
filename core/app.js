@@ -59,7 +59,7 @@ app.use(urlEncoded)
 app.use(a6)
 app.use(json)
 app.use(a7)
-app.use(multipartFile)
+app.use(multipartFile.any())
 app.use(a8)
 
 // Main routes
