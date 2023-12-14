@@ -9,15 +9,13 @@ module.exports = {
         return queryInterface.sequelize.transaction(async transaction => {
             // Find and Create roles (1, Admin), (2, Member), (3, Guest), (4, Owner)
             for (const id of roleIds) {
-                console.log("select")
                 const [[roleData]] = await queryInterface.sequelize.query(`select (id) from roles where id = ${id}`, { transaction })
-                console.log(roleData)
                 if (!roleData) {
-                    console.log("insert")
                     const [[roleInsertData]] = await queryInterface.sequelize.query(`insert into roles (id, name, description) values (${id}, '${roleList[id - 1]}', '') returning id;`, { transaction })
                     insertedRoles.push(roleInsertData.id)
                 }
             }
+            // Find and Create role permissions (1, C), (1, R), (1, U), (1, D), (2, C), (2, R), (2, U), (3, R), (4, C), (4, R), (4, U), (4, D)
             for (const id of insertedRoles) {
                 for (const permission of permissionList) {
                     const [[permissionData]] = await queryInterface.sequelize.query(`select (role_id) from role_permissions where role_id = ${id} and permission = '${permission}'`, { transaction })
