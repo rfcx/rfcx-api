@@ -1,6 +1,6 @@
 const { Stream, Project, User, Organization, Sequelize } = require('../../_models')
 const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
-const { hasPermission, getAccessibleObjectsIDs, PROJECT, ORGANIZATION, READ, CREATE, DELETE } = require('../../roles/dao')
+const { hasPermission, getAccessibleObjectsIDs, addRole, PROJECT, ORGANIZATION, READ, CREATE, DELETE } = require('../../roles/dao')
 const { randomId } = require('../../../common/crypto/random')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -59,6 +59,12 @@ async function create (project, options = {}) {
   }
 
   return Project.create(project)
+    .then(async result => {
+      // Add Owner to UserProjectRoles
+      // 4 is Owner
+      await addRole(result.createdById, 4, result.id, PROJECT)
+      return result
+    })
     .catch(error => {
       // TODO What errors do we expect here? Catch specific errors and create ValidationError for each
       throw error
