@@ -375,8 +375,17 @@ function addRole (userId, roleId, itemId, itemName) {
  * @param {string} itemId item id
  * @param {string} itemName item model name (e.g. stream, project, organization)
  */
-function removeRole (userId, itemId, itemName) {
+async function removeRole (userId, itemId, itemName) {
   const columnName = `${itemName}_id`
+
+  const userRole = await hierarchy[itemName].roleModel.findOne({ where: {
+      [columnName]: itemId,
+      user_id: userId
+  } })
+  // check if user is Owner
+  if (userRole.roleId === 4) {
+    throw Error('Cannot remove Owner role')
+  }
   return hierarchy[itemName].roleModel.destroy({
     where: {
       [columnName]: itemId,
