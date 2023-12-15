@@ -74,9 +74,6 @@ router.put('/:id/users', hasProjectPermission('U'), function (req, res) {
     .then(async () => {
       const project = await projectsService.get(projectId)
       const user = await usersService.getUserByEmail(convertedParams.email)
-      if (project.created_by_id === user.id) {
-        throw new ForbiddenError('You can not assign role to project owner.')
-      }
       const role = await dao.getByName(convertedParams.role)
       await dao.addRole(user.id, role.id, projectId, dao.PROJECT)
       return res.status(201).json(await dao.getUserRoleForItem(projectId, user.id, dao.PROJECT))

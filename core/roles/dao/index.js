@@ -114,7 +114,7 @@ async function getPermissions (userOrId, itemOrId, itemName, options = {}) {
   }
   const originalItem = { ...item }
   const user = await (userIsPrimitive ? usersService.getUserByParams({ id: userId }, false, { transaction }) : Promise.resolve(userOrId))
-  if (user.is_super || item.created_by_id === userId) {
+  if (user.is_super) {
     return [CREATE, READ, UPDATE, DELETE]
   }
 
@@ -147,9 +147,6 @@ async function getPermissions (userOrId, itemOrId, itemName, options = {}) {
           transaction
         })
         if (item) {
-          if (item.created_by_id === userId) {
-            return [CREATE, READ, UPDATE, DELETE]
-          }
           currentLevel = hierarchy[currentLevel.parent]
         }
       } else {
@@ -188,11 +185,7 @@ async function getPermissionsForProjects (projectIds, userId) {
     if (p.organization_id) {
       permObject[p.id] = organizationPerms[p.organization_id]
     }
-    if (p.created_by_id === userId) {
-      permObject[p.id] = [CREATE, READ, UPDATE, DELETE]
-    } else {
-      excludedProjectIds.push(p.id)
-    }
+    excludedProjectIds.push(p.id)
   })
   const projectPerms = await getPermissionsForObjects(PROJECT, excludedProjectIds, userId)
 
