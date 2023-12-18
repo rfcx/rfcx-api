@@ -270,8 +270,11 @@ async function getAccessibleObjectsIDs (userId, itemName, inIds, permission = RE
  * Returns list of users with their role and permissions for specified item
  * @param {string} id item id
  * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
+ * @param {*} options Additional get options
+ * @param {string[]} options.includeRoles Include only if user role is in the given roles
+ * @param {string[]} options.permissions Include only if user has permissions in the given permissions
  */
-function getUsersForItem (id, itemName) {
+function getUsersForItem (id, itemName, options) {
   if (!Object.keys(hierarchy).includes(itemName)) {
     throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemName}"`)
   }
@@ -289,7 +292,24 @@ function getUsersForItem (id, itemName) {
     ]
   })
     .then((items) => {
-      return items.map((item) => {
+      let tempItems = [...items]
+      if (options.includeRoles) {
+        tempItems = tempItems.filter(item => {
+          return options.includeRoles.includes(item.role.name)
+        })
+      }
+      if (options.permissions) {
+        tempItems = tempItems.filter(item => {
+          const permissions = item.role.permissions.map(x => x.permission)
+          for (const permission of options.permissions) {
+            if (!permissions.includes(permission)) {
+              return false
+            }
+          }
+          return true
+        })
+      }
+      return tempItems.map((item) => {
         return {
           ...item.user.toJSON(),
           role: item.role.name,
