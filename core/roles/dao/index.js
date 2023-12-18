@@ -1,6 +1,6 @@
 const models = require('../../_models')
 const usersService = require('../../../common/users')
-const { EmptyResultError } = require('../../../common/error-handling/errors')
+const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 
 const ORGANIZATION = 'organization'
 const PROJECT = 'project'
@@ -376,8 +376,8 @@ async function removeRole (userId, itemId, itemName) {
       user_id: userId
   } })
   // check if user is Owner
-  if (userRole.roleId === 4) {
-    throw Error('Cannot remove Owner role')
+  if (userRole.role_id === 4) {
+    throw new ForbiddenError('Cannot remove Owner role')
   }
   return hierarchy[itemName].roleModel.destroy({
     where: {

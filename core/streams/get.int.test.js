@@ -37,7 +37,7 @@ describe('GET /streams/:id', () => {
   test('readable by creator', async () => {
     const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, altitude: 200 }
     await models.Stream.create(stream)
-
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
     const response = await request(app).get(`/${stream.id}`)
 
     expect(response.statusCode).toBe(200)

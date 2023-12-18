@@ -17,6 +17,7 @@ afterAll(async () => {
 
 async function commonSetup () {
   const project = await models.Project.create({ id: 'foo', name: 'my project', createdById: seedValues.primaryUserId })
+  await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
   const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId, projectId: project.id }
   await models.Stream.create(stream)
   const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 }

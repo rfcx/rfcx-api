@@ -22,6 +22,7 @@ afterAll(async () => {
 
 async function commonSetup () {
   const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+  await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
   const stream1 = (await models.Stream.findOrCreate({ where: { id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id } }))[0]
   const stream2 = (await models.Stream.findOrCreate({ where: { id: 'opqw1', name: 'Jaguar Station 2', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id } }))[0]
   const audioFileFormat = { id: 1, value: 'wav' }

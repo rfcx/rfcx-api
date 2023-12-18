@@ -19,6 +19,7 @@ describe('DELETE /projects/:id', () => {
   test('result', async () => {
     const project = { id: 'ft1', name: 'Forest village', createdById: seedValues.primaryUserId }
     await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
 
     const response = await request(app).delete(`/${project.id}`)
 

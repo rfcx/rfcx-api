@@ -64,6 +64,7 @@ const differentUserLastname = 'Shady'
 const roleAdmin = 1
 const roleMember = 2
 const roleGuest = 3
+const roleOwner = 4
 const seedValues = {
   primaryUserId,
   primaryUserGuid,
@@ -91,7 +92,8 @@ const seedValues = {
   differentUserLastname,
   roleAdmin,
   roleMember,
-  roleGuest
+  roleGuest,
+  roleOwner
 }
 
 async function seed (models) {

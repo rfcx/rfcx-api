@@ -100,7 +100,7 @@ router.put('/:id/users', hasProjectPermission('U'), function (req, res) {
  *         description: OK
  */
 
-router.delete('/:id/users', hasProjectPermission('U'), function (req, res) {
+router.delete('/:id/users', hasProjectPermission('D'), function (req, res) {
   const projectId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)

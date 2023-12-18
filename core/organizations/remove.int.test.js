@@ -19,6 +19,7 @@ describe('DELETE /organizations/:id', () => {
   test('result', async () => {
     const org = { id: 'r0F1c2X3', name: 'RFCx', createdById: seedValues.primaryUserId }
     await models.Organization.create(org)
+    await models.UserOrganizationRole.create({ user_id: org.createdById, organization_id: org.id, role_id: seedValues.roleOwner })
 
     const response = await request(app).delete(`/${org.id}`)
 

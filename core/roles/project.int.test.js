@@ -97,16 +97,71 @@ describe('PUT /projects/:id/users', () => {
 })
 
 describe('DELETE /projects/:id/users', () => {
-  test('delete success', async () => {
+  test('delete member success', async () => {
     const requestBody = {
       email: seedValues.otherUserEmail
     }
     const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
     await models.Project.create(project)
-    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleMember })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
 
     const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
 
     expect(response.statusCode).toBe(200)
+  })
+
+  test('delete admin success', async () => {
+    const requestBody = {
+      email: seedValues.otherUserEmail
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+
+    const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(200)
+  })
+
+  test('delete failed without access', async () => {
+    const requestBody = {
+      email: seedValues.otherUserEmail
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleOwner })
+
+    const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(403)
+  })
+
+  test('member delete role failed', async () => {
+    const requestBody = {
+      email: seedValues.otherUserEmail
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
+
+    const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(403)
+  })
+
+  test('delete owner failed', async () => {
+    const requestBody = {
+      email: seedValues.primaryUserEmail
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+
+    const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(403)
   })
 })

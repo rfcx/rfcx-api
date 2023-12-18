@@ -24,6 +24,8 @@ afterAll(async () => {
 async function commonSetup () {
   const project = await models.Project.create({ id: 'ppp111', name: 'My Project 122', createdById: seedValues.primaryUserId })
   const stream = await models.Stream.create({ id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId, projectId: project.id })
+  await models.UserProjectRole.create({ project_id: project.id, user_id: seedValues.primaryUserId, role_id: seedValues.roleOwner })
+  await models.UserStreamRole.create({ stream_id: stream.id, user_id: seedValues.primaryUserId, role_id: seedValues.roleOwner })
   const classification = await models.Classification.create({ value: 'chainsaw', title: 'Chainsaw', typeId: 1, source_id: 1 })
   const classification2 = await models.Classification.create({ value: 'gunshot', title: 'Gunshot', typeId: 1, source_id: 1 })
   const classification3 = await models.Classification.create({ value: 'vehicle', title: 'Vehicle', typeId: 1, source_id: 1 })

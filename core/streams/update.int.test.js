@@ -1,7 +1,7 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../_models')
-const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase, seed } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
@@ -28,6 +28,7 @@ describe('PATCH /streams/:id', () => {
   test('updatable by creator', async () => {
     const stream = { id: 'am1', name: 'Big tree', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
 
     const requestBody = { name: 'Huge bush' }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
@@ -40,6 +41,7 @@ describe('PATCH /streams/:id', () => {
   test('other member stream is updatable by creator', async () => {
     const project = { id: 'ft1', name: 'Forest village', createdById: seedValues.primaryUserId }
     await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
     const stream = { id: 'am1', name: 'Big tree', projectId: project.id, createdById: seedValues.otherUserId }
     await models.Stream.create(stream)
 
@@ -139,6 +141,7 @@ describe('PATCH /streams/:id', () => {
 
   test('Returns 400 if user tries to change name to existing stream name in the project', async () => {
     const project = (await models.Project.findOrCreate({ where: { id: 'pro000000000', name: 'Forest village', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ project_id: project.id, user_id: project.createdById, role_id: seedValues.roleOwner })
     const stream1 = (await models.Stream.findOrCreate({ where: { id: 'str000000001', name: 'Big tree', createdById: seedValues.primaryUserId, project_id: project.id } }))[0]
     const stream2 = (await models.Stream.findOrCreate({ where: { id: 'str000000002', name: 'Small tree', createdById: seedValues.primaryUserId, project_id: project.id } }))[0]
 
@@ -150,6 +153,7 @@ describe('PATCH /streams/:id', () => {
 
   test('Returns 204 if user tries to change name to non-existing stream name in the project', async () => {
     const project = (await models.Project.findOrCreate({ where: { id: 'pro000000000', name: 'Forest village', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ project_id: project.id, user_id: project.createdById, role_id: seedValues.roleOwner })
     await models.Stream.findOrCreate({ where: { id: 'str000000001', name: 'Big tree', createdById: seedValues.primaryUserId, project_id: project.id } })
     const stream2 = (await models.Stream.findOrCreate({ where: { id: 'str000000002', name: 'Small tree', createdById: seedValues.primaryUserId, project_id: project.id } }))[0]
 
@@ -161,6 +165,7 @@ describe('PATCH /streams/:id', () => {
 
   test('Returns 204 if user tries to change name to same name of target stream', async () => {
     const project = (await models.Project.findOrCreate({ where: { id: 'pro000000000', name: 'Forest village', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ project_id: project.id, user_id: project.createdById, role_id: seedValues.roleOwner })
     await models.Stream.findOrCreate({ where: { id: 'str000000001', name: 'Big tree', createdById: seedValues.primaryUserId, project_id: project.id } })
     const stream2 = (await models.Stream.findOrCreate({ where: { id: 'str000000002', name: 'Small tree', createdById: seedValues.primaryUserId, project_id: project.id } }))[0]
 
@@ -175,6 +180,7 @@ describe('PATCH /streams/:id', () => {
     const newLon = 20
     const stream = { id: 'am1', name: 'Big tree', latitude: 18, longitude: -66, timezone: 'America/Puerto_Rico', timezoneLocked: false, createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
 
     const requestBody = { latitude: newLat, longitude: newLon }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
@@ -191,6 +197,7 @@ describe('PATCH /streams/:id', () => {
     const newLon = 20
     const stream = { id: 'am1', name: 'Big tree', latitude: 18, longitude: -66, timezone: 'America/Puerto_Rico', timezoneLocked: true, createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
 
     const requestBody = { latitude: newLat, longitude: newLon }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
@@ -205,6 +212,7 @@ describe('PATCH /streams/:id', () => {
   test('country code works well for updated stream', async () => {
     const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
 
     const requestBody = { latitude: 52.775435, longitude: 23.9068233 }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
@@ -216,6 +224,7 @@ describe('PATCH /streams/:id', () => {
   test('country code is not changed for undefined lat', async () => {
     const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
 
     const requestBody = { latitude: undefined, longitude: -4.5 }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
@@ -227,6 +236,7 @@ describe('PATCH /streams/:id', () => {
   test('country code is not changed for null lat', async () => {
     const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
 
     const requestBody = { latitude: null, longitude: -4.5 }
     const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
@@ -238,6 +248,7 @@ describe('PATCH /streams/:id', () => {
   test('country code is null for coordinates somewhere in the ocean', async () => {
     const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
 
     const requestBody = { latitude: 40, longitude: -40 }
     const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)

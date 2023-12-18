@@ -28,6 +28,7 @@ describe('PATCH /projects/:id', () => {
   test('updatable by creator', async () => {
     const project = { id: 'ft1', name: 'Forest village', createdById: seedValues.primaryUserId }
     await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
     const requestBody = { name: 'Jungle village' }
 
     const response = await request(app).patch(`/${project.id}`).send(requestBody)
