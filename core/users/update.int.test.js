@@ -67,7 +67,7 @@ describe('PATCH /users/{email}', () => {
     const userBefore = await models.User.findOne({ where: { email: user.email } })
     const response = await request(app).patch(`/${user.email}`).send(requestBody)
     const userAfter = await models.User.findOne({ where: { email: user.email } })
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode).toBe(204)
     expect(userBefore.firstname).toBe(user.firstname)
     expect(userBefore.lastname).toBe(user.lastname)
     expect(userBefore.picture).toBe(user.picture)
