@@ -1,4 +1,8 @@
-## 1.3.3 (2023-09-xx)
+## 1.3.4 (2023-12-xx)
+* **core**: Add `Create Owner to role and role permission table` migration files
+* **core**: Add `include_roles` and `permissions` params to `project/:id/users` endpoint
+* **core**: Fix test cases after above changes
+
 ### Features
 * **noncore**: End IoTDA connection in close callback
 
