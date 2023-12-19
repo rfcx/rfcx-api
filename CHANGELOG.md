@@ -1,3 +1,7 @@
+## 1.3.4 (2023-12-xx)
+### Bug Fixes
+* **core**: Fix PATCH `/users/:email` endpoint to properly update the name on Auth0 and core database
+
 ## 1.3.3 (2023-09-xx)
 ### Features
 * **noncore**: End IoTDA connection in close callback

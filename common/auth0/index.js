@@ -205,7 +205,7 @@ function updateAuth0User (token, opts) {
       } else if (!!body && !!body.error) {
         reject(body)
       } else {
-        resolve(body)
+        resolve([body, response.statusCode])
       }
     })
   })
