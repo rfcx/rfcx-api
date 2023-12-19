@@ -62,6 +62,114 @@ describe('GET /projects/:id/users', () => {
     expect(response.body[0].permissions.includes('R')).toBeTruthy()
     expect(response.body[0].permissions.includes('U')).toBeTruthy()
   })
+
+  test('filter Owner', async () => {
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: project.id, role_id: seedValues.roleMember })
+
+    const response = await request(app).get(`/${project.id}/users`).query({ include_roles: ['Owner'] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].role).toBe('Owner')
+  })
+
+  test('filter Owner and Admin', async () => {
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: project.id, role_id: seedValues.roleMember })
+
+    const response = await request(app).get(`/${project.id}/users`).query({ include_roles: ['Owner', 'Admin'] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    expect(response.body[0].role).toBe('Owner')
+    expect(response.body[1].role).toBe('Admin')
+  })
+
+  test('filter Admin but empty result', async () => {
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: project.id, role_id: seedValues.roleMember })
+
+    const response = await request(app).get(`/${project.id}/users`).query({ include_roles: ['Admin'] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(0)
+  })
+
+  test('filter with permission C', async () => {
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: project.id, role_id: seedValues.roleMember })
+    await models.UserProjectRole.create({ user_id: seedValues.differentUserId, project_id: project.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get(`/${project.id}/users`).query({ permissions: ['C'] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(3)
+    expect(response.body[0].role).toBe('Owner')
+    expect(response.body[1].role).toBe('Admin')
+    expect(response.body[2].role).toBe('Member')
+  })
+
+  test('filter with permission D', async () => {
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: project.id, role_id: seedValues.roleMember })
+    await models.UserProjectRole.create({ user_id: seedValues.differentUserId, project_id: project.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get(`/${project.id}/users`).query({ permissions: ['D'] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    expect(response.body[0].role).toBe('Owner')
+    expect(response.body[1].role).toBe('Admin')
+  })
+
+  test('filter with permission R', async () => {
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: project.id, role_id: seedValues.roleMember })
+    await models.UserProjectRole.create({ user_id: seedValues.differentUserId, project_id: project.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get(`/${project.id}/users`).query({ permissions: ['R'] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(4)
+    expect(response.body[0].role).toBe('Owner')
+    expect(response.body[1].role).toBe('Admin')
+    expect(response.body[2].role).toBe('Member')
+    expect(response.body[3].role).toBe('Guest')
+  })
+
+  test('filter with permission C,D', async () => {
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: project.id, role_id: seedValues.roleMember })
+    await models.UserProjectRole.create({ user_id: seedValues.differentUserId, project_id: project.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get(`/${project.id}/users`).query({ permissions: ['C', 'D'] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    expect(response.body[0].role).toBe('Owner')
+    expect(response.body[1].role).toBe('Admin')
+  })
 })
 
 describe('PUT /projects/:id/users', () => {
