@@ -1,9 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const projectsService = require('../projects/dao')
 const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
-const { ForbiddenError } = require('../../common/error-handling/errors')
 const dao = require('./dao')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
@@ -88,7 +86,6 @@ router.put('/:id/users', hasProjectPermission('U'), function (req, res) {
 
   return params.validate()
     .then(async () => {
-      const project = await projectsService.get(projectId)
       const user = await usersService.getUserByEmail(convertedParams.email)
       const role = await dao.getByName(convertedParams.role)
       await dao.addRole(user.id, role.id, projectId, dao.PROJECT)

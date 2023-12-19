@@ -391,10 +391,14 @@ function addRole (userId, roleId, itemId, itemName) {
 async function removeRole (userId, itemId, itemName) {
   const columnName = `${itemName}_id`
 
-  const userRole = await hierarchy[itemName].roleModel.findOne({ where: {
-      [columnName]: itemId,
-      user_id: userId
-  } })
+  const userRole = await hierarchy[itemName].roleModel.findOne(
+    {
+      where: {
+        [columnName]: itemId,
+        user_id: userId
+      }
+    }
+  )
   // check if user is Owner
   if (userRole.role_id === 4) {
     throw new ForbiddenError('Cannot remove Owner role')

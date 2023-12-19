@@ -44,7 +44,7 @@ describe('POST /projects', () => {
     const requestBody = {
       name: 'Test Project'
     }
-    
+
     const response = await request(app).post('/').send(requestBody)
     const id = response.header.location.replace('/projects/', '')
     const userProjectRole = await models.UserProjectRole.findOne({ where: { project_id: id, user_id: seedValues.primaryUserId } })

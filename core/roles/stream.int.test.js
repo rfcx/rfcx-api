@@ -19,7 +19,7 @@ afterAll(async () => {
 
 async function commonSetup () {
   const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
-  const streamRole = { stream_id: stream.id, user_id: seedValues.primaryUserId, role_id: seedValues.roleOwner}
+  const streamRole = { stream_id: stream.id, user_id: seedValues.primaryUserId, role_id: seedValues.roleOwner }
   await models.Stream.create(stream)
   await models.UserStreamRole.create(streamRole)
   return { stream }

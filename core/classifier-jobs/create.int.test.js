@@ -22,8 +22,8 @@ async function seedTestData () {
   await await models.Classifier.bulkCreate(CLASSIFIERS)
   await await models.Project.bulkCreate(PROJECTS)
   await await models.Stream.bulkCreate(STREAMS)
-  await models.UserProjectRole.bulkCreate(PROJECTS.map( project => { return { project_id: project.id, user_id: project.createdById, role_id: seedValues.roleOwner } }))
-  await models.UserStreamRole.bulkCreate(STREAMS.map( stream => { return { stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner } }))
+  await models.UserProjectRole.bulkCreate(PROJECTS.map(project => { return { project_id: project.id, user_id: project.createdById, role_id: seedValues.roleOwner } }))
+  await models.UserStreamRole.bulkCreate(STREAMS.map(stream => { return { stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner } }))
   await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
 }
 
