@@ -98,7 +98,7 @@ jobs:
   deploy:
     name: 'Deploy'
     if: ${{ vars.EKS_CD_ENABLED == 'true' }}
-    needs: [configure, deploy-core-api-secrets, deploy-noncore-api-secrets]
+    needs: [configure, build, deploy-core-api-secrets, deploy-noncore-api-secrets]
     uses: rfcx/cicd/.github/workflows/eks-k8s-deploy-deployment.yaml@eks-branch-refactored
     with:
       tag: ${{ needs.build.outputs.unique-tag }}
