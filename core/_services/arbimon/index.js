@@ -1,6 +1,7 @@
 const rp = require('request-promise')
 const moment = require('moment')
 const arbimonBaseUrl = process.env.ARBIMON_BASE_URL
+const arbimonAPIPrefix = process.env.ARBIMON_API_PREFIX
 const { rpErrorHandler } = require('../../../common/error-handling/http')
 const { getSegmentRemotePath } = require('../../stream-segments/bl/segment-file-utils')
 const { getClientToken } = require('../../../common/auth0')
@@ -14,7 +15,7 @@ function createProject (project, idToken) {
   body.external_id = project.id
   const options = {
     method: 'POST',
-    url: `${arbimonBaseUrl}legacy-api/integration/projects`,
+    url: `${arbimonBaseUrl}${arbimonAPIPrefix}integration/projects`,
     headers: {
       Authorization: idToken,
       'Content-Type': 'application/json'
@@ -22,7 +23,6 @@ function createProject (project, idToken) {
     body,
     json: true
   }
-
   return rp(options).catch(rpErrorHandler)
 }
 
@@ -31,7 +31,7 @@ function updateProject (opts, idToken) {
   ['name', 'description'].forEach((attr) => { body[attr] = opts[attr] })
   const options = {
     method: 'PATCH',
-    url: `${arbimonBaseUrl}legacy-api/integration/projects/${opts.id}`,
+    url: `${arbimonBaseUrl}${arbimonAPIPrefix}integration/projects/${opts.id}`,
     headers: {
       Authorization: idToken,
       'Content-Type': 'application/json'
@@ -55,7 +55,7 @@ function createSite (stream, idToken) {
   }
   const options = {
     method: 'POST',
-    url: `${arbimonBaseUrl}legacy-api/integration/sites`,
+    url: `${arbimonBaseUrl}${arbimonAPIPrefix}integration/sites`,
     headers: {
       Authorization: idToken,
       'Content-Type': 'application/json'
@@ -72,7 +72,7 @@ function updateSite (opts, idToken) {
   ['name', 'latitude', 'longitude', 'altitude', 'project_id'].forEach((attr) => { body[attr] = opts[attr] })
   const options = {
     method: 'PATCH',
-    url: `${arbimonBaseUrl}legacy-api/integration/sites/${opts.id}`,
+    url: `${arbimonBaseUrl}${arbimonAPIPrefix}integration/sites/${opts.id}`,
     headers: {
       Authorization: idToken,
       'Content-Type': 'application/json'
@@ -87,7 +87,7 @@ function updateSite (opts, idToken) {
 function deleteSite (id, idToken) {
   const options = {
     method: 'DELETE',
-    url: `${arbimonBaseUrl}legacy-api/integration/sites/${id}`,
+    url: `${arbimonBaseUrl}${arbimonAPIPrefix}integration/sites/${id}`,
     headers: {
       Authorization: idToken,
       'Content-Type': 'application/json'
@@ -195,7 +195,7 @@ function createUser (user, idToken) {
   ['firstname', 'lastname', 'email', 'guid', 'user_id', 'picture'].forEach((attr) => { body[attr] = user[attr] })
   const options = {
     method: 'POST',
-    url: `${arbimonBaseUrl}legacy-api/integration/users`,
+    url: `${arbimonBaseUrl}${arbimonAPIPrefix}integration/users`,
     headers: {
       'Content-Type': 'application/json'
     },
