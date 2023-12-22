@@ -10,7 +10,10 @@ module.exports = expressWinston.logger({
   ),
   meta: false,
   msg: function (req, res) {
-    let body = { ...req.body }
+    // stream/:id/detections receive request data as array
+    // classifier receive request data as object
+    // we don't want to spread array values into single object
+    let body = Array.isArray(req.body) ? req.body : { ...req.body }
     // shorten long detections body request
     if (/streams\/([a-zA-Z]|\d)+\/detections/.test(req.url) && req.body.length > 5) {
       const totalLength = body.length
