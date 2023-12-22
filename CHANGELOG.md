@@ -1,3 +1,8 @@
+## 1.3.5 (2023-12-xx)
+### Bug Fixes
+* **core**: Fix Arbimon API path to separated the path between staging as `legacy-api` and production as `api`
+* **core**: Fix logging request error on endpoint `streams/:id/detections` receiving array of objects
+
 ## 1.3.4 (2023-12-xx)
 ### Bug Fixes
 * **core**: Fix PATCH `/users/:email` endpoint to properly update the name on Auth0 and core database
