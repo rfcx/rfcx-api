@@ -1,10 +1,6 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const { ForbiddenError } = require('../../common/error-handling/errors')
-const dao = require('./dao')
-const { randomId } = require('../../common/crypto/random')
+const { create } = require('./bl')
 const Converter = require('../../common/converter')
-const { hasPermission, CREATE, ORGANIZATION } = require('../roles/dao')
-const arbimonService = require('../_services/arbimon')
 
 /**
  * @swagger
@@ -37,7 +33,12 @@ const arbimonService = require('../_services/arbimon')
  */
 
 module.exports = (req, res) => {
-  const createdById = req.rfcx.auth_token_info.id
+  const user = req.rfcx.auth_token_info
+  const creatableById = user.is_super || user.has_system_role ? undefined : user.id
+  const requestSource = req.headers.source
+  const idToken = req.headers.authorization
+  const options = { creatableById, requestSource, idToken }
+
   const converter = new Converter(req.body, {}, true)
   converter.convert('id').optional().toString()
   converter.convert('name').toString()
@@ -47,34 +48,7 @@ module.exports = (req, res) => {
   converter.convert('external_id').optional().toInt()
 
   return converter.validate()
-    .then(async (params) => {
-      // TODO move - route handler should not contain business logic
-      if (params.organizationId) {
-        const allowed = await hasPermission(CREATE, createdById, params.organizationId, ORGANIZATION)
-        if (!allowed) {
-          throw new ForbiddenError('You do not have permission to create project in this organization.')
-        }
-      }
-
-      const project = {
-        ...params,
-        createdById,
-        id: randomId()
-      }
-
-      // TODO move - route handler should not contain business logic
-      if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
-        try {
-          const arbimonProject = await arbimonService.createProject(project, req.headers.authorization)
-          project.externalId = arbimonProject.project_id
-        } catch (error) {
-          console.error(`Error creating project in Arbimon (project: ${project.id})`)
-          throw new Error()
-        }
-      }
-
-      return await dao.create(project)
-    })
+    .then((params) => create(params, options))
     .then(project => res.location(`/projects/${project.id}`).sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed creating project'))
 }

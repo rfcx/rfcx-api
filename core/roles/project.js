@@ -19,7 +19,7 @@ const { hasProjectPermission } = require('../../common/middleware/authorization/
  *         in: query
  *         type: array
  *       - name: permissions
- *         description: Customize included permissions
+ *         description: Customize included permissions (a role includes ALL listed permissions)
  *         in: query
  *         type: array
  *     responses:
@@ -33,20 +33,19 @@ const { hasProjectPermission } = require('../../common/middleware/authorization/
  *                 $ref: '#/components/schemas/UserLiteWithRoleAndPermissions'
  */
 
-router.get('/:id/users', hasProjectPermission('R'), async function (req, res) {
+router.get('/:id/users', hasProjectPermission('R'), function (req, res) {
   const converter = new Converter(req.query, {}, true)
   converter.convert('include_roles').optional().toArray()
   converter.convert('permissions').optional().toArray()
-  try {
-    const params = await converter.validate()
-    const options = {
-      includeRoles: params.includeRoles,
-      permissions: params.permissions
-    }
-    return res.json(await dao.getUsersForItem(req.params.id, dao.PROJECT, options))
-  } catch (e) {
-    httpErrorHandler(req, res, 'Failed getting project permission.')(e)
-  }
+  return converter.validate()
+    .then(async (params) => {
+      const filters = {
+        includeRoles: params.includeRoles,
+        permissions: params.permissions
+      }
+      return res.json(await dao.getUsersForItem(req.params.id, dao.PROJECT, filters))
+    })
+    .catch(httpErrorHandler(req, res, 'Failed getting project permission.'))
 })
 
 /**

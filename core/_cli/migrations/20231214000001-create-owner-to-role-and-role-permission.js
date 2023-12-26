@@ -1,7 +1,8 @@
 'use strict'
-const roleIds = [1, 2, 3, 4]
+const { ADMIN, MEMBER, GUEST, OWNER } = require('../../roles/dao')
+const roleIds = [ADMIN, MEMBER, GUEST, OWNER] // [1, 2, 3, 4]
 const roleList = ['Admin', 'Member', 'Guest', 'Owner']
-const permissionList = ['1,C', '1,R', '1,U', '1,D', '2,C', '2,R', '2,U', '3,R', '4,C', '4,R', '4,U', '4,D']
+const permissionList = [`${ADMIN},C`, `${ADMIN},R`, `${ADMIN},U`, `${ADMIN},D`, `${MEMBER},C`, `${MEMBER},R`, `${MEMBER},U`, `${GUEST},R`, `${OWNER},C`, `${OWNER},R`, `${OWNER},U`, `${OWNER},D`]
 const insertedRoles = [] // [1, 2 ,3 ,4]
 const insertedRolePermissions = [] // [{ roleId:1, permission:'C'}, { roleId:1, permission:'R'}]
 module.exports = {

@@ -2,6 +2,11 @@ const models = require('../../_models')
 const usersService = require('../../../common/users')
 const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 
+const ADMIN = 1
+const MEMBER = 2
+const GUEST = 3
+const OWNER = 4
+
 const ORGANIZATION = 'organization'
 const PROJECT = 'project'
 const STREAM = 'stream'
@@ -270,11 +275,11 @@ async function getAccessibleObjectsIDs (userId, itemName, inIds, permission = RE
  * Returns list of users with their role and permissions for specified item
  * @param {string} id item id
  * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
- * @param {*} options Additional get options
+ * @param {*} filters Additional get filters
  * @param {string[]} options.includeRoles Include only if user role is in the given roles
  * @param {string[]} options.permissions Include only if user has permissions in the given permissions
  */
-function getUsersForItem (id, itemName, options) {
+function getUsersForItem (id, itemName, filters) {
   if (!Object.keys(hierarchy).includes(itemName)) {
     throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemName}"`)
   }
@@ -292,16 +297,16 @@ function getUsersForItem (id, itemName, options) {
     ]
   })
     .then((items) => {
-      let tempItems = [...items]
-      if (options.includeRoles) {
-        tempItems = tempItems.filter(item => {
-          return options.includeRoles.includes(item.role.name)
+      items = [...items]
+      if (filters.includeRoles) {
+        items = items.filter(item => {
+          return filters.includeRoles.includes(item.role.name)
         })
       }
-      if (options.permissions) {
-        tempItems = tempItems.filter(item => {
+      if (filters.permissions) {
+        items = items.filter(item => {
           const permissions = item.role.permissions.map(x => x.permission)
-          for (const permission of options.permissions) {
+          for (const permission of filters.permissions) {
             if (!permissions.includes(permission)) {
               return false
             }
@@ -309,7 +314,7 @@ function getUsersForItem (id, itemName, options) {
           return true
         })
       }
-      return tempItems.map((item) => {
+      return items.map((item) => {
         return {
           ...item.user.toJSON(),
           role: item.role.name,
@@ -361,9 +366,15 @@ function getUserRoleForItem (id, userId, itemName) {
  * @param {string} roleId role id
  * @param {string} itemId item id
  * @param {string} itemName item model name (e.g. stream, project, organization)
+ * @param {object} options.transaction Sequelize transaction object
  */
-function addRole (userId, roleId, itemId, itemName) {
-  return models.sequelize.transaction(async (transaction) => {
+function addRole (userId, roleId, itemId, itemName, options = {}) {
+
+  return models.sequelize.transaction(async (sequelizeTransaction) => {
+    let transaction = sequelizeTransaction
+    if (options.transaction) {
+      transaction = options.transaction
+    }
     const columnName = `${itemName}_id`
     await hierarchy[itemName].roleModel.destroy({
       where: {
@@ -391,16 +402,14 @@ function addRole (userId, roleId, itemId, itemName) {
 async function removeRole (userId, itemId, itemName) {
   const columnName = `${itemName}_id`
 
-  const userRole = await hierarchy[itemName].roleModel.findOne(
-    {
-      where: {
-        [columnName]: itemId,
-        user_id: userId
-      }
+  const userRole = await hierarchy[itemName].roleModel.findOne({
+    where: {
+      [columnName]: itemId,
+      user_id: userId
     }
-  )
+  })
   // check if user is Owner
-  if (userRole.role_id === 4) {
+  if (userRole && userRole.role_id === OWNER) {
     throw new ForbiddenError('Cannot remove Owner role')
   }
   return hierarchy[itemName].roleModel.destroy({
@@ -427,5 +436,9 @@ module.exports = {
   CREATE,
   READ,
   UPDATE,
-  DELETE
+  DELETE,
+  ADMIN,
+  MEMBER,
+  GUEST,
+  OWNER
 }

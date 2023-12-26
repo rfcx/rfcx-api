@@ -74,7 +74,8 @@ describe('GET /projects/:id/users', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
-    expect(response.body[0].role).toBe('Owner')
+    const roles = response.body.map(u => u.role)
+    expect(roles.includes('Owner')).toBeTruthy()
   })
 
   test('filter Owner and Admin', async () => {
@@ -88,8 +89,40 @@ describe('GET /projects/:id/users', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(2)
-    expect(response.body[0].role).toBe('Owner')
-    expect(response.body[1].role).toBe('Admin')
+    const roles = response.body.map(u => u.role)
+    expect(roles.includes('Owner')).toBeTruthy()
+    expect(roles.includes('Admin')).toBeTruthy()
+  })
+
+  test('filter Member and Guest', async () => {
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleMember })
+    await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: project.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get(`/${project.id}/users`).query({ include_roles: ['Member', 'Guest'] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    const roles = response.body.map(u => u.role)
+    expect(roles.includes('Member')).toBeTruthy()
+    expect(roles.includes('Guest')).toBeTruthy()
+  })
+
+  test('filter Member and Guest but only Member exist', async () => {
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: project.id, role_id: seedValues.roleMember })
+
+    const response = await request(app).get(`/${project.id}/users`).query({ include_roles: ['Member', 'Guest'] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    const roles = response.body.map(u => u.role)
+    expect(roles.includes('Member')).toBeTruthy()
   })
 
   test('filter Admin but empty result', async () => {
@@ -116,9 +149,10 @@ describe('GET /projects/:id/users', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(3)
-    expect(response.body[0].role).toBe('Owner')
-    expect(response.body[1].role).toBe('Admin')
-    expect(response.body[2].role).toBe('Member')
+    const roles = response.body.map(u => u.role)
+    expect(roles.includes('Owner')).toBeTruthy()
+    expect(roles.includes('Admin')).toBeTruthy()
+    expect(roles.includes('Member')).toBeTruthy()
   })
 
   test('filter with permission D', async () => {
@@ -133,8 +167,9 @@ describe('GET /projects/:id/users', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(2)
-    expect(response.body[0].role).toBe('Owner')
-    expect(response.body[1].role).toBe('Admin')
+    const roles = response.body.map(u => u.role)
+    expect(roles.includes('Owner')).toBeTruthy()
+    expect(roles.includes('Admin')).toBeTruthy()
   })
 
   test('filter with permission R', async () => {
@@ -149,10 +184,11 @@ describe('GET /projects/:id/users', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(4)
-    expect(response.body[0].role).toBe('Owner')
-    expect(response.body[1].role).toBe('Admin')
-    expect(response.body[2].role).toBe('Member')
-    expect(response.body[3].role).toBe('Guest')
+    const roles = response.body.map(u => u.role)
+    expect(roles.includes('Owner')).toBeTruthy()
+    expect(roles.includes('Admin')).toBeTruthy()
+    expect(roles.includes('Member')).toBeTruthy()
+    expect(roles.includes('Guest')).toBeTruthy()
   })
 
   test('filter with permission C,D', async () => {
@@ -167,8 +203,9 @@ describe('GET /projects/:id/users', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(2)
-    expect(response.body[0].role).toBe('Owner')
-    expect(response.body[1].role).toBe('Admin')
+    const roles = response.body.map(u => u.role)
+    expect(roles.includes('Owner')).toBeTruthy()
+    expect(roles.includes('Admin')).toBeTruthy()
   })
 })
 
@@ -271,5 +308,6 @@ describe('DELETE /projects/:id/users', () => {
     const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
 
     expect(response.statusCode).toBe(403)
+    expect(response.body.message).toBe('Cannot remove Owner role')
   })
 })

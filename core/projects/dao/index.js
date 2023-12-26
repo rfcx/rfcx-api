@@ -1,6 +1,6 @@
 const { Stream, Project, User, Organization, Sequelize } = require('../../_models')
 const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
-const { hasPermission, getAccessibleObjectsIDs, addRole, PROJECT, ORGANIZATION, READ, CREATE, DELETE } = require('../../roles/dao')
+const { hasPermission, getAccessibleObjectsIDs, PROJECT, ORGANIZATION, READ, CREATE, DELETE } = require('../../roles/dao')
 const { randomId } = require('../../../common/crypto/random')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -47,6 +47,7 @@ async function get (idOrWhere, options = {}) {
  * @param {string|undefined} project.externalId Arbimon project identifier
  * @param {*} options Additional create options
  * @param {number|undefined} options.creatableBy Allow only if the given user id has permission to create
+ * @param {object} options.transaction Sequelize transaction object
  * @throws ForbiddenError when `creatableBy` user does not have create permission on the organization
  */
 async function create (project, options = {}) {
@@ -58,13 +59,8 @@ async function create (project, options = {}) {
     project.id = randomId()
   }
 
-  return Project.create(project)
-    .then(async result => {
-      // Add Owner to UserProjectRoles
-      // 4 is Owner
-      await addRole(result.createdById, 4, result.id, PROJECT)
-      return result
-    })
+  const { transaction } = options
+  return Project.create(project, { transaction })
     .catch(error => {
       // TODO What errors do we expect here? Catch specific errors and create ValidationError for each
       throw error
