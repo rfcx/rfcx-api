@@ -1,5 +1,5 @@
 const dao = require('../dao')
-const { hasPermission, addRole, PROJECT, UPDATE, CREATE, OWNER } = require('../../roles/dao')
+const { hasPermission, addRole, ORGANIZATION, PROJECT, UPDATE, CREATE, OWNER } = require('../../roles/dao')
 const { sequelize } = require('../../_models')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const arbimonService = require('../../_services/arbimon')
@@ -72,7 +72,7 @@ async function create (params, options = {}) {
 
   if (arbimonService.isEnabled && options.requestSource !== 'arbimon') {
     try {
-      const arbimonProject = await arbimonService.createProject(project, req.headers.authorization)
+      const arbimonProject = await arbimonService.createProject(project, options.idToken)
       project.externalId = arbimonProject.project_id
     } catch (error) {
       console.error(`Error creating project in Arbimon (project: ${project.id})`)

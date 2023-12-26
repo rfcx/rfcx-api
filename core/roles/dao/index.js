@@ -369,7 +369,6 @@ function getUserRoleForItem (id, userId, itemName) {
  * @param {object} options.transaction Sequelize transaction object
  */
 function addRole (userId, roleId, itemId, itemName, options = {}) {
-
   return models.sequelize.transaction(async (sequelizeTransaction) => {
     let transaction = sequelizeTransaction
     if (options.transaction) {
