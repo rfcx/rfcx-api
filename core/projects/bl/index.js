@@ -65,22 +65,21 @@ async function create (params, options = {}) {
     id: randomId()
   }
 
-  const transaction = await sequelize.transaction()
-  options.transaction = transaction
-  const result = await dao.create(project, options)
-  await addRole(result.createdById, OWNER, result.id, PROJECT, options)
+  return sequelize.transaction(async (transaction) => {
+    options.transaction = transaction
+    const result = await dao.create(project, options)
+    await addRole(result.createdById, OWNER, result.id, PROJECT, options)
 
-  if (arbimonService.isEnabled && options.requestSource !== 'arbimon') {
-    try {
-      const arbimonProject = await arbimonService.createProject(project, options.idToken)
-      project.externalId = arbimonProject.project_id
-    } catch (error) {
-      console.error(`Error creating project in Arbimon (project: ${project.id})`)
+    if (arbimonService.isEnabled && options.requestSource !== 'arbimon') {
+      try {
+        const arbimonProject = await arbimonService.createProject(project, options.idToken)
+        project.externalId = arbimonProject.project_id
+      } catch (error) {
+        console.error(`Error creating project in Arbimon (project: ${project.id})`)
+      }
     }
-  }
-
-  transaction.commit()
-  return result
+    return result
+  })
 }
 
 module.exports = {

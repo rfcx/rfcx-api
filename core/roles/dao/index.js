@@ -297,7 +297,6 @@ function getUsersForItem (id, itemName, filters) {
     ]
   })
     .then((items) => {
-      items = [...items]
       if (filters.includeRoles) {
         items = items.filter(item => {
           return filters.includeRoles.includes(item.role.name)

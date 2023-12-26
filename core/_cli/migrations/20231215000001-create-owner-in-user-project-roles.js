@@ -1,4 +1,5 @@
 'use strict'
+const { OWNER } = require('../../roles/dao')
 const insertedUserAndProject = [] // [{ userId: 1, projectId: "aaaaaaaaaaa" }]
 module.exports = {
   up: (queryInterface, Sequelize) => {
@@ -6,7 +7,7 @@ module.exports = {
       const [projectsCreatedBy] = await queryInterface.sequelize.query('select id, created_by_id from projects', { transaction })
       for (const projectAndOwner of projectsCreatedBy) {
         await queryInterface.sequelize.query(`delete from user_project_roles where user_id = ${projectAndOwner.created_by_id} and project_id = '${projectAndOwner.id}'`, { transaction })
-        await queryInterface.sequelize.query(`insert into user_project_roles (user_id, project_id, role_id, created_at, updated_at) values (${projectAndOwner.created_by_id}, '${projectAndOwner.id}', 4, now(), now())`, { transaction })
+        await queryInterface.sequelize.query(`insert into user_project_roles (user_id, project_id, role_id, created_at, updated_at) values (${projectAndOwner.created_by_id}, '${projectAndOwner.id}', ${OWNER}, now(), now())`, { transaction })
         insertedUserAndProject.push({
           userId: projectAndOwner.created_by_id,
           projectId: projectAndOwner.id
