@@ -28,6 +28,7 @@ describe('GET /projects/:id', () => {
   test('readable by creator', async () => {
     const project = { id: 'ft1', name: 'Forest village', createdById: seedValues.primaryUserId }
     await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
 
     const response = await request(app).get(`/${project.id}`)
 
@@ -72,6 +73,7 @@ describe('GET /projects/:id', () => {
   test('can get external_id field only', async () => {
     const project = { id: 'ft3', name: 'House in the woods', createdById: seedValues.primaryUserId, externalId: 12345 }
     await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
 
     const response = await request(app).get(`/${project.id}`).query({ fields: 'external_id' })
 

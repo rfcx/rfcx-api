@@ -47,6 +47,7 @@ async function get (idOrWhere, options = {}) {
  * @param {string|undefined} project.externalId Arbimon project identifier
  * @param {*} options Additional create options
  * @param {number|undefined} options.creatableBy Allow only if the given user id has permission to create
+ * @param {object} options.transaction Sequelize transaction object
  * @throws ForbiddenError when `creatableBy` user does not have create permission on the organization
  */
 async function create (project, options = {}) {
@@ -58,7 +59,8 @@ async function create (project, options = {}) {
     project.id = randomId()
   }
 
-  return Project.create(project)
+  const { transaction } = options
+  return Project.create(project, { transaction })
     .catch(error => {
       // TODO What errors do we expect here? Catch specific errors and create ValidationError for each
       throw error

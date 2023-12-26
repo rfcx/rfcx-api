@@ -28,6 +28,7 @@ describe('DELETE /streams/:id', () => {
   test('deletable by creator', async () => {
     const stream = { id: 'am1', name: 'Big tree', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
 
     const response = await request(app).delete(`/${stream.id}`)
 

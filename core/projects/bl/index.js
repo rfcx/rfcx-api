@@ -1,7 +1,9 @@
 const dao = require('../dao')
-const { hasPermission, PROJECT, UPDATE } = require('../../roles/dao')
+const { hasPermission, addRole, ORGANIZATION, PROJECT, UPDATE, CREATE, OWNER } = require('../../roles/dao')
+const { sequelize } = require('../../_models')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const arbimonService = require('../../_services/arbimon')
+const { randomId } = require('../../../common/crypto/random')
 
 /**
  * Update project
@@ -34,6 +36,53 @@ async function update (id, project, options = {}) {
   return result
 }
 
+/**
+ * Create project
+ * @param {Project} project
+ * @param {string} project.id
+ * @param {string} project.name
+ * @param {string} project.description
+ * @param {boolean} project.is_public
+ * @param {boolean} project.organization_id
+ * @param {integer} project.external_id
+ * @param {*} options
+ * @param {number} options.creatableById Create only if project is creatable by the given user id
+ * @param {string} options.requestSource Whether the request was sent from the Arbimon or not
+ * @param {string} options.idToken user jwt token
+ * @throws ForbiddenError when `creatableBy` user does not have create permission on the project
+ */
+async function create (params, options = {}) {
+  if (params.organizationId && options.creatableById) {
+    const allowed = await hasPermission(CREATE, options.creatableById, params.organizationId, ORGANIZATION)
+    if (!allowed) {
+      throw new ForbiddenError('You do not have permission to create project in this organization.')
+    }
+  }
+
+  const project = {
+    ...params,
+    createdById: options.creatableById,
+    id: randomId()
+  }
+
+  return sequelize.transaction(async (transaction) => {
+    options.transaction = transaction
+    const result = await dao.create(project, options)
+    await addRole(result.createdById, OWNER, result.id, PROJECT, options)
+
+    if (arbimonService.isEnabled && options.requestSource !== 'arbimon') {
+      try {
+        const arbimonProject = await arbimonService.createProject(project, options.idToken)
+        project.externalId = arbimonProject.project_id
+      } catch (error) {
+        console.error(`Error creating project in Arbimon (project: ${project.id})`)
+      }
+    }
+    return result
+  })
+}
+
 module.exports = {
-  update
+  update,
+  create
 }

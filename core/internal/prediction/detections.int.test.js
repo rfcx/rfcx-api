@@ -23,6 +23,7 @@ afterAll(async () => {
 async function commonSetup () {
   const stream = { id: 'abced', name: 'my stream', createdById: seedValues.primaryUserId }
   await models.Stream.findOrCreate({ where: stream })
+  await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
   const classification = (await models.Classification.findOrCreate({ where: { value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 } }))[0]
   const classifier = (await models.Classifier.findOrCreate({ where: { externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' } }))[0]
   const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'chnsw', ignoreThreshold: 0.1 }

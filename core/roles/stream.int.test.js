@@ -19,7 +19,9 @@ afterAll(async () => {
 
 async function commonSetup () {
   const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
+  const streamRole = { stream_id: stream.id, user_id: seedValues.primaryUserId, role_id: seedValues.roleOwner }
   await models.Stream.create(stream)
+  await models.UserStreamRole.create(streamRole)
   return { stream }
 }
 
@@ -28,7 +30,7 @@ describe('GET streams/:id/permissions', () => {
     const { stream } = await commonSetup()
 
     const response = await request(app).get(`/${stream.id}/permissions`).send()
-
+    console.log(response)
     expect(response.statusCode).toBe(200)
     const permissions = response.body
     expect(permissions.includes('C')).toBeTruthy()

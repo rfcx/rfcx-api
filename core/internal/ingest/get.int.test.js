@@ -25,7 +25,9 @@ async function commonSetup () {
   const fileExtension = { id: 1, value: '.wav' }
   await models.FileExtension.create(fileExtension)
   const project = await models.Project.create({ id: 'foo', name: 'my project', createdById: seedValues.primaryUserId })
+  await models.UserProjectRole.create({ user_id: project.createdById, project_id: project.id, role_id: seedValues.roleOwner })
   const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
+  await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
   return { audioFileFormat, audioCodec, fileExtension, project, stream }
 }
 

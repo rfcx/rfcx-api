@@ -29,6 +29,7 @@ async function commonSetup () {
   await models.AudioCodec.create({ id: 1, value: 'wav' })
   await models.FileExtension.create({ id: 1, value: '.wav' })
   const stream = await models.Stream.create({ id: 'abc123', name: 'Magpies Nest', latitude: 14.1, longitude: 141.1, createdById: seedValues.primaryUserId })
+  await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
   const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, filename: '20210726_101000.wav', duration: 600, sample_count: 1, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: 1, audio_file_format_id: 1 })
   const segments = await Promise.all([
     { stream_id: stream.id, start: '2021-07-26T10:10:00.000Z', end: '2021-07-26T10:10:59.999Z', stream_source_file_id: sourceFile.id, sample_count: 1, file_extension_id: 1, availability: 1 },
@@ -51,6 +52,7 @@ describe('GET /internal/assets/streams/:attributes', () => {
   test('segment not found', async () => {
     const stream = { id: 'j123s', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, altitude: 200 }
     await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
 
     const response = await request(app).get(`/streams/${stream.id}_t20191227T134400000Z.20191227T134420000Z_fwav.wav`)
 

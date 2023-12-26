@@ -64,6 +64,7 @@ const differentUserLastname = 'Shady'
 const roleAdmin = 1
 const roleMember = 2
 const roleGuest = 3
+const roleOwner = 4
 const seedValues = {
   primaryUserId,
   primaryUserGuid,
@@ -91,30 +92,18 @@ const seedValues = {
   differentUserLastname,
   roleAdmin,
   roleMember,
-  roleGuest
+  roleGuest,
+  roleOwner
 }
 
 async function seed (models) {
   await models.ClassificationType.destroy({ where: {} })
   await models.ClassificationSource.destroy({ where: {} })
-  await models.RolePermission.destroy({ where: {} })
-  await models.Role.destroy({ where: {} })
   await models.User.destroy({ where: {} })
   await models.User.findOrCreate({ where: { id: primaryUserId, guid: primaryUserGuid, username: 'jb', firstname: primaryUserFirstname, lastname: primaryUserLastname, email: primaryUserEmail } })
   await models.User.findOrCreate({ where: { id: otherUserId, guid: otherUserGuid, username: 'em', firstname: otherUserFirstname, lastname: otherUserLastname, email: otherUserEmail } })
   await models.User.findOrCreate({ where: { id: anotherUserId, guid: anotherUserGuid, username: 'st', firstname: anotherUserFirstname, lastname: anotherUserLastname, email: anotherUserEmail } })
   await models.User.findOrCreate({ where: { id: differentUserId, guid: differentUserGuid, username: 'sl', firstname: differentUserFirstname, lastname: differentUserLastname, email: differentUserEmail } })
-  await models.Role.findOrCreate({ where: { id: roleAdmin, name: 'Admin' } })
-  await models.Role.findOrCreate({ where: { id: roleMember, name: 'Member' } })
-  await models.Role.findOrCreate({ where: { id: roleGuest, name: 'Guest' } })
-  await models.RolePermission.findOrCreate({ where: { role_id: roleAdmin, permission: 'C' } })
-  await models.RolePermission.findOrCreate({ where: { role_id: roleAdmin, permission: 'R' } })
-  await models.RolePermission.findOrCreate({ where: { role_id: roleAdmin, permission: 'U' } })
-  await models.RolePermission.findOrCreate({ where: { role_id: roleAdmin, permission: 'D' } })
-  await models.RolePermission.findOrCreate({ where: { role_id: roleMember, permission: 'C' } })
-  await models.RolePermission.findOrCreate({ where: { role_id: roleMember, permission: 'R' } })
-  await models.RolePermission.findOrCreate({ where: { role_id: roleMember, permission: 'U' } })
-  await models.RolePermission.findOrCreate({ where: { role_id: roleGuest, permission: 'R' } })
   await models.ClassificationSource.findOrCreate({ where: { id: 1, value: 'unknown' } })
   await models.ClassificationType.findOrCreate({ where: { id: 1, value: 'unknown' } })
 }

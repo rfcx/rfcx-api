@@ -1,9 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const projectsService = require('../projects/dao')
 const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
-const { ForbiddenError } = require('../../common/error-handling/errors')
 const dao = require('./dao')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
@@ -16,6 +14,14 @@ const { hasProjectPermission } = require('../../common/middleware/authorization/
  *     tags:
  *       - roles
  *     parameters:
+ *       - name: include_roles
+ *         description: Customize included roles
+ *         in: query
+ *         type: array
+ *       - name: permissions
+ *         description: Customize included permissions (a role includes ALL listed permissions)
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
  *         description: List of permissions objects
@@ -27,12 +33,19 @@ const { hasProjectPermission } = require('../../common/middleware/authorization/
  *                 $ref: '#/components/schemas/UserLiteWithRoleAndPermissions'
  */
 
-router.get('/:id/users', hasProjectPermission('U'), async function (req, res) {
-  try {
-    return res.json(await dao.getUsersForItem(req.params.id, dao.PROJECT))
-  } catch (e) {
-    httpErrorHandler(req, res, 'Failed getting project permission.')(e)
-  }
+router.get('/:id/users', hasProjectPermission('R'), function (req, res) {
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('include_roles').optional().toArray()
+  converter.convert('permissions').optional().toArray()
+  return converter.validate()
+    .then(async (params) => {
+      const filters = {
+        includeRoles: params.includeRoles,
+        permissions: params.permissions
+      }
+      return res.json(await dao.getUsersForItem(req.params.id, dao.PROJECT, filters))
+    })
+    .catch(httpErrorHandler(req, res, 'Failed getting project permission.'))
 })
 
 /**
@@ -72,11 +85,7 @@ router.put('/:id/users', hasProjectPermission('U'), function (req, res) {
 
   return params.validate()
     .then(async () => {
-      const project = await projectsService.get(projectId)
       const user = await usersService.getUserByEmail(convertedParams.email)
-      if (project.created_by_id === user.id) {
-        throw new ForbiddenError('You can not assign role to project owner.')
-      }
       const role = await dao.getByName(convertedParams.role)
       await dao.addRole(user.id, role.id, projectId, dao.PROJECT)
       return res.status(201).json(await dao.getUserRoleForItem(projectId, user.id, dao.PROJECT))
@@ -103,7 +112,7 @@ router.put('/:id/users', hasProjectPermission('U'), function (req, res) {
  *         description: OK
  */
 
-router.delete('/:id/users', hasProjectPermission('U'), function (req, res) {
+router.delete('/:id/users', hasProjectPermission('D'), function (req, res) {
   const projectId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
