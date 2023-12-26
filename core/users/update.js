@@ -18,7 +18,7 @@ const { updateInCoreAndAuth0 } = require('./bl/update')
  *           schema:
  *             $ref: '#/components/requestBodies/UserUpdate'
  *     responses:
- *       200:
+ *       204:
  *         description: Updated
  *       400:
  *         description: Invalid query parameters
@@ -40,6 +40,6 @@ module.exports = function (req, res, next) {
 
   converter.validate().then(async (params) => {
     await updateInCoreAndAuth0(email, params, options)
-    res.sendStatus(200)
+    res.sendStatus(204)
   }).catch(httpErrorHandler(req, res, 'Failed updating user'))
 }

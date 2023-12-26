@@ -1,8 +1,16 @@
-## 1.3.4 (2023-12-xx)
+## 1.3.5 (2023-12-xx)
+### Bug Fixes
+* **core**: Fix Arbimon API path to separated the path between staging as `legacy-api` and production as `api`
+* **core**: Fix logging request error on endpoint `streams/:id/detections` receiving array of objects
 * **core**: Add `Create Owner to role and role permission table` migration files
 * **core**: Add `include_roles` and `permissions` params to `project/:id/users` endpoint
 * **core**: Fix test cases after above changes
 
+## 1.3.4 (2023-12-xx)
+### Bug Fixes
+* **core**: Fix PATCH `/users/:email` endpoint to properly update the name on Auth0 and core database
+
+## 1.3.3 (2023-09-xx)
 ### Features
 * **noncore**: End IoTDA connection in close callback
 
