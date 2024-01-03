@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const { Stream, Project, User, Organization, Sequelize } = require('../../_models')
 const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { hasPermission, getAccessibleObjectsIDs, PROJECT, ORGANIZATION, READ, CREATE, DELETE } = require('../../roles/dao')
@@ -206,7 +207,7 @@ function getProjectLocation (id) {
 }
 
 function formatProject (project) {
-  const { id, name, description, is_public, created_at, updated_at, min_latitude, min_longitude, max_latitude, max_longitude } = project // eslint-disable-line camelcase
+  const { id, name, description, is_public, created_at, updated_at, min_latitude, min_longitude, max_latitude, max_longitude } = project
   return {
     id,
     name,

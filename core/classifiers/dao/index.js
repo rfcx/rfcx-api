@@ -190,8 +190,8 @@ async function update (id, createdBy, attrs, opts = {}) {
     if (attrs.status) {
       const update = {
         ...attrs,
-        id: id,
-        createdBy: createdBy
+        id,
+        createdBy
       }
       await updateClassifierDeployment(update, { transaction })
     }
@@ -199,7 +199,7 @@ async function update (id, createdBy, attrs, opts = {}) {
     // Only update if there are activeStreams
     if (Array.isArray(attrs.activeStreams)) {
       const update = {
-        id: id,
+        id,
         activeStreams: attrs.activeStreams
       }
       await updateActiveStreams(update, { transaction })
@@ -208,7 +208,7 @@ async function update (id, createdBy, attrs, opts = {}) {
     // Only update if there is activeProjects
     if (Array.isArray(attrs.activeProjects)) {
       const update = {
-        id: id,
+        id,
         activeProjects: attrs.activeProjects
       }
       await updateActiveProjects(update, { transaction })
@@ -286,7 +286,7 @@ async function updateActiveStreams (update, opts = {}) {
   const addedStreamIds = update.activeStreams.filter(s => !existingStreamIds.includes(s))
   await models.ClassifierActiveStream.bulkCreate(addedStreamIds.map(streamId => ({
     classifierId: update.id,
-    streamId: streamId
+    streamId
   })), { transaction })
 }
 

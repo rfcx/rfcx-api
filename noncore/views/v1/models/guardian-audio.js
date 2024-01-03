@@ -62,7 +62,7 @@ exports.models = {
             clipOffset: queryParams.clipOffset,
             clipDuration: queryParams.clipDuration,
             copyCodecInsteadOfTranscode: (dbRow.Format.file_extension === outputFileExtension),
-            sourceFilePath: sourceFilePath
+            sourceFilePath
           }).then(function (outputFilePath) {
             audioUtils.serveAudioFromFile(res, outputFilePath, outputFileName, audioUtils.formatSettings[outputFileExtension].mime, !!req.query.inline)
               .then(function () {
@@ -234,12 +234,12 @@ function parsePermittedQueryParams (queryParams, clipDurationFull) {
   if ((clipOffset + clipDuration) > clipDurationFull) { clipDuration = (clipDurationFull - clipOffset) } else if (clipDuration < 0) { clipDuration = (clipDurationFull - clipOffset) }
 
   return {
-    specWidth: specWidth,
-    specHeight: specHeight,
-    specRotate: specRotate,
-    specZaxis: specZaxis,
+    specWidth,
+    specHeight,
+    specRotate,
+    specZaxis,
     specWindowFunc: specWindowFunc.substr(0, 1).toUpperCase() + specWindowFunc.substr(1),
-    clipOffset: clipOffset,
-    clipDuration: clipDuration
+    clipOffset,
+    clipDuration
   }
 }

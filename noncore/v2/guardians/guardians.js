@@ -166,7 +166,7 @@ router.route('/register')
       res.status(200).json({
         name: dbGuardian.shortname,
         guid: dbGuardian.guid,
-        token: token,
+        token,
         pin_code: pinCode,
         api_mqtt_host: process.env.GUARDIAN_BROKER_HOSTNAME,
         api_sms_address: process.env.GUARDIAN_API_SMS_ADDRESS,

@@ -81,7 +81,7 @@ exports.mandrill = function () {
       const message = this.buildMessage(messageOptions)
       return new Promise(function (resolve, reject) {
         client.messages.send({
-          message: message
+          message
           // "async": false,
           // "ip_pool": "Main Pool",
           // "send_at": null

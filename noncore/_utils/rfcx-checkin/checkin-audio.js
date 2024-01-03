@@ -64,7 +64,7 @@ exports.audio = {
             capture_codec: audioMeta[i][6],
             capture_is_vbr: (audioMeta[i][7].toLowerCase() === 'vbr'),
 
-            timeStamp: timeStamp,
+            timeStamp,
             measured_at: timeStampDateObj,
             api_token_guid: null,
             api_token: null,

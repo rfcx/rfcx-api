@@ -1,4 +1,3 @@
-
 function generateCSV (data, label) {
   let csv = ''
   for (const guid in data) {
@@ -24,5 +23,5 @@ function generateCSV (data, label) {
 }
 
 module.exports = {
-  generateCSV: generateCSV
+  generateCSV
 }

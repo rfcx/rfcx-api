@@ -29,11 +29,11 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       const msg = {
         text: message,
-        subject: subject,
+        subject,
         from_email: 'contact@rfcx.org',
         from_name: 'Rainforest Connection',
         to: [{
-          email: email,
+          email,
           name: name === '' ? null : name,
           type: 'to'
         }],

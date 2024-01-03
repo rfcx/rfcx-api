@@ -58,7 +58,7 @@ function filter (req) {
   return models.GuardianAudio
     .findAll({
       where: mainClasuse,
-      order: order,
+      order,
       include: [
         {
           model: models.GuardianSite,
@@ -148,7 +148,7 @@ router.route('/download/zip')
         })
         .then(function (url) {
           return res.status(200).json({
-            url: url
+            url
           })
         })
     })

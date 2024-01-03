@@ -14,7 +14,7 @@ const mockAuth0UserRequest = (roles = []) => {
   return {
     user: {
       userType: 'auth0',
-      roles: roles
+      roles
     }
   }
 }

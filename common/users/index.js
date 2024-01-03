@@ -48,7 +48,7 @@ function getUserByGuid (guid, ignoreMissing) {
 }
 
 function getUserByEmail (email, ignoreMissing) {
-  return getUserByParams({ email: email }, ignoreMissing)
+  return getUserByParams({ email }, ignoreMissing)
 }
 
 function getUserByGuidOrEmail (field1, field2) {
