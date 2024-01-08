@@ -1,6 +1,6 @@
 FROM linuxserver/ffmpeg:version-6.1-cli
 
-RUN echo ${PWD} && ls -lR
+RUN echo ${PWD} && ls -lR usr/
 
 FROM node:20.9.0 as base
 
