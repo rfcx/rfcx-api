@@ -1,4 +1,7 @@
 FROM linuxserver/ffmpeg:version-6.1-cli
+
+RUN echo ${PWD} && ls -lR
+
 FROM node:20.9.0 as base
 
 COPY --from=0 /usr/lib/aarch64-linux-gnu/libv4l2.so.0 /usr/lib/aarch64-linux-gnu/libv4l2.so.0
