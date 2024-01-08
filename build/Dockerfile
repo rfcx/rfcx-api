@@ -1,7 +1,11 @@
-FROM jrottenberg/ffmpeg:4.1-ubuntu
+FROM linuxserver/ffmpeg:version-6.1-cli
 FROM node:20.9.0 as base
 
-COPY --from=0 / /
+COPY --from=0 /usr/lib/aarch64-linux-gnu/libv4l2.so.0 /usr/lib/aarch64-linux-gnu/libv4l2.so.0
+COPY --from=0 /usr/lib/aarch64-linux-gnu/libv4lconvert.so.0 /usr/lib/aarch64-linux-gnu/libv4lconvert.so.0
+COPY --from=0 /usr/lib/aarch64-linux-gnu/libjpeg.so.8 /usr/lib/aarch64-linux-gnu/libjpeg.so.8
+COPY --from=0 /usr/local/lib /usr/local/lib
+COPY --from=0 /usr/local/bin /usr/local/bin
 
 RUN apt update && apt install -y sox libsox-fmt-mp3 pngcrush imagemagick
 
