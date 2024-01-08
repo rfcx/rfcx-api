@@ -109,7 +109,6 @@ jobs:
       cluster-name: ${{ needs.configure.outputs.cluster-name }}
     secrets: inherit
 
-
   # notify:
   #   name: 'Notify'
   #   if: ${{ always() }}
