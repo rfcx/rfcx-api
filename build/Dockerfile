@@ -1,13 +1,6 @@
-FROM linuxserver/ffmpeg:version-6.1-cli
 FROM node:20.9.0 as base
 
-COPY --from=0 /usr/lib/aarch64-linux-gnu/libv4l2.so.0 /usr/lib/aarch64-linux-gnu/libv4l2.so.0
-COPY --from=0 /usr/lib/aarch64-linux-gnu/libv4lconvert.so.0 /usr/lib/aarch64-linux-gnu/libv4lconvert.so.0
-COPY --from=0 /usr/lib/aarch64-linux-gnu/libjpeg.so.8 /usr/lib/aarch64-linux-gnu/libjpeg.so.8
-COPY --from=0 /usr/local/lib /usr/local/lib
-COPY --from=0 /usr/local/bin /usr/local/bin
-
-RUN apt update && apt install -y sox libsox-fmt-mp3 pngcrush imagemagick
+RUN apt update && apt install -y sox libsox-fmt-mp3 pngcrush imagemagick ffmpeg
 
 WORKDIR /tmp
 RUN rm -rf /var/lib/apt/lists/* && \
@@ -15,7 +8,7 @@ RUN rm -rf /var/lib/apt/lists/* && \
     /bin/bash -c "mkdir -p /tmp/{uploads,test-assets,ffmpeg,zip}"
 
 ENV SOX_PATH="/usr/bin/sox"
-ENV FFMPEG_PATH="/usr/local/bin/ffmpeg"
+ENV FFMPEG_PATH="/usr/bin/ffmpeg"
 ENV IMAGEMAGICK_PATH="/usr/bin/convert"
 ENV PNGCRUSH_PATH="/usr/bin/pngcrush"
 ENV CACHE_DIRECTORY="/tmp/"
