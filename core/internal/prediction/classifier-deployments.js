@@ -2,6 +2,7 @@ const router = require('express').Router()
 const Converter = require('../../../common/converter')
 const { hasRole } = require('../../../common/middleware/authorization/authorization')
 const classifierDeploymentsService = require('../../classifiers/dao/deployments')
+const { update } = require('./bl/classifier-update')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 
 /**
@@ -151,10 +152,12 @@ router.patch('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) 
   const id = req.params.id
   const converter = new Converter(req.body, {}, true)
   converter.convert('deployed').toBoolean()
+  converter.convert('ignore_threshold').optional().toFloat()
 
   return converter.validate()
-    .then((deployment) => {
-      return classifierDeploymentsService.update(id, deployment)
+    .then((params) => {
+      params.id = id
+      return update(params)
     })
     .then(() => res.status(200).send('Updated'))
     .catch(httpErrorHandler(req, res, 'Failed to update classifier deployment'))

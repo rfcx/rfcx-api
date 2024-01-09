@@ -133,6 +133,10 @@
       "deployed": {
         "type": "boolean",
         "description": "Status of the deployment (true means that the model is deployed and should be active)"
+      },
+      "ignore_threshold": {
+        "type": "float",
+        "description": "A number of minimum threshold that this classifier will save the result into database"
       }
     }
   },

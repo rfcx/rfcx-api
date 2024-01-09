@@ -82,9 +82,12 @@ async function query (filters, options = {}) {
  * Update classifier deployment
  * @param {number} id
  * @param {ClassifierDeployment} deployment
+ * @param {*} options Additional update options
+ * @param {object} options.transaction Sequelize transaction object
  */
-async function update (id, deployment) {
-  await ClassifierDeployment.update(deployment, { where: { id } })
+async function update (id, deployment, options = {}) {
+  const transaction = options.transaction
+  await ClassifierDeployment.update(deployment, { where: { id }, transaction })
 }
 
 module.exports = {

@@ -1,4 +1,5 @@
 const { Classifier, Classification, ClassifierOutput, Sequelize } = require('../../_models')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
@@ -27,6 +28,29 @@ async function query (filters, options = {}) {
   })
 }
 
+/**
+ * Update a classifier outout
+ * @param {number} classifierId
+ * @param {*} classifierOutput
+ * @param {float} classifierOutput.ignore_threshold
+ * @param {*} options Additional update options
+ * @param {object} options.transaction Sequelize transaction object
+ */
+async function update (classifierId, classifierOutput, options = {}) {
+  const transaction = options.transaction
+  const classifierOutputs = await ClassifierOutput.findAll({
+    where: { classifier_id: classifierId },
+    transaction
+  })
+  if (classifierOutputs.length === 0) {
+    throw new EmptyResultError('Classifier outputs with given Classifier id not found.')
+  }
+  return await Promise.all(classifierOutputs.map(output => {
+    output.update(classifierOutput, { transaction })
+  }))
+}
+
 module.exports = {
-  query
+  query,
+  update
 }
