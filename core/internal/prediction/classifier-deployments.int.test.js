@@ -64,7 +64,7 @@ describe('PATCH /internal/prediction/classifier-deployments', () => {
       ignore_threshold: 0.9
     }
 
-    const response = await request(app).patch('classifier-deployments/123456').send(requestBody)
+    const response = await request(app).patch('/classifier-deployments/123456').send(requestBody)
 
     expect(response.statusCode).toBe(404)
   })
