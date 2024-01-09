@@ -5,6 +5,7 @@
 * **core**: Add `Create Owner to role and role permission table` migration files
 * **core**: Add `include_roles` and `permissions` params to `project/:id/users` endpoint
 * **core**: Fix test cases after above changes
+* **core**: `PATCH /internal/prediction/classifier-deployments/:id` can update `ignore_threshold`
 * **media**: Fix `pad_dur` not available by updating ffmpeg version to 6.1
 
 ## 1.3.4 (2023-12-xx)

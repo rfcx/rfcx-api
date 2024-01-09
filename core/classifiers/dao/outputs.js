@@ -46,7 +46,7 @@ async function update (classifierId, classifierOutput, options = {}) {
     throw new EmptyResultError('Classifier outputs with given Classifier id not found.')
   }
   return await Promise.all(classifierOutputs.map(output => {
-    output.update(classifierOutput, { transaction })
+    return output.update(classifierOutput, { transaction })
   }))
 }
 
