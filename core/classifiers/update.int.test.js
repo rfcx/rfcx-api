@@ -208,6 +208,23 @@ describe('PATCH /classifiers/:id', () => {
     expect(output[0].ignoreThreshold).toBe(0.1)
   })
 
+  test('update classifier with classification_values from:to', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, parameters: 'step=0.9', modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    const classifierOutput = { classifierId: classifier.id, classificationId: CLASSIFICATION_1.id, outputClassName: 'chainsaw', ignoreThreshold: 0.1 }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    await models.ClassifierOutput.create(classifierOutput)
+    const requestBody = { classification_values: 'chainsaw:chainsaw' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(200)
+    const output = await models.ClassifierOutput.findAll({ where: { classifierId: classifier.id, classificationId: CLASSIFICATION_1.id, outputClassName: classifierOutput.outputClassName } })
+    expect(output[0].ignoreThreshold).toBe(0.5)
+  })
+
   test('update classifier with classification_values only (to)', async () => {
     console.warn = jest.fn()
     const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, parameters: 'step=0.9', modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
@@ -249,6 +266,36 @@ describe('PATCH /classifiers/:id', () => {
     await models.ClassifierDeployment.create(deployment)
     await models.ClassifierOutput.create(classifierOutput)
     const requestBody = { classification_values: 'chn' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(404)
+  })
+
+  test('failed update classifier with classification_values from:to: but (from) is not exist', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, parameters: 'step=0.9', modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    const classifierOutput = { classifierId: classifier.id, classificationId: CLASSIFICATION_1.id, outputClassName: 'chainsaw' }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    await models.ClassifierOutput.create(classifierOutput)
+    const requestBody = { classification_values: 'chns:chainsaw' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(404)
+  })
+
+  test('failed update classifier with classification_values from:to: but (to) is not exist', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, parameters: 'step=0.9', modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    const classifierOutput = { classifierId: classifier.id, classificationId: CLASSIFICATION_1.id, outputClassName: 'chainsaw' }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    await models.ClassifierOutput.create(classifierOutput)
+    const requestBody = { classification_values: 'chainsaw:chns' }
 
     const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
 

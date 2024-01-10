@@ -287,6 +287,25 @@ describe('POST /classifiers/:id', () => {
       expect(classifierOutputs.length).toBe(0)
     })
 
+    test('400 from:to if not classification not exist in db', async () => {
+      // Arrange
+      const requestBody = {
+        name: 'abc',
+        version: 1,
+        classification_values: 'abc:def'
+      }
+
+      // Act
+      const response = await request(superUserApp).post('/').send(requestBody)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
+
+      // Assert
+      expect(response.statusCode).toBe(400)
+      expect(classifiers.length).toBe(0)
+      expect(classifierOutputs.length).toBe(0)
+    })
+
     test('400 from:to:threshold if not classification not exist in db', async () => {
       // Arrange
       const requestBody = {
