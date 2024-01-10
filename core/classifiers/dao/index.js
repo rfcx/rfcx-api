@@ -1,7 +1,9 @@
 const models = require('../../_models')
-const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
+const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
+const { parseClassifierOutputMapping } = require('../dao/parsing')
+const { getIds } = require('../../classifications/dao')
 
 const availableIncludes = [
   {
@@ -215,6 +217,15 @@ async function update (id, createdBy, attrs, opts = {}) {
       await updateActiveProjects(update, { transaction })
     }
 
+    // Only update if there is classificationValues
+    if (Array.isArray(attrs.classificationValues)) {
+      const update = {
+        id: id,
+        classificationValues: attrs.classificationValues
+      }
+      await updateClassifierOutputs(update, { transaction })
+    }
+
     await classifier.update(attrs, { transaction })
     if (isTransactionLocal) {
       await transaction.commit()
@@ -316,6 +327,31 @@ async function updateActiveProjects (update, opts = {}) {
     classifierId: update.id,
     projectId: streamId
   })), { transaction })
+}
+
+async function updateClassifierOutputs (update, opts = {}) {
+  // Get the classification ids for each output (or error if not found)
+  const outputMappings = update.classificationValues.map(parseClassifierOutputMapping)
+  let serverIds = {}
+  try {
+    serverIds = await getIds(outputMappings.map(value => value.to))
+  } catch (_) {
+    throw new ValidationError(_.message)
+  }
+  const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to], threshold: value.threshold }))
+  // Create the outputs
+  const outputsData = outputs.map(output => ({
+    classifierId: update.id,
+    classificationId: output.id,
+    outputClassName: output.className,
+    ignoreThreshold: output.threshold
+  }))
+
+  const transaction = opts.transaction
+  await Promise.all(outputsData.map(output => {
+    const { ignoreThreshold, ...where } = output
+    return models.ClassifierOutput.update({ ignoreThreshold }, { where, transaction })
+  }))
 }
 
 module.exports = {

@@ -7,6 +7,17 @@ const app = expressApp({ has_system_role: true })
 
 app.use('/', routes)
 
+const CLASSIFICATION_1 = { id: 1, value: 'chainsaw', title: 'chainsaw', typeId: 1, sourceId: null, parent_id: null, source_external_id: null, created_at: '2022-06-29 11:22:37.094935' }
+const CLASSIFICATION_2 = { id: 2, value: 'vehicle', title: 'vehicle', typeId: 1, sourceId: null, parent_id: null, source_external_id: null, created_at: '2022-06-29 11:22:37.094935' }
+const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2]
+
+async function commonSetup () {
+  await models.Classification.bulkCreate(CLASSIFICATIONS)
+}
+
+beforeEach(async () => {
+  await commonSetup()
+})
 afterEach(async () => {
   await truncateNonBase(models)
 })
@@ -161,5 +172,22 @@ describe('PATCH /classifiers/:id', () => {
     expect(activeProjects.length).toBe(1)
     const classifierActiveProject = activeProjects.find(s => s.classifierId === classifier.id)
     expect(classifierActiveProject.projectId).toBe(requestBody.active_projects)
+  })
+
+  test('update classifier with classification_values', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, parameters: 'step=0.9', modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    const classifierOutput = { classifierId: classifier.id, classificationId: CLASSIFICATION_1.id, outputClassName: 'chainsaw' }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    await models.ClassifierOutput.create(classifierOutput)
+    const requestBody = { classification_values: 'chainsaw:0.1' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(200)
+    const output = await models.ClassifierOutput.findAll({ where: { classifierId: classifier.id, classificationId: CLASSIFICATION_1.id, outputClassName: classifierOutput.outputClassName } })
+    expect(output[0].ignoreThreshold).toBe(0.1)
   })
 })
