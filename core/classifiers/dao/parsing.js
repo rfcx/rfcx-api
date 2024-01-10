@@ -1,4 +1,4 @@
-const { ValidationError } = require("../../../common/error-handling/errors")
+const { ValidationError } = require('../../../common/error-handling/errors')
 
 module.exports = {
   parseClassifierOutputMapping (str) {

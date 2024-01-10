@@ -270,7 +270,6 @@ describe('PATCH /classifiers/:id', () => {
     expect(response.statusCode).toBe(404)
   })
 
-
   test('failed update classifier with classification_values only threshold', async () => {
     console.warn = jest.fn()
     const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, parameters: 'step=0.9', modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }

@@ -94,7 +94,6 @@ describe('POST /classifiers/:id', () => {
       expect(classifierOutputs[0].ignoreThreshold).toBe(0.5)
     })
 
-
     test('map from:to:threshold correct classification value and correct threshold', async () => {
       // Arrange
       const classifierLabel = 'chain'

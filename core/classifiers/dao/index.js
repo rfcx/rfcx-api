@@ -1,5 +1,5 @@
 const models = require('../../_models')
-const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
+const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
 const { parseClassifierOutputMapping } = require('../dao/parsing')
