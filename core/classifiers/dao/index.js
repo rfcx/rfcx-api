@@ -155,7 +155,8 @@ function create (attrs) {
     const outputsData = attrs.outputs.map(output => ({
       classifierId: classifier.id,
       classificationId: output.id,
-      outputClassName: output.className
+      outputClassName: output.className,
+      ignoreThreshold: output.threshold
     }))
     await models.ClassifierOutput.bulkCreate(outputsData, { transaction })
 

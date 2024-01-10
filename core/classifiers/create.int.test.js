@@ -57,6 +57,7 @@ describe('POST /classifiers/:id', () => {
       expect(classifierOutputs[0].classifierId).toBe(classifiers[0].id)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(CLASSIFICATION_1.value)
+      expect(classifierOutputs[0].ignoreThreshold).toBe(0.5)
     })
 
     test('normal user can create classifier', async () => {
@@ -71,7 +72,7 @@ describe('POST /classifiers/:id', () => {
       expect(response.statusCode).toBe(201)
     })
 
-    test('map correct classification value', async () => {
+    test('map from:to correct classification value', async () => {
       // Arrange
       const classifierLabel = 'chain'
       const dbLabel = CLASSIFICATION_1.value
@@ -90,9 +91,56 @@ describe('POST /classifiers/:id', () => {
       expect(classifierOutputs.length).toBe(1)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(classifierLabel)
+      expect(classifierOutputs[0].ignoreThreshold).toBe(0.5)
     })
 
-    test('multiple classification values', async () => {
+
+    test('map from:to:threshold correct classification value and correct threshold', async () => {
+      // Arrange
+      const classifierLabel = 'chain'
+      const dbLabel = CLASSIFICATION_1.value
+      const threshold = 0.2
+      const requestBody = {
+        name: 'chainsaw',
+        version: 1,
+        classification_values: `${classifierLabel}:${dbLabel}:${threshold}`
+      }
+
+      // Act
+      const response = await request(superUserApp).post('/').send(requestBody)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
+
+      // Assert
+      expect(response.statusCode).toBe(201)
+      expect(classifierOutputs.length).toBe(1)
+      expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
+      expect(classifierOutputs[0].outputClassName).toBe(classifierLabel)
+      expect(classifierOutputs[0].ignoreThreshold).toBe(threshold)
+    })
+
+    test('map to:threshold correct classification value and correct threshold', async () => {
+      // Arrange
+      const dbLabel = CLASSIFICATION_1.value
+      const threshold = 0.2
+      const requestBody = {
+        name: 'chainsaw',
+        version: 1,
+        classification_values: `${dbLabel}:${threshold}`
+      }
+
+      // Act
+      const response = await request(superUserApp).post('/').send(requestBody)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
+
+      // Assert
+      expect(response.statusCode).toBe(201)
+      expect(classifierOutputs.length).toBe(1)
+      expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
+      expect(classifierOutputs[0].outputClassName).toBe(dbLabel)
+      expect(classifierOutputs[0].ignoreThreshold).toBe(threshold)
+    })
+
+    test('multiple from:to classification values', async () => {
       // Arrange
       const classifierLabel1 = 'chain'
       const classifierLabel2 = 'veh'
@@ -113,8 +161,91 @@ describe('POST /classifiers/:id', () => {
       expect(classifierOutputs.length).toBe(2)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(classifierLabel1)
+      expect(classifierOutputs[0].ignoreThreshold).toBe(0.5)
       expect(classifierOutputs[1].classificationId).toBe(CLASSIFICATION_2.id)
       expect(classifierOutputs[1].outputClassName).toBe(classifierLabel2)
+      expect(classifierOutputs[1].ignoreThreshold).toBe(0.5)
+    })
+
+    test('multiple from:to:threshold classification values', async () => {
+      // Arrange
+      const classifierLabel1 = 'chain'
+      const classifierLabel2 = 'veh'
+      const dbLabel1 = CLASSIFICATION_1.value
+      const dbLabel2 = CLASSIFICATION_2.value
+      const threshold1 = 0.1
+      const threshold2 = 0.2
+      const requestBody = {
+        name: 'chainsaw_and_vehicle',
+        version: 1,
+        classification_values: [`${classifierLabel1}:${dbLabel1}:${threshold1}`, `${classifierLabel2}:${dbLabel2}:${threshold2}`]
+      }
+
+      // Act
+      const response = await request(superUserApp).post('/').send(requestBody)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
+
+      // Assert
+      expect(response.statusCode).toBe(201)
+      expect(classifierOutputs.length).toBe(2)
+      expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
+      expect(classifierOutputs[0].outputClassName).toBe(classifierLabel1)
+      expect(classifierOutputs[0].ignoreThreshold).toBe(threshold1)
+      expect(classifierOutputs[1].classificationId).toBe(CLASSIFICATION_2.id)
+      expect(classifierOutputs[1].outputClassName).toBe(classifierLabel2)
+      expect(classifierOutputs[1].ignoreThreshold).toBe(threshold2)
+    })
+
+    test('multiple to:threshold classification values', async () => {
+      // Arrange
+      const dbLabel1 = CLASSIFICATION_1.value
+      const dbLabel2 = CLASSIFICATION_2.value
+      const threshold1 = 0.1
+      const threshold2 = 0.2
+      const requestBody = {
+        name: 'chainsaw_and_vehicle',
+        version: 1,
+        classification_values: [`${dbLabel1}:${threshold1}`, `${dbLabel2}:${threshold2}`]
+      }
+
+      // Act
+      const response = await request(superUserApp).post('/').send(requestBody)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
+
+      // Assert
+      expect(response.statusCode).toBe(201)
+      expect(classifierOutputs.length).toBe(2)
+      expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
+      expect(classifierOutputs[0].outputClassName).toBe(dbLabel1)
+      expect(classifierOutputs[0].ignoreThreshold).toBe(threshold1)
+      expect(classifierOutputs[1].classificationId).toBe(CLASSIFICATION_2.id)
+      expect(classifierOutputs[1].outputClassName).toBe(dbLabel2)
+      expect(classifierOutputs[1].ignoreThreshold).toBe(threshold2)
+    })
+
+    test('multiple only to classification values', async () => {
+      // Arrange
+      const dbLabel1 = CLASSIFICATION_1.value
+      const dbLabel2 = CLASSIFICATION_2.value
+      const requestBody = {
+        name: 'chainsaw_and_vehicle',
+        version: 1,
+        classification_values: [`${dbLabel1}`, `${dbLabel2}`]
+      }
+
+      // Act
+      const response = await request(superUserApp).post('/').send(requestBody)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
+
+      // Assert
+      expect(response.statusCode).toBe(201)
+      expect(classifierOutputs.length).toBe(2)
+      expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
+      expect(classifierOutputs[0].outputClassName).toBe(dbLabel1)
+      expect(classifierOutputs[0].ignoreThreshold).toBe(0.5)
+      expect(classifierOutputs[1].classificationId).toBe(CLASSIFICATION_2.id)
+      expect(classifierOutputs[1].outputClassName).toBe(dbLabel2)
+      expect(classifierOutputs[1].ignoreThreshold).toBe(0.5)
     })
   })
 
@@ -125,6 +256,44 @@ describe('POST /classifiers/:id', () => {
         name: 'abc',
         version: 1,
         classification_values: 'abc'
+      }
+
+      // Act
+      const response = await request(superUserApp).post('/').send(requestBody)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
+
+      // Assert
+      expect(response.statusCode).toBe(400)
+      expect(classifiers.length).toBe(0)
+      expect(classifierOutputs.length).toBe(0)
+    })
+
+    test('400 to:threshold if not classification not exist in db', async () => {
+      // Arrange
+      const requestBody = {
+        name: 'abc',
+        version: 1,
+        classification_values: 'abc:0.5'
+      }
+
+      // Act
+      const response = await request(superUserApp).post('/').send(requestBody)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
+
+      // Assert
+      expect(response.statusCode).toBe(400)
+      expect(classifiers.length).toBe(0)
+      expect(classifierOutputs.length).toBe(0)
+    })
+
+    test('400 from:to:threshold if not classification not exist in db', async () => {
+      // Arrange
+      const requestBody = {
+        name: 'abc',
+        version: 1,
+        classification_values: 'abc:def:0.5'
       }
 
       // Act
