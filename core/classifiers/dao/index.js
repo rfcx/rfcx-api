@@ -1,5 +1,5 @@
 const models = require('../../_models')
-const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
+const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
 const { parseClassifierOutputMapping } = require('../dao/parsing')
@@ -332,12 +332,7 @@ async function updateActiveProjects (update, opts = {}) {
 async function updateClassifierOutputs (update, opts = {}) {
   // Get the classification ids for each output (or error if not found)
   const outputMappings = update.classificationValues.map(parseClassifierOutputMapping)
-  let serverIds = {}
-  try {
-    serverIds = await getIds(outputMappings.map(value => value.to))
-  } catch (_) {
-    throw new ValidationError(_.message)
-  }
+  const serverIds = await getIds(outputMappings.map(value => value.to))
   const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to], threshold: value.threshold }))
   // Create the outputs
   const outputsData = outputs.map(output => ({
@@ -348,9 +343,13 @@ async function updateClassifierOutputs (update, opts = {}) {
   }))
 
   const transaction = opts.transaction
-  await Promise.all(outputsData.map(output => {
+  await Promise.all(outputsData.map(async output => {
     const { ignoreThreshold, ...where } = output
-    return models.ClassifierOutput.update({ ignoreThreshold }, { where, transaction })
+    const existingOutput = await models.ClassifierOutput.findOne({ where, transaction })
+    if (!existingOutput) {
+      throw new EmptyResultError(`Output class name "${output.outputClassName}" does not exist in this classifier`)
+    }
+    return existingOutput.update({ ignoreThreshold }, { transaction })
   }))
 }
 
