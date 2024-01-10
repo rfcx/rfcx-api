@@ -306,5 +306,24 @@ describe('POST /classifiers/:id', () => {
       expect(classifiers.length).toBe(0)
       expect(classifierOutputs.length).toBe(0)
     })
+
+    test('400 only threshold in classification values', async () => {
+      // Arrange
+      const requestBody = {
+        name: 'abc',
+        version: 1,
+        classification_values: '0.5'
+      }
+
+      // Act
+      const response = await request(superUserApp).post('/').send(requestBody)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
+
+      // Assert
+      expect(response.statusCode).toBe(400)
+      expect(classifiers.length).toBe(0)
+      expect(classifierOutputs.length).toBe(0)
+    })
   })
 })
