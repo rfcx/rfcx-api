@@ -331,4 +331,19 @@ describe('PATCH /classifiers/:id', () => {
 
     expect(response.statusCode).toBe(404)
   })
+
+  test('failed update classifier with classification_values from:to:threshold but threshold is invalid format', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, parameters: 'step=0.9', modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    const classifierOutput = { classifierId: classifier.id, classificationId: CLASSIFICATION_1.id, outputClassName: 'chainsaw' }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    await models.ClassifierOutput.create(classifierOutput)
+    const requestBody = { classification_values: 'chns:chainsaw:abc' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(404)
+  })
 })
