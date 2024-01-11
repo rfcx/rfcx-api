@@ -86,7 +86,8 @@ router.put('/:id/users', hasProjectPermission('D'), function (req, res) {
 
   return converter.validate()
     .then(async (params) => {
-      return res.status(201).json(await put(params, userId, projectId, dao.PROJECT))
+      const result = await put(params, userId, projectId, dao.PROJECT)
+      return res.status(201).json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed adding project role for user'))
 })

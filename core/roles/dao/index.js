@@ -7,11 +7,6 @@ const MEMBER = 2
 const GUEST = 3
 const OWNER = 4
 
-const ADMIN_VALUE = 'Admin'
-const MEMBER_VALUE = 'Member'
-const GUEST_VALUE = 'Guest'
-const OWNER_VALUE = 'Owner'
-
 const ORGANIZATION = 'organization'
 const PROJECT = 'project'
 const STREAM = 'stream'
@@ -72,11 +67,13 @@ const hierarchy = {
  * @returns {*} role model item
  */
 function getByName (name, opts = {}) {
+  const transaction = opts.transaction
   return models.Role
     .findOne({
       where: { name },
       attributes: models.Role.attributes.full,
-      include: opts && opts.joinRelations ? roleBaseInclude : []
+      include: opts && opts.joinRelations ? roleBaseInclude : [],
+      transaction
     })
     .then(item => {
       if (!item) {
@@ -333,8 +330,10 @@ function getUsersForItem (id, itemName, filters) {
  * @param {string} id item id
  * @param {string} userId user id
  * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
+ * @param {object} options.transaction Sequelize transaction object
  */
-function getUserRoleForItem (id, userId, itemName) {
+function getUserRoleForItem (id, userId, itemName, options = {}) {
+  const transaction = options.transaction
   if (!Object.keys(hierarchy).includes(itemName)) {
     throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemName}"`)
   }
@@ -350,7 +349,8 @@ function getUserRoleForItem (id, userId, itemName) {
         as: 'user',
         attributes: models.User.attributes.lite
       }
-    ]
+    ],
+    transaction
   })
     .then((item) => {
       if (!item) {
@@ -383,7 +383,8 @@ function addRole (userId, roleId, itemId, itemName, options = {}) {
       where: {
         [columnName]: itemId,
         user_id: userId
-      }
+      },
+      transaction
     })
     // check if user is Owner
     if (userRole && userRole.role_id === OWNER) {
@@ -453,9 +454,5 @@ module.exports = {
   ADMIN,
   MEMBER,
   GUEST,
-  OWNER,
-  ADMIN_VALUE,
-  MEMBER_VALUE,
-  GUEST_VALUE,
-  OWNER_VALUE
+  OWNER
 }
