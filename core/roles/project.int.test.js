@@ -210,7 +210,7 @@ describe('GET /projects/:id/users', () => {
 })
 
 describe('PUT /projects/:id/users', () => {
-  test('create success Owner add user as Admin', async () => {
+  test('Success Owner add user as Admin', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Admin'
@@ -227,7 +227,7 @@ describe('PUT /projects/:id/users', () => {
     expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('create success Owner add user as Member', async () => {
+  test('Success Owner add user as Member', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Member'
@@ -244,7 +244,7 @@ describe('PUT /projects/:id/users', () => {
     expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('create success Owner add user as Guest', async () => {
+  test('Success Owner add user as Guest', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Guest'
@@ -261,7 +261,7 @@ describe('PUT /projects/:id/users', () => {
     expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('create success Admin add user as Admin', async () => {
+  test('Success Admin add user as Admin', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Admin'
@@ -278,7 +278,7 @@ describe('PUT /projects/:id/users', () => {
     expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('create success Admin add user as Member', async () => {
+  test('Success Admin add user as Member', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Member'
@@ -295,7 +295,7 @@ describe('PUT /projects/:id/users', () => {
     expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('create success Admin add user as Guest', async () => {
+  test('Success Admin add user as Guest', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Guest'
