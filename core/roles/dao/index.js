@@ -7,10 +7,10 @@ const MEMBER = 2
 const GUEST = 3
 const OWNER = 4
 
-const ADMIN_VALUE = "Admin"
-const MEMBER_VALUE = "Member"
-const GUEST_VALUE = "Guest"
-const OWNER_VALUE = "Owner"
+const ADMIN_VALUE = 'Admin'
+const MEMBER_VALUE = 'Member'
+const GUEST_VALUE = 'Guest'
+const OWNER_VALUE = 'Owner'
 
 const ORGANIZATION = 'organization'
 const PROJECT = 'project'

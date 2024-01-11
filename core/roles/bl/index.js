@@ -1,6 +1,6 @@
 const dao = require('../dao')
 const usersService = require('../../../common/users')
-const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
+const { ValidationError } = require('../../../common/error-handling/errors')
 
 /**
  * put role
