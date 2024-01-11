@@ -3,6 +3,7 @@ const { httpErrorHandler } = require('../../common/error-handling/http')
 const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 const dao = require('./dao')
+const { update } = require('./bl')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
 /**
@@ -76,19 +77,15 @@ router.get('/:id/users', hasProjectPermission('R'), function (req, res) {
  *               $ref: '#/components/schemas/UserLiteWithRoleAndPermissions'
  */
 
-router.put('/:id/users', hasProjectPermission('U'), function (req, res) {
+router.put('/:id/users', hasProjectPermission('D'), function (req, res) {
   const projectId = req.params.id
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-  params.convert('role').toString()
-  params.convert('email').toString()
+  const converter = new Converter(req.body, {}, true)
+  converter.convert('role').toString()
+  converter.convert('email').toString()
 
-  return params.validate()
-    .then(async () => {
-      const user = await usersService.getUserByEmail(convertedParams.email)
-      const role = await dao.getByName(convertedParams.role)
-      await dao.addRole(user.id, role.id, projectId, dao.PROJECT)
-      return res.status(201).json(await dao.getUserRoleForItem(projectId, user.id, dao.PROJECT))
+  return converter.validate()
+    .then(async (params) => {
+      return res.status(201).json(await update(params, projectId, dao.PROJECT))
     })
     .catch(httpErrorHandler(req, res, 'Failed adding project role for user'))
 })

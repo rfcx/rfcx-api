@@ -7,6 +7,11 @@ const MEMBER = 2
 const GUEST = 3
 const OWNER = 4
 
+const ADMIN_VALUE = "Admin"
+const MEMBER_VALUE = "Member"
+const GUEST_VALUE = "Guest"
+const OWNER_VALUE = "Owner"
+
 const ORGANIZATION = 'organization'
 const PROJECT = 'project'
 const STREAM = 'stream'
@@ -374,6 +379,16 @@ function addRole (userId, roleId, itemId, itemName, options = {}) {
       transaction = options.transaction
     }
     const columnName = `${itemName}_id`
+    const userRole = await hierarchy[itemName].roleModel.findOne({
+      where: {
+        [columnName]: itemId,
+        user_id: userId
+      }
+    })
+    // check if user is Owner
+    if (userRole && userRole.role_id === OWNER) {
+      throw new ForbiddenError('Cannot change Owner user to below roles')
+    }
     await hierarchy[itemName].roleModel.destroy({
       where: {
         [columnName]: itemId,
@@ -438,5 +453,9 @@ module.exports = {
   ADMIN,
   MEMBER,
   GUEST,
-  OWNER
+  OWNER,
+  ADMIN_VALUE,
+  MEMBER_VALUE,
+  GUEST_VALUE,
+  OWNER_VALUE
 }
