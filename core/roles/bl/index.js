@@ -17,7 +17,7 @@ async function put (params, userId, itemId, itemName) {
   return sequelize.transaction(async (transaction) => {
     const targetUser = await usersService.getUserByEmail(params.email, false, { transaction })
     const role = await dao.getByName(params.role, { transaction })
-  
+
     if (userId === targetUser.id) {
       throw new ForbiddenError('You are not allowed to change your role')
     }
