@@ -7,7 +7,7 @@ const { ValidationError, ForbiddenError } = require('../../../common/error-handl
  * @param {Params} params
  * @param {string} params.email
  * @param {string} params.role
- * @param {string} userId 
+ * @param {string} userId
  * @param {string} itemId projectId, streamId
  * @param {string} itemName PROJECT, STREAM
  * @throws ValidationError when trying to set Owner role
