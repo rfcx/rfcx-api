@@ -84,10 +84,10 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(201)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifierOutputs.length).toBe(1)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(classifierLabel)
@@ -107,10 +107,10 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(201)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifierOutputs.length).toBe(1)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(classifierLabel)
@@ -129,10 +129,10 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(201)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifierOutputs.length).toBe(1)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(dbLabel)
@@ -153,10 +153,10 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(201)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifierOutputs.length).toBe(2)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(classifierLabel1)
@@ -182,10 +182,10 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(201)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifierOutputs.length).toBe(2)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(classifierLabel1)
@@ -209,10 +209,10 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(201)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifierOutputs.length).toBe(2)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(dbLabel1)
@@ -234,10 +234,10 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(201)
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifierOutputs.length).toBe(2)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(dbLabel1)
@@ -259,11 +259,11 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifiers = await models.Classifier.findAll()
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(400)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifiers.length).toBe(0)
       expect(classifierOutputs.length).toBe(0)
     })
@@ -278,11 +278,11 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifiers = await models.Classifier.findAll()
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(400)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifiers.length).toBe(0)
       expect(classifierOutputs.length).toBe(0)
     })
@@ -297,11 +297,11 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifiers = await models.Classifier.findAll()
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(400)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifiers.length).toBe(0)
       expect(classifierOutputs.length).toBe(0)
     })
@@ -316,11 +316,11 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifiers = await models.Classifier.findAll()
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(400)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifiers.length).toBe(0)
       expect(classifierOutputs.length).toBe(0)
     })
@@ -335,11 +335,11 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifiers = await models.Classifier.findAll()
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(400)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifiers.length).toBe(0)
       expect(classifierOutputs.length).toBe(0)
     })
@@ -354,11 +354,11 @@ describe('POST /classifiers/:id', () => {
 
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
-      const classifiers = await models.Classifier.findAll()
-      const classifierOutputs = await models.ClassifierOutput.findAll()
 
       // Assert
       expect(response.statusCode).toBe(400)
+      const classifiers = await models.Classifier.findAll()
+      const classifierOutputs = await models.ClassifierOutput.findAll()
       expect(classifiers.length).toBe(0)
       expect(classifierOutputs.length).toBe(0)
     })
