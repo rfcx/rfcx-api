@@ -3,7 +3,7 @@ const usersService = require('../../../common/users')
 const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
 
 /**
- * Update role
+ * put role
  * @param {Params} params
  * @param {string} params.email
  * @param {string} params.role
@@ -11,7 +11,7 @@ const { ForbiddenError, ValidationError } = require('../../../common/error-handl
  * @param {string} itemName PROJECT, STREAM
  * @throws ValidationError when trying to set Owner role
  */
-async function update (params, itemId, itemName) {
+async function put (params, itemId, itemName) {
   const user = await usersService.getUserByEmail(params.email)
   const role = await dao.getByName(params.role)
 
@@ -23,5 +23,5 @@ async function update (params, itemId, itemName) {
 }
 
 module.exports = {
-  update
+  put
 }

@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../common/error-handling/http')
 const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 const dao = require('./dao')
-const { update } = require('./bl')
+const { put } = require('./bl')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
 /**
@@ -85,7 +85,7 @@ router.put('/:id/users', hasProjectPermission('D'), function (req, res) {
 
   return converter.validate()
     .then(async (params) => {
-      return res.status(201).json(await update(params, projectId, dao.PROJECT))
+      return res.status(201).json(await put(params, projectId, dao.PROJECT))
     })
     .catch(httpErrorHandler(req, res, 'Failed adding project role for user'))
 })
