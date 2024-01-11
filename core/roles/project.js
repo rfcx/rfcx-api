@@ -78,6 +78,7 @@ router.get('/:id/users', hasProjectPermission('R'), function (req, res) {
  */
 
 router.put('/:id/users', hasProjectPermission('D'), function (req, res) {
+  const userId = req.rfcx.auth_token_info.id
   const projectId = req.params.id
   const converter = new Converter(req.body, {}, true)
   converter.convert('role').toString()
@@ -85,7 +86,7 @@ router.put('/:id/users', hasProjectPermission('D'), function (req, res) {
 
   return converter.validate()
     .then(async (params) => {
-      return res.status(201).json(await put(params, projectId, dao.PROJECT))
+      return res.status(201).json(await put(params, userId, projectId, dao.PROJECT))
     })
     .catch(httpErrorHandler(req, res, 'Failed adding project role for user'))
 })

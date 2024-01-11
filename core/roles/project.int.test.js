@@ -343,7 +343,7 @@ describe('PUT /projects/:id/users', () => {
     expect(response.statusCode).toBe(400)
   })
 
-  test('Forbidden Owner change himself as Member', async () => {
+  test('Forbidden Owner change himself a role', async () => {
     const requestBody = {
       email: seedValues.primaryUserEmail,
       role: 'Member'
@@ -357,24 +357,10 @@ describe('PUT /projects/:id/users', () => {
     expect(response.statusCode).toBe(403)
   })
 
-  test('Validation error Owner change himself as Owner', async () => {
+  test('Forbidden error Admin change himself a role', async () => {
     const requestBody = {
       email: seedValues.primaryUserEmail,
-      role: 'Owner'
-    }
-    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
-    await models.Project.create(project)
-    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
-
-    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
-
-    expect(response.statusCode).toBe(400)
-  })
-
-  test('Validation error Admin change himself as Owner', async () => {
-    const requestBody = {
-      email: seedValues.primaryUserEmail,
-      role: 'Owner'
+      role: 'Member'
     }
     const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
     await models.Project.create(project)
@@ -382,7 +368,7 @@ describe('PUT /projects/:id/users', () => {
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
-    expect(response.statusCode).toBe(400)
+    expect(response.statusCode).toBe(403)
   })
 
   test('Validation error Admin add user as Owner', async () => {
