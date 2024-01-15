@@ -220,10 +220,9 @@ async function update (id, createdBy, attrs, opts = {}) {
     // Only update if there is classificationValues
     if (Array.isArray(attrs.classificationValues)) {
       const update = {
-        id: id,
         classificationValues: attrs.classificationValues
       }
-      await updateClassifierOutputs(update, { transaction })
+      await updateClassifierOutputs(id, update, { transaction })
     }
 
     await classifier.update(attrs, { transaction })
@@ -329,28 +328,46 @@ async function updateActiveProjects (update, opts = {}) {
   })), { transaction })
 }
 
-async function updateClassifierOutputs (update, opts = {}) {
+async function updateClassifierOutputs (id, data, opts = {}) {
+  const transaction = opts.transaction
   // Get the classification ids for each output (or error if not found)
-  const outputMappings = update.classificationValues.map(parseClassifierOutputMapping)
-  const serverIds = await getIds(outputMappings.map(value => value.to))
-  const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to], threshold: value.threshold }))
+  const outputMappings = data.classificationValues.map(parseClassifierOutputMapping)
+  const serverIds = await getIds(outputMappings.map(value => value.to), opts)
   // Create the outputs
-  const outputsData = outputs.map(output => ({
-    classifierId: update.id,
-    classificationId: output.id,
-    outputClassName: output.className,
+  const updateData = outputMappings.map(output => ({
+    classificationId: serverIds[output.to],
+    classificationName: output.to,
+    outputClassName: output.from,
     ignoreThreshold: output.threshold
   }))
 
-  const transaction = opts.transaction
-  await Promise.all(outputsData.map(async output => {
-    const { ignoreThreshold, ...where } = output
-    const existingOutput = await models.ClassifierOutput.findOne({ where, transaction })
-    if (!existingOutput) {
-      throw new EmptyResultError(`Output class name "${output.outputClassName}" does not exist in this classifier`)
-    }
-    return existingOutput.update({ ignoreThreshold }, { transaction })
+  // Get current classifier output of classifier
+  const currentOutputs = await models.ClassifierOutput.findAll({ where: { classifierId: id }, transaction }).map(output => ({
+    classifierId: output.classifierId,
+    classificationId: output.classificationId,
+    outputClassName: output.outputClassName,
+    ignoreThreshold: output.ignoreThreshold
   }))
+  // Update current output with the updateData
+  updateData.forEach(data => {
+    const targetIndex = currentOutputs.findIndex(output => data.classificationId === output.classificationId && data.outputClassName === output.outputClassName)
+    if (targetIndex === -1) {
+      throw new EmptyResultError(`Classification "${data.classificationName}" or Class name "${data.outputClassName}" does not exist for this classifier`)
+    }
+    // Replace with updated data
+    currentOutputs[targetIndex] = {
+      classifierId: id,
+      classificationId: data.classificationId,
+      outputClassName: data.outputClassName,
+      ignoreThreshold: data.ignoreThreshold
+    }
+  })
+
+  // Delete all current classifier outputs of classifier
+  await models.ClassifierOutput.destroy({ where: { classifierId: id }, transaction })
+
+  // Batch insert updated outputs
+  await models.ClassifierOutput.bulkCreate(currentOutputs, { transaction })
 }
 
 module.exports = {
