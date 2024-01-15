@@ -61,7 +61,6 @@ async function create (params, options = {}) {
 
   const project = {
     ...params,
-    createdById: options.creatableById,
     id: randomId()
   }
 

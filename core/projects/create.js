@@ -48,7 +48,10 @@ module.exports = (req, res) => {
   converter.convert('external_id').optional().toInt()
 
   return converter.validate()
-    .then((params) => create(params, options))
+    .then((params) => {
+      params.createdById = user.id
+      return create(params, options)
+    })
     .then(project => res.location(`/projects/${project.id}`).sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed creating project'))
 }
