@@ -48,6 +48,7 @@ module.exports = async (req, res) => {
     converter.convert('platform').optional().toString().default('aws')
     converter.convert('active_projects').optional().toArray()
     converter.convert('active_streams').optional().toArray()
+    converter.convert('classification_values').optional().toArray()
     const params = await converter.validate()
 
     // Call DAO & return

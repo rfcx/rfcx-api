@@ -53,12 +53,16 @@ function getId (value) {
  * Given a set of values, returns their ids as an object map
  *
  * @param {Array<String>} values An array of classification values
+ * @param {*} options
+ * @param {object} options.transaction Sequelize transaction object
  * @returns {Promise<Object>} Object that maps values to ids
  */
-async function getIds (values) {
+async function getIds (values, options = {}) {
+  const transaction = options.transaction
   const classifications = await models.Classification.findAll({
     where: { value: { [models.Sequelize.Op.in]: values } },
-    attributes: ['id', 'value']
+    attributes: ['id', 'value'],
+    transaction
   })
   const classificationsReduced = classifications.reduce((acc, cur) => {
     acc[cur.value] = cur.id

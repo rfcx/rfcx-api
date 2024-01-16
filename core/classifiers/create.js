@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
     } catch (_) {
       throw new ValidationError(_.message)
     }
-    const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to] }))
+    const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to], threshold: value.threshold }))
 
     const createdById = req.rfcx.auth_token_info.id
     const classifier = {
