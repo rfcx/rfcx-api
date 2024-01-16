@@ -55,13 +55,15 @@
       },
       "classification_values": {
         "type": "array",
-        "description": "Values of the classifications that this classifier supports (supports mapping if not the same `from_model_class_name:to_classification_value`)",
+        "description": "Values of the classifications that this classifier supports (supports mapping if not the same `from_model_class_name[:to_classification_value][:ignore_threshold]`). If `ignore_threshold` is not defined, it will use default value (0.5).",
         "items": {
           "type": "string"
         },
         "examples": [
           "chainsaw",
-          "dog_bark:dogbark"
+          "dog_bark:dogbark",
+          "dogbark:0.7",
+          "dog_bark:dogbark:0.7"
         ]
       },
       "status": {
