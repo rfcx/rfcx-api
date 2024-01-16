@@ -342,7 +342,7 @@ async function updateClassifierOutputs (id, data, opts = {}) {
   }))
 
   // Get current classifier output of classifier
-  const currentOutputs = await models.ClassifierOutput.findAll({ where: { classifierId: id }, transaction }).map(output => ({
+  const currentOutputs = (await models.ClassifierOutput.findAll({ where: { classifierId: id }, transaction })).map(output => ({
     classifierId: output.classifierId,
     classificationId: output.classificationId,
     outputClassName: output.outputClassName,
