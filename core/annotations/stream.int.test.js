@@ -1,5 +1,5 @@
 const request = require('supertest')
-const routes = require('.')
+const routes = require('./stream')
 const models = require('../_models')
 const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 
@@ -34,9 +34,10 @@ const STREAM_3 = { id: 'LilSjZJkRK45', name: 'Stream 3', projectId: PROJECT_2.id
 const STREAMS = [STREAM_1, STREAM_2, STREAM_3]
 
 const ANNOTATION_1 = { id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', start: '2021-04-14T00:00:00.000Z', end: '2021-04-14T00:01:00.000Z', stream_id: STREAM_1.id, classification_id: CLASSIFICATION_1.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
+const ANNOTATION_1_1 = { id: 'aaaaaaaa-bbbb-cccc-dddd-ffffffffffff', start: '2021-04-14T00:01:00.000Z', end: '2021-04-14T00:02:00.000Z', stream_id: STREAM_1.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
 const ANNOTATION_2 = { id: '11111111-2222-3333-4444-555555555555', start: '2021-04-14T00:02:00.000Z', end: '2021-04-14T00:03:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId  }
 const ANNOTATION_3 = { id: '11111111-2222-3333-4444-666666666666', start: '2021-04-14T00:03:00.000Z', end: '2021-04-14T00:04:00.000Z', stream_id: STREAM_3.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.otherUserId, updated_by_id: seedValues.otherUserId  }
-const ANNOTATIONS = [ANNOTATION_1, ANNOTATION_2, ANNOTATION_3]
+const ANNOTATIONS = [ANNOTATION_1, ANNOTATION_1_1, ANNOTATION_2, ANNOTATION_3]
 
 async function commonSetup () {
   await models.Project.bulkCreate(PROJECTS)
@@ -47,7 +48,7 @@ async function commonSetup () {
   await models.Annotation.bulkCreate(ANNOTATIONS)
 }
 
-describe('GET /annotations', () => {
+describe('GET /streams/:id/annotations', () => {
   describe('Valid', () => {
     test('with [`start`, `end`] params 1 output', async () => {
       const params = {
@@ -55,7 +56,7 @@ describe('GET /annotations', () => {
         end: ANNOTATION_1.end
       }
       
-      const response = await request(app).get('/').query(params)
+      const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
   
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
@@ -69,10 +70,10 @@ describe('GET /annotations', () => {
     test('with [`start`, `end`] params 2 output', async () => {
       const params = {
         start: ANNOTATION_1.start,
-        end: ANNOTATION_2.end
+        end: ANNOTATION_1_1.end
       }
       
-      const response = await request(app).get('/').query(params)
+      const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
   
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
@@ -81,57 +82,39 @@ describe('GET /annotations', () => {
       expect(response.body[0].start).toBe(ANNOTATION_1.start)
       expect(response.body[0].end).toBe(ANNOTATION_1.end)
       expect(response.body[0].classification.value).toBe(CLASSIFICATION_1.value)
-      expect(response.body[1].id).toBe(ANNOTATION_2.id)
-      expect(response.body[1].stream_id).toBe(ANNOTATION_2.stream_id)
-      expect(response.body[1].start).toBe(ANNOTATION_2.start)
-      expect(response.body[1].end).toBe(ANNOTATION_2.end)
+      expect(response.body[1].id).toBe(ANNOTATION_1_1.id)
+      expect(response.body[1].stream_id).toBe(ANNOTATION_1_1.stream_id)
+      expect(response.body[1].start).toBe(ANNOTATION_1_1.start)
+      expect(response.body[1].end).toBe(ANNOTATION_1_1.end)
       expect(response.body[1].classification.value).toBe(CLASSIFICATION_2.value)
     })
 
-    test('with [`start`, `end`, `stream_id`] params', async () => {
+    test('with [`start`, `end`, `classifications`] params 1 outout', async () => {
       const params = {
         start: ANNOTATION_1.start,
-        end: ANNOTATION_2.end,
-        stream_id: ANNOTATION_2.stream_id
-      }
-      
-      const response = await request(app).get('/').query(params)
-  
-      expect(response.statusCode).toBe(200)
-      expect(response.body.length).toBe(1)
-      expect(response.body[0].id).toBe(ANNOTATION_2.id)
-      expect(response.body[0].stream_id).toBe(ANNOTATION_2.stream_id)
-      expect(response.body[0].start).toBe(ANNOTATION_2.start)
-      expect(response.body[0].end).toBe(ANNOTATION_2.end)
-      expect(response.body[0].classification.value).toBe(CLASSIFICATION_2.value)
-    })
-
-    test('with [`start`, `end`, `classifications`] params 1 output', async () => {
-      const params = {
-        start: ANNOTATION_1.start,
-        end: ANNOTATION_2.end,
+        end: ANNOTATION_1_1.end,
         classifications: ['vehicle']
       }
       
-      const response = await request(app).get('/').query(params)
+      const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
   
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
-      expect(response.body[0].id).toBe(ANNOTATION_2.id)
-      expect(response.body[0].stream_id).toBe(ANNOTATION_2.stream_id)
-      expect(response.body[0].start).toBe(ANNOTATION_2.start)
-      expect(response.body[0].end).toBe(ANNOTATION_2.end)
+      expect(response.body[0].id).toBe(ANNOTATION_1_1.id)
+      expect(response.body[0].stream_id).toBe(ANNOTATION_1_1.stream_id)
+      expect(response.body[0].start).toBe(ANNOTATION_1_1.start)
+      expect(response.body[0].end).toBe(ANNOTATION_1_1.end)
       expect(response.body[0].classification.value).toBe(CLASSIFICATION_2.value)
     })
 
     test('with [`start`, `end`, `classifications`] params 2 output', async () => {
       const params = {
         start: ANNOTATION_1.start,
-        end: ANNOTATION_2.end,
+        end: ANNOTATION_1_1.end,
         classifications: ['vehicle', 'chainsaw']
       }
       
-      const response = await request(app).get('/').query(params)
+      const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
   
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
@@ -140,32 +123,20 @@ describe('GET /annotations', () => {
       expect(response.body[0].start).toBe(ANNOTATION_1.start)
       expect(response.body[0].end).toBe(ANNOTATION_1.end)
       expect(response.body[0].classification.value).toBe(CLASSIFICATION_1.value)
-      expect(response.body[1].id).toBe(ANNOTATION_2.id)
-      expect(response.body[1].stream_id).toBe(ANNOTATION_2.stream_id)
-      expect(response.body[1].start).toBe(ANNOTATION_2.start)
-      expect(response.body[1].end).toBe(ANNOTATION_2.end)
+      expect(response.body[1].id).toBe(ANNOTATION_1_1.id)
+      expect(response.body[1].stream_id).toBe(ANNOTATION_1_1.stream_id)
+      expect(response.body[1].start).toBe(ANNOTATION_1_1.start)
+      expect(response.body[1].end).toBe(ANNOTATION_1_1.end)
       expect(response.body[1].classification.value).toBe(CLASSIFICATION_2.value)
     })
   })
   describe('Invalid', () => {
-    test('Forbidden', async () => {
+    test('Invalid Params', async () => {
       const params = {
         start: ANNOTATION_1.start,
-        end: ANNOTATION_3.end,
-        stream_id: ANNOTATION_3.stream_id
       }
       
-      const response = await request(app).get('/').query(params)
-  
-      expect(response.statusCode).toBe(403)
-    })
-
-    test('Invalid Param', async () => {
-      const params = {
-        start: ANNOTATION_1.start
-      }
-      
-      const response = await request(app).get('/').query(params)
+      const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
   
       expect(response.statusCode).toBe(400)
     })
@@ -173,11 +144,9 @@ describe('GET /annotations', () => {
     test('Not found Stream', async () => {
       const params = {
         start: ANNOTATION_1.start,
-        end: ANNOTATION_3.end,
-        stream_id: 'aaaaaaaaaaaa'
       }
       
-      const response = await request(app).get('/').query(params)
+      const response = await request(app).get(`/aaaaaaaaaaaa/annotations`).query(params)
   
       expect(response.statusCode).toBe(404)
     })

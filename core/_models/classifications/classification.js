@@ -1,7 +1,7 @@
 const includeBuilder = require('../../_utils/db/include-builder')
 
 module.exports = function (sequelize, DataTypes) {
-  const Classification = sequelize.define('Classifications', {
+  const Classification = sequelize.define('Classification', {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
