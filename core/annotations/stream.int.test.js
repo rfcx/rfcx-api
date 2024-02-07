@@ -43,7 +43,6 @@ async function commonSetup () {
   await models.Project.bulkCreate(PROJECTS)
   await models.UserProjectRole.bulkCreate(PROJECTS.map(project => { return { project_id: project.id, user_id: project.createdById, role_id: seedValues.roleOwner } }))
   await models.Stream.bulkCreate(STREAMS)
-  await models.UserStreamRole.bulkCreate(STREAMS.map(stream => { return { stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner } }))
   await models.Classification.bulkCreate(CLASSIFICATIONS)
   await models.Annotation.bulkCreate(ANNOTATIONS)
 }
