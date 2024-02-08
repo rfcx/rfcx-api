@@ -29,7 +29,7 @@ async function defaultQueryOptions (filters, options = {}) {
   if (filters.streamId !== undefined) {
     condition.stream_id = filters.streamId
   } else {
-    const streamIds = filters.streamsOnlyPublic
+    const streamIds = options.streamsOnlyPublic
       ? await streamDao.getPublicStreamIds()
       : await getAccessibleObjectsIDs(filters.user.id, STREAM)
     condition.stream_id = {
