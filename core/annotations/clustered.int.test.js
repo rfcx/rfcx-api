@@ -151,7 +151,7 @@ describe('GET /streams/:id/annotations', () => {
       expect(response.body[0].classification.title).toBe(CLASSIFICATION_2.title)
     })
 
-    test('with [`start`, `end`, `interval`] params', async () => {
+    test('with [`start`, `end`, `interval(2d)`] params', async () => {
       const params = {
         start: ANNOTATION_4.start,
         end: ANNOTATION_5.end,
@@ -177,7 +177,7 @@ describe('GET /streams/:id/annotations', () => {
     })
   })
   describe('Invalid', () => {
-    test('Invalid Param not enough required', async () => {
+    test('Invalid Params not enough required', async () => {
       const params = {
         start: ANNOTATION_4.start
       }

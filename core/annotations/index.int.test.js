@@ -159,7 +159,7 @@ describe('GET /annotations', () => {
       expect(response.statusCode).toBe(403)
     })
 
-    test('Invalid Param', async () => {
+    test('Invalid Params', async () => {
       const params = {
         start: ANNOTATION_1.start
       }
