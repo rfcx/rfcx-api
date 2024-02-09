@@ -30,7 +30,7 @@ function httpErrorResponse (req, res, code, context, mes) {
   const message = mes || (((context != null) && (options['' + code]['' + context] != null)) ? options['' + code]['' + context] : options['' + code].default)
   code = parseInt(code)
   const json = {
-    message: message,
+    message,
     error: {
       status: code
     }

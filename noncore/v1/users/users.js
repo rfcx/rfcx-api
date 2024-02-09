@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const express = require('express')
 const router = express.Router()
 const { httpErrorResponse } = require('../../../common/error-handling/http')
@@ -26,7 +27,7 @@ router.route('/accept-terms')
 
     return auth0Service.getToken()
       .then((token) => {
-        const user_metadata = { // eslint-disable-line camelcase
+        const user_metadata = {
           consentGivenRangerApp: 'true',
           consentGivenDashboard: 'true',
           consentGivenAcousticsExplorer: 'true'
@@ -223,7 +224,7 @@ router.route('/avatar-change')
         return auth0Service.getToken()
           .then((token) => {
             return auth0Service.updateAuth0User(token, {
-              user_id: user_id,
+              user_id,
               picture: url
             })
               .then(() => {

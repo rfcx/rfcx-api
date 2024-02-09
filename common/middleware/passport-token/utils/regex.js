@@ -1,4 +1,3 @@
-
 const regex = {
 
   regExIndexOf: function (stringToMatch, regExMatchArray) {
