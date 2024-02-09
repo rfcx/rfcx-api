@@ -130,7 +130,7 @@ function matchSegmentToRecording (sfParams, segment) {
 function createRecordings (body) {
   const options = {
     method: 'POST',
-    url: `${arbimonBaseUrl}api/ingest/recordings/create`,
+    url: `${arbimonBaseUrl}${arbimonAPIPrefix}ingest/recordings/create`,
     headers: {
       'Content-Type': 'application/json'
     },
@@ -168,7 +168,7 @@ async function deleteRecordingsFromSegments (streamId, segments) {
   })
   const options = {
     method: 'POST',
-    url: `${arbimonBaseUrl}api/ingest/recordings/delete`,
+    url: `${arbimonBaseUrl}${arbimonAPIPrefix}ingest/recordings/delete`,
     headers: {
       'Content-Type': 'application/json'
     },

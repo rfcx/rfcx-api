@@ -210,7 +210,217 @@ describe('GET /projects/:id/users', () => {
 })
 
 describe('PUT /projects/:id/users', () => {
-  test('create success', async () => {
+  test('Success Owner add user as Admin', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Admin'
+    }
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
+  })
+
+  test('Success Owner add user as Member', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Member'
+    }
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
+  })
+
+  test('Success Owner add user as Guest', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Guest'
+    }
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
+  })
+
+  test('Success Admin add user as Admin', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Admin'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
+  })
+
+  test('Success Admin add user as Member', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Member'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
+  })
+
+  test('Success Admin add user as Guest', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Guest'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
+  })
+
+  test('Validation error Owner add user as Owner', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Owner'
+    }
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    const user = await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe('You are not able to change Owner role')
+    const userRole = await models.UserProjectRole.findOne({ where: { user_id: user.id, project_id: project.id } })
+    expect(userRole).toBeNull()
+  })
+
+  test('Validation error Owner change Admin as Owner', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Owner'
+    }
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    const newUser = await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+    await models.UserProjectRole.create({ user_id: newUser.id, project_id: project.id, role_id: seedValues.roleAdmin })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe('You are not able to change Owner role')
+    const userRole = await models.UserProjectRole.findOne({ where: { user_id: newUser.id, project_id: project.id } })
+    expect(userRole.roleId).toBe(seedValues.roleAdmin)
+  })
+
+  test('Forbidden Owner change himself a role', async () => {
+    const requestBody = {
+      email: seedValues.primaryUserEmail,
+      role: 'Member'
+    }
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(403)
+    expect(response.body.message).toBe('You are not allowed to change your role')
+    const userRole = await models.UserProjectRole.findOne({ where: { user_id: seedValues.primaryUserId, project_id: project.id } })
+    expect(userRole.roleId).toBe(seedValues.roleOwner)
+  })
+
+  test('Forbidden error Admin change himself a role', async () => {
+    const requestBody = {
+      email: seedValues.primaryUserEmail,
+      role: 'Member'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(403)
+    expect(response.body.message).toBe('You are not allowed to change your role')
+    const userRole = await models.UserProjectRole.findOne({ where: { user_id: seedValues.primaryUserId, project_id: project.id } })
+    expect(userRole.roleId).toBe(seedValues.roleAdmin)
+  })
+
+  test('Validation error Admin add user as Owner', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Owner'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const user = await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe('You are not able to change Owner role')
+    const userRole = await models.UserProjectRole.findOne({ where: { user_id: user.id, project_id: project.id } })
+    expect(userRole).toBeNull()
+  })
+
+  test('Validation error Admin change Member as Owner', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Owner'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const newUser = await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+    await models.UserProjectRole.create({ user_id: newUser.id, project_id: project.id, role_id: seedValues.roleMember })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe('You are not able to change Owner role')
+    const userRole = await models.UserProjectRole.findOne({ where: { user_id: newUser.id, project_id: project.id } })
+    expect(userRole.roleId).toBe(seedValues.roleMember)
+  })
+
+  test('Forbidden Member try to add user', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Member'
@@ -218,12 +428,32 @@ describe('PUT /projects/:id/users', () => {
     const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
-    await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+    const user = await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
-    expect(response.statusCode).toBe(201)
-    expect(response.body.email).toBe(requestBody.email)
+    expect(response.statusCode).toBe(403)
+    expect(response.body.message).toBe('You do not have permission to access this item.')
+    const userRole = await models.UserProjectRole.findOne({ where: { user_id: user.id, project_id: project.id } })
+    expect(userRole).toBeNull()
+  })
+
+  test('Forbidden Guest try to add user', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Member'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleGuest })
+    const user = await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+
+    const response = await request(app).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(403)
+    expect(response.body.message).toBe('You do not have permission to access this item.')
+    const userRole = await models.UserProjectRole.findOne({ where: { user_id: user.id, project_id: project.id } })
+    expect(userRole).toBeNull()
   })
 
   test('not found users', async () => {
@@ -231,9 +461,9 @@ describe('PUT /projects/:id/users', () => {
       email: 'john1@doe.com',
       role: 'Member'
     }
-    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
     await models.Project.create(project)
-    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 

@@ -61,14 +61,11 @@ async function create (params, options = {}) {
 
   const project = {
     ...params,
-    createdById: options.creatableById,
     id: randomId()
   }
 
   return sequelize.transaction(async (transaction) => {
     options.transaction = transaction
-    const result = await dao.create(project, options)
-    await addRole(result.createdById, OWNER, result.id, PROJECT, options)
 
     if (arbimonService.isEnabled && options.requestSource !== 'arbimon') {
       try {
@@ -78,6 +75,9 @@ async function create (params, options = {}) {
         console.error(`Error creating project in Arbimon (project: ${project.id})`)
       }
     }
+
+    const result = await dao.create(project, options)
+    await addRole(result.createdById, OWNER, result.id, PROJECT, options)
     return result
   })
 }

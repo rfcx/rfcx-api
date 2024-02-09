@@ -1,9 +1,6 @@
-FROM jrottenberg/ffmpeg:4.1-ubuntu
 FROM node:20.9.0 as base
 
-COPY --from=0 / /
-
-RUN apt update && apt install -y sox libsox-fmt-mp3 pngcrush imagemagick
+RUN apt update && apt install -y sox libsox-fmt-mp3 pngcrush imagemagick ffmpeg
 
 WORKDIR /tmp
 RUN rm -rf /var/lib/apt/lists/* && \
@@ -11,7 +8,7 @@ RUN rm -rf /var/lib/apt/lists/* && \
     /bin/bash -c "mkdir -p /tmp/{uploads,test-assets,ffmpeg,zip}"
 
 ENV SOX_PATH="/usr/bin/sox"
-ENV FFMPEG_PATH="/usr/local/bin/ffmpeg"
+ENV FFMPEG_PATH="/usr/bin/ffmpeg"
 ENV IMAGEMAGICK_PATH="/usr/bin/convert"
 ENV PNGCRUSH_PATH="/usr/bin/pngcrush"
 ENV CACHE_DIRECTORY="/tmp/"
