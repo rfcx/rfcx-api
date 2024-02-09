@@ -108,7 +108,7 @@ async function seed (models) {
   await models.ClassificationType.findOrCreate({ where: { id: 1, value: 'unknown' } })
 }
 
-const truncateOrder = ['Event', 'Annotation', 'DetectionReview', 'Detection', 'ClassifierProcessedSegment', 'ClassifierJobStream', 'ClassifierJobSummary', 'ClassifierJob', 'ClassifierActiveProject', 'ClassifierActiveStream', 'ClassifierDeployment', 'ClassifierEventStrategy', 'ClassifierOutput', 'Classifier', 'EventStrategy', 'ClassificationAlternativeName', 'Classification', 'UserStreamRole', 'UserProjectRole', 'UserOrganizationRole', 'StreamSegment', 'StreamSourceFile', 'AudioFileFormat', 'AudioCodec', 'FileExtension', 'Stream', 'Project', 'Organization']
+const truncateOrder = ['Index', 'IndexType', 'IndexValue', 'Event', 'Annotation', 'DetectionReview', 'Detection', 'ClassifierProcessedSegment', 'ClassifierJobStream', 'ClassifierJobSummary', 'ClassifierJob', 'ClassifierActiveProject', 'ClassifierActiveStream', 'ClassifierDeployment', 'ClassifierEventStrategy', 'ClassifierOutput', 'Classifier', 'EventStrategy', 'ClassificationAlternativeName', 'Classification', 'UserStreamRole', 'UserProjectRole', 'UserOrganizationRole', 'StreamSegment', 'StreamSourceFile', 'AudioFileFormat', 'AudioCodec', 'FileExtension', 'Stream', 'Project', 'Organization']
 
 async function truncate (models) {
   for (const key of truncateOrder) {
