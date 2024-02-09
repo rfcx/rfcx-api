@@ -44,14 +44,17 @@ const { ForbiddenError } = require('../../../common/error-handling/errors')
 router.patch('/projects/:externalId', (req, res) => {
   const user = req.rfcx.auth_token_info
   const projectId = req.params.externalId
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
+  let convertedParams = {}
+  const params = new Converter(req.body, convertedParams, true)
   params.convert('name').optional().toString()
   params.convert('description').optional().toString()
   params.convert('is_public').optional().toBoolean()
 
   return params.validate()
-    .then(() => projectsService.get({ external_id: projectId }))
+    .then((camelizedParams) => {
+      convertedParams = { ...camelizedParams } // camelized params only accessible after validated
+      return projectsService.get({ external_id: projectId })
+    })
     .then(async project => {
       const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, project, rolesService.PROJECT)
       if (!allowed) {
