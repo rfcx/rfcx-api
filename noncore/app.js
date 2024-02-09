@@ -8,6 +8,7 @@ const { urlEncoded, json, multipartFile } = require('../common/middleware/body-p
 const routeMiddleware = require('../common/middleware/route')
 const v1Routes = require('./v1/routes')
 const v2Routes = require('./v2/routes')
+const passport = require('passport')
 
 const app = express()
 
@@ -16,6 +17,7 @@ app.use(addRequestId({ attributeName: 'guid' }))
 app.use(cors())
 app.use(logging, metrics)
 app.use(urlEncoded, json, multipartFile.any())
+app.use(passport.initialize())
 
 // Main routes
 const versionedRoutes = { v1: v1Routes, v2: v2Routes }
