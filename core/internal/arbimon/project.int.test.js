@@ -58,15 +58,14 @@ describe('PATCH /internal/arbimon/projects/:externalId', () => {
     })
   })
   describe('Invalid', () => {
-    test('Invalid Params', async () => {
+    test('Forbidden', async () => {
       const body = {
-        name: 'New Test project 1',
-        is_public: 123
+        name: 'New Test project 2'
       }
 
-      const response = await request(app).patch(`/projects/${PROJECT_1.externalId}`).send(body)
+      const response = await request(app).patch(`/projects/${PROJECT_2.externalId}`).send(body)
 
-      expect(response.statusCode).toBe(400)
+      expect(response.statusCode).toBe(403)
     })
 
     test('Not found Project', async () => {

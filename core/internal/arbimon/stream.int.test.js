@@ -1,11 +1,15 @@
 const request = require('supertest')
 const routes = require('./stream')
 const models = require('../../_models')
-const { expressApp, seedValues, truncateNonBase } = require('../../../common/testing/sequelize')
+const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
+
+beforeAll(async () => {
+  muteConsole()
+})
 
 afterEach(async () => {
   await truncateNonBase(models)
