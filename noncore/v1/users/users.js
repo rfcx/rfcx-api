@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const express = require('express')
 const router = express.Router()
 const { httpErrorResponse } = require('../../../common/error-handling/http')

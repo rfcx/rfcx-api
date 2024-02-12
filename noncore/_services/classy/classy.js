@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const request = require('request')
 const Promise = require('bluebird')
 

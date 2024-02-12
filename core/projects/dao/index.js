@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const { Stream, Project, User, Organization, Sequelize } = require('../../_models')
 const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { hasPermission, getAccessibleObjectsIDs, PROJECT, ORGANIZATION, READ, CREATE, DELETE } = require('../../roles/dao')

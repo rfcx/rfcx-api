@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const moment = require('moment-timezone')
 const { EmptyResultError, ValidationError, ForbiddenError } = require('../../../common/error-handling/errors')
 const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../_models')
@@ -52,9 +53,9 @@ async function create (data, minStart, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create source file with empty object.')
   }
-  const { stream_id, filename, duration, sample_count, sample_rate, channels_count, bit_rate, sha1_checksum, meta } = data // eslint-disable-line camelcase
+  const { stream_id, filename, duration, sample_count, sample_rate, channels_count, bit_rate, sha1_checksum, meta } = data
   const { hasUnavailable } = await checkForDuplicates(stream_id, sha1_checksum, minStart, opts)
-  const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data, opts) // eslint-disable-line camelcase
+  const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data, opts)
   const where = { stream_id, sha1_checksum }
   const defaults = { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta }
   const transaction = opts.transaction || null
