@@ -32,8 +32,8 @@ const STREAM_2 = { id: 'LilSjZJkRK44', name: 'Stream 2', projectId: PROJECT_1.id
 const STREAMS = [STREAM_1, STREAM_2]
 
 const ANNOTATION_1 = { id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', start: '2021-04-14T00:00:00.000Z', end: '2021-04-14T00:01:00.000Z', stream_id: STREAM_1.id, classification_id: CLASSIFICATION_1.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
-const ANNOTATION_2 = { id: '11111111-2222-3333-4444-555555555555', start: '2021-04-14T00:02:00.000Z', end: '2021-04-14T00:03:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_1.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId  }
-const ANNOTATION_3 = { id: '11111111-2222-3333-4444-666666666666', start: '2021-04-14T00:03:00.000Z', end: '2021-04-14T00:04:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.otherUserId, updated_by_id: seedValues.otherUserId  }
+const ANNOTATION_2 = { id: '11111111-2222-3333-4444-555555555555', start: '2021-04-14T00:02:00.000Z', end: '2021-04-14T00:03:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_1.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
+const ANNOTATION_3 = { id: '11111111-2222-3333-4444-666666666666', start: '2021-04-14T00:03:00.000Z', end: '2021-04-14T00:04:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.otherUserId, updated_by_id: seedValues.otherUserId }
 const ANNOTATIONS = [ANNOTATION_1, ANNOTATION_2, ANNOTATION_3]
 
 async function commonSetup () {
@@ -47,18 +47,16 @@ async function commonSetup () {
 describe('GET /streams/:id/classifications', () => {
   describe('Valid', () => {
     test('1 output', async () => {
-
       const response = await request(app).get(`/${STREAM_1.id}/classifications`).query()
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].title).toBe(CLASSIFICATION_1.title)
     })
 
     test('2 output', async () => {
-
       const response = await request(app).get(`/${STREAM_2.id}/classifications`).query()
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].title).toBe(CLASSIFICATION_1.title)
@@ -67,9 +65,8 @@ describe('GET /streams/:id/classifications', () => {
   })
   describe('Invalid', () => {
     test('Not found Stream', async () => {
+      const response = await request(app).get('/aaaaaaaaaaaa/classifications').query()
 
-      const response = await request(app).get(`/aaaaaaaaaaaa/classifications`).query()
-  
       expect(response.statusCode).toBe(404)
     })
   })

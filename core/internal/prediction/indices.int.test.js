@@ -58,7 +58,7 @@ describe('POST /index-values', () => {
       }
       const fn = jest.spyOn(indicesService, 'clearHeatmapCache').mockReturnValue('')
 
-      const response = await request(app).post(`/index-values`).send(body)
+      const response = await request(app).post('/index-values').send(body)
 
       expect(response.statusCode).toBe(201)
       expect(fn).toHaveBeenCalled()
@@ -76,7 +76,7 @@ describe('POST /index-values', () => {
         step: 1
       }
 
-      const response = await request(app).post(`/index-values`).send(body)
+      const response = await request(app).post('/index-values').send(body)
 
       expect(response.statusCode).toBe(404)
       expect(response.body.message).toBe('Index with given code not found')
@@ -91,7 +91,7 @@ describe('POST /index-values', () => {
         step: 1
       }
 
-      const response = await request(app).post(`/index-values`).send(body)
+      const response = await request(app).post('/index-values').send(body)
 
       expect(response.statusCode).toBe(400)
     })

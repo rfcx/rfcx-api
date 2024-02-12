@@ -22,8 +22,8 @@ function defaultQueryOptions (streamId, index, start, end, descending, limit, of
       }
     ],
     attributes: models.IndexValue.attributes.lite,
-    offset: offset,
-    limit: limit,
+    offset,
+    limit,
     order: [['time', descending ? 'DESC' : 'ASC']]
   }
 }

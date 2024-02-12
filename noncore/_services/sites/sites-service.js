@@ -5,7 +5,7 @@ const Promise = require('bluebird')
 function getSiteByGuid (guid, ignoreMissing) {
   return models.GuardianSite
     .findOne({
-      where: { guid: guid }
+      where: { guid }
     })
     .then((site) => {
       if (!site && !ignoreMissing) {

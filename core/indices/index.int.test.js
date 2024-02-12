@@ -1,7 +1,7 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../_models')
-const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
+const { expressApp, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
@@ -37,9 +37,8 @@ async function commonSetup () {
 describe('GET /indices', () => {
   describe('Valid', () => {
     test('Normal', async () => {
+      const response = await request(app).get('/').query()
 
-      const response = await request(app).get(`/`).query()
-  
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(3)
       expect(response.body[0].code).toBe(INDEX_1.code)
@@ -52,8 +51,8 @@ describe('GET /indices', () => {
         limit: 1
       }
 
-      const response = await request(app).get(`/`).query(params)
-  
+      const response = await request(app).get('/').query(params)
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].code).toBe(INDEX_1.code)
@@ -64,8 +63,8 @@ describe('GET /indices', () => {
         offset: 1
       }
 
-      const response = await request(app).get(`/`).query(params)
-  
+      const response = await request(app).get('/').query(params)
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].code).toBe(INDEX_2.code)
@@ -78,8 +77,8 @@ describe('GET /indices', () => {
         offset: 1
       }
 
-      const response = await request(app).get(`/`).query(params)
-  
+      const response = await request(app).get('/').query(params)
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].code).toBe(INDEX_2.code)
@@ -92,8 +91,8 @@ describe('GET /indices', () => {
         offset: 1
       }
 
-      const response = await request(app).get(`/`).query(params)
-  
+      const response = await request(app).get('/').query(params)
+
       expect(response.statusCode).toBe(400)
     })
   })

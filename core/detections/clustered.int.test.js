@@ -56,9 +56,9 @@ describe('GET /clustered-detections', () => {
         start: DETECTION_1.start,
         end: DETECTION_3.end
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].aggregated_value).toBe(1)
@@ -71,15 +71,14 @@ describe('GET /clustered-detections', () => {
         end: DETECTION_3.end,
         min_confidence: 0.6
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].aggregated_value).toBe(3)
       expect(response.body[0].first_start).toBe(DETECTION_1.start)
     })
-
 
     test('with [`start`, `end`, `streams`] params', async () => {
       const params = {
@@ -87,9 +86,9 @@ describe('GET /clustered-detections', () => {
         end: DETECTION_4.end,
         streams: [STREAM_2.id]
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].aggregated_value).toBe(1)
@@ -103,9 +102,9 @@ describe('GET /clustered-detections', () => {
         streams: [STREAM_1.id],
         min_confidence: 0.6
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].aggregated_value).toBe(3)
@@ -118,9 +117,9 @@ describe('GET /clustered-detections', () => {
         end: DETECTION_4.end,
         streams_public: false
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].aggregated_value).toBe(1)
@@ -136,9 +135,9 @@ describe('GET /clustered-detections', () => {
         end: DETECTION_4.end,
         streams_public: true
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].aggregated_value).toBe(1)
@@ -151,9 +150,9 @@ describe('GET /clustered-detections', () => {
         end: DETECTION_4.end,
         classifications: ['chainsaw']
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].aggregated_value).toBe(1)
@@ -166,9 +165,9 @@ describe('GET /clustered-detections', () => {
         end: DETECTION_4.end,
         classifications: ['vehicle']
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].aggregated_value).toBe(1)
@@ -181,9 +180,9 @@ describe('GET /clustered-detections', () => {
         end: DETECTION_4.end,
         classifications: ['vehicle', 'chainsaw']
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].aggregated_value).toBe(1)
@@ -197,9 +196,9 @@ describe('GET /clustered-detections', () => {
       const params = {
         start: DETECTION_1.start
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(400)
     })
   })

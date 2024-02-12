@@ -1,4 +1,3 @@
-
 exports.sbdRockBlock = {
 
   validateIncomingMessage: function (req) {

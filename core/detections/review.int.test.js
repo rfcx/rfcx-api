@@ -79,7 +79,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -101,7 +101,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -124,7 +124,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream2.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -146,7 +146,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -169,7 +169,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -183,7 +183,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.45
       })
@@ -209,7 +209,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -234,7 +234,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -260,7 +260,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -296,7 +296,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -334,7 +334,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -372,7 +372,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -410,7 +410,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -448,7 +448,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         streamId: stream.id,
         classificationId: classification.id,
         classifierId: classifier.id,
-        start: start,
+        start,
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
@@ -518,7 +518,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: -1
@@ -547,7 +547,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: -1
@@ -576,7 +576,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: -1
@@ -605,7 +605,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -634,7 +634,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -663,7 +663,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -692,7 +692,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 1
@@ -721,7 +721,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 1
@@ -750,7 +750,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 1
@@ -780,7 +780,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -814,7 +814,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -848,7 +848,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -882,7 +882,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -916,7 +916,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -950,7 +950,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -984,7 +984,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1018,7 +1018,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1052,7 +1052,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1087,7 +1087,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1126,7 +1126,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1165,7 +1165,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1205,7 +1205,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: -1
@@ -1239,7 +1239,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: -1
@@ -1273,7 +1273,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1307,7 +1307,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1341,7 +1341,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 1
@@ -1375,7 +1375,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 1
@@ -1410,7 +1410,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: -1
@@ -1449,7 +1449,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: -1
@@ -1488,7 +1488,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: -1
@@ -1527,7 +1527,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: -1
@@ -1566,7 +1566,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1605,7 +1605,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1644,7 +1644,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1683,7 +1683,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 0
@@ -1722,7 +1722,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 1
@@ -1761,7 +1761,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 1
@@ -1800,7 +1800,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 1
@@ -1839,7 +1839,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           streamId: stream.id,
           classificationId: classification.id,
           classifierId: classifier.id,
-          start: start,
+          start,
           end: '2022-01-01T00:00:01.000Z',
           confidence: 0.99,
           reviewStatus: 1

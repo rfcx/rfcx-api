@@ -8,7 +8,7 @@ const { hasPermission, READ, PROJECT } = require('../../../core/roles/dao')
 function getGuardianByGuid (guid, ignoreMissing) {
   return models.Guardian
     .findOne({
-      where: { guid: guid },
+      where: { guid },
       // TODO: make includes editable if needed later
       include: [
         { model: models.GuardianSite, as: 'Site' }

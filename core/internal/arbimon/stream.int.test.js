@@ -97,7 +97,7 @@ describe('PATCH /internal/arbimon/streams/:externalId', () => {
         latitude: 19.9
       }
 
-      const response = await request(app).patch(`/streams/123`).send(body)
+      const response = await request(app).patch('/streams/123').send(body)
 
       expect(response.statusCode).toBe(404)
     })

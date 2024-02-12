@@ -32,9 +32,9 @@ function getIoTDAConnectionOptions (pingObj, now) {
   const password = crypto.createHmac('sha256', key).update('rfcxrfcx').digest('hex')
 
   return {
-    clientId: clientId,
+    clientId,
     username: guid,
-    password: password
+    password
   }
 }
 

@@ -39,9 +39,8 @@ async function commonSetup () {
 describe('GET /classifications', () => {
   describe('Valid', () => {
     test('Without Params', async () => {
-
       const response = await request(app).get('/').query()
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].title).toBe(CLASSIFICATION_1.title)
@@ -54,7 +53,7 @@ describe('GET /classifications', () => {
       }
 
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].title).toBe(CLASSIFICATION_1.title)
@@ -66,7 +65,7 @@ describe('GET /classifications', () => {
       }
 
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].title).toBe(CLASSIFICATION_1.title)
@@ -78,7 +77,7 @@ describe('GET /classifications', () => {
       }
 
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].title).toBe(CLASSIFICATION_2.title)
@@ -90,7 +89,7 @@ describe('GET /classifications', () => {
       }
 
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(0)
     })
@@ -101,7 +100,7 @@ describe('GET /classifications', () => {
       }
 
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].title).toBe(CLASSIFICATION_1.title)
@@ -114,7 +113,7 @@ describe('GET /classifications', () => {
       }
 
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(0)
     })
@@ -125,7 +124,7 @@ describe('GET /classifications', () => {
       }
 
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].title).toBe(CLASSIFICATION_1.title)
@@ -137,7 +136,7 @@ describe('GET /classifications', () => {
       }
 
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(0)
     })
@@ -149,7 +148,7 @@ describe('GET /classifications', () => {
       }
 
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(400)
     })
   })
@@ -161,7 +160,7 @@ describe('GET /classifications/:value', () => {
       const value = 'chainsaw'
 
       const response = await request(app).get(`/${value}`).query()
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.value).toBe(CLASSIFICATION_1.value)
     })
@@ -170,7 +169,7 @@ describe('GET /classifications/:value', () => {
       const value = 'vehicle'
 
       const response = await request(app).get(`/${value}`).query()
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.value).toBe(CLASSIFICATION_2.value)
     })
@@ -180,7 +179,7 @@ describe('GET /classifications/:value', () => {
       const value = 'chain'
 
       const response = await request(app).get(`/${value}`).query()
-  
+
       expect(response.statusCode).toBe(404)
     })
   })

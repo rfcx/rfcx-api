@@ -43,7 +43,6 @@ const SOURCE_FILES = [SOURCE_FILE_1]
 const SEGMENT_1 = { id: 'aaaaaaaa-bbbb-cccc-ffff-000000000001', stream_id: STREAM_1.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: SOURCE_FILE_1.id, sample_count: 720000, file_extension_id: FILE_EXTENSION_1.id, availability: 1, path: 'path/to/file' }
 const SEGMENTS = [SEGMENT_1]
 
-
 async function commonSetup () {
   await models.Project.bulkCreate(PROJECTS)
   await models.UserProjectRole.bulkCreate(PROJECTS.map(project => { return { project_id: project.id, user_id: project.createdById, role_id: seedValues.roleOwner } }))
@@ -72,7 +71,7 @@ describe('DELETE /streams/:id/stream-source-file-and-segments', () => {
       }
 
       const response = await request(app).delete(`/streams/${STREAM_1.id}/stream-source-file-and-segments`).send(body)
-  
+
       expect(response.statusCode).toBe(204)
       const segments = await models.StreamSegment.findAll()
       const sourceFiles = await models.StreamSourceFile.findAll()
@@ -95,7 +94,7 @@ describe('DELETE /streams/:id/stream-source-file-and-segments', () => {
       }
 
       const response = await request(app).delete(`/streams/${STREAM_1.id}/stream-source-file-and-segments`).send(body)
-  
+
       expect(response.statusCode).toBe(400)
     })
 
@@ -107,7 +106,7 @@ describe('DELETE /streams/:id/stream-source-file-and-segments', () => {
       }
 
       const response = await request(app).delete(`/streams/${STREAM_1.id}/stream-source-file-and-segments`).send(body)
-  
+
       expect(response.statusCode).toBe(400)
     })
   })

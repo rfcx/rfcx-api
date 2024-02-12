@@ -34,8 +34,8 @@ const STREAM_3 = { id: 'LilSjZJkRK45', name: 'Stream 3', projectId: PROJECT_2.id
 const STREAMS = [STREAM_1, STREAM_2, STREAM_3]
 
 const ANNOTATION_1 = { id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', start: '2021-04-14T00:00:00.000Z', end: '2021-04-14T00:01:00.000Z', stream_id: STREAM_1.id, classification_id: CLASSIFICATION_1.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
-const ANNOTATION_2 = { id: '11111111-2222-3333-4444-555555555555', start: '2021-04-14T00:02:00.000Z', end: '2021-04-14T00:03:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId  }
-const ANNOTATION_3 = { id: '11111111-2222-3333-4444-666666666666', start: '2021-04-14T00:03:00.000Z', end: '2021-04-14T00:04:00.000Z', stream_id: STREAM_3.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.otherUserId, updated_by_id: seedValues.otherUserId  }
+const ANNOTATION_2 = { id: '11111111-2222-3333-4444-555555555555', start: '2021-04-14T00:02:00.000Z', end: '2021-04-14T00:03:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
+const ANNOTATION_3 = { id: '11111111-2222-3333-4444-666666666666', start: '2021-04-14T00:03:00.000Z', end: '2021-04-14T00:04:00.000Z', stream_id: STREAM_3.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.otherUserId, updated_by_id: seedValues.otherUserId }
 const ANNOTATIONS = [ANNOTATION_1, ANNOTATION_2, ANNOTATION_3]
 
 async function commonSetup () {
@@ -53,9 +53,9 @@ describe('GET /annotations', () => {
         start: ANNOTATION_1.start,
         end: ANNOTATION_1.end
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].id).toBe(ANNOTATION_1.id)
@@ -70,9 +70,9 @@ describe('GET /annotations', () => {
         start: ANNOTATION_1.start,
         end: ANNOTATION_2.end
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].id).toBe(ANNOTATION_1.id)
@@ -93,9 +93,9 @@ describe('GET /annotations', () => {
         end: ANNOTATION_2.end,
         stream_id: ANNOTATION_2.stream_id
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].id).toBe(ANNOTATION_2.id)
@@ -111,9 +111,9 @@ describe('GET /annotations', () => {
         end: ANNOTATION_2.end,
         classifications: ['vehicle']
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].id).toBe(ANNOTATION_2.id)
@@ -129,9 +129,9 @@ describe('GET /annotations', () => {
         end: ANNOTATION_2.end,
         classifications: ['vehicle', 'chainsaw']
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].id).toBe(ANNOTATION_1.id)
@@ -153,9 +153,9 @@ describe('GET /annotations', () => {
         end: ANNOTATION_3.end,
         stream_id: ANNOTATION_3.stream_id
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(403)
     })
 
@@ -163,9 +163,9 @@ describe('GET /annotations', () => {
       const params = {
         start: ANNOTATION_1.start
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(400)
     })
 
@@ -175,9 +175,9 @@ describe('GET /annotations', () => {
         end: ANNOTATION_3.end,
         stream_id: 'aaaaaaaaaaaa'
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(404)
     })
   })

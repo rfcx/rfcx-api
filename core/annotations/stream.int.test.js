@@ -35,8 +35,8 @@ const STREAMS = [STREAM_1, STREAM_2, STREAM_3]
 
 const ANNOTATION_1 = { id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', start: '2021-04-14T00:00:00.000Z', end: '2021-04-14T00:01:00.000Z', stream_id: STREAM_1.id, classification_id: CLASSIFICATION_1.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
 const ANNOTATION_1_1 = { id: 'aaaaaaaa-bbbb-cccc-dddd-ffffffffffff', start: '2021-04-14T00:01:00.000Z', end: '2021-04-14T00:02:00.000Z', stream_id: STREAM_1.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
-const ANNOTATION_2 = { id: '11111111-2222-3333-4444-555555555555', start: '2021-04-14T00:02:00.000Z', end: '2021-04-14T00:03:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId  }
-const ANNOTATION_3 = { id: '11111111-2222-3333-4444-666666666666', start: '2021-04-14T00:03:00.000Z', end: '2021-04-14T00:04:00.000Z', stream_id: STREAM_3.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.otherUserId, updated_by_id: seedValues.otherUserId  }
+const ANNOTATION_2 = { id: '11111111-2222-3333-4444-555555555555', start: '2021-04-14T00:02:00.000Z', end: '2021-04-14T00:03:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
+const ANNOTATION_3 = { id: '11111111-2222-3333-4444-666666666666', start: '2021-04-14T00:03:00.000Z', end: '2021-04-14T00:04:00.000Z', stream_id: STREAM_3.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.otherUserId, updated_by_id: seedValues.otherUserId }
 const ANNOTATIONS = [ANNOTATION_1, ANNOTATION_1_1, ANNOTATION_2, ANNOTATION_3]
 
 async function commonSetup () {
@@ -54,9 +54,9 @@ describe('GET /streams/:id/annotations', () => {
         start: ANNOTATION_1.start,
         end: ANNOTATION_1.end
       }
-      
+
       const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].id).toBe(ANNOTATION_1.id)
@@ -71,9 +71,9 @@ describe('GET /streams/:id/annotations', () => {
         start: ANNOTATION_1.start,
         end: ANNOTATION_1_1.end
       }
-      
+
       const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].id).toBe(ANNOTATION_1.id)
@@ -94,9 +94,9 @@ describe('GET /streams/:id/annotations', () => {
         end: ANNOTATION_1_1.end,
         classifications: ['vehicle']
       }
-      
+
       const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].id).toBe(ANNOTATION_1_1.id)
@@ -112,9 +112,9 @@ describe('GET /streams/:id/annotations', () => {
         end: ANNOTATION_1_1.end,
         classifications: ['vehicle', 'chainsaw']
       }
-      
+
       const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].id).toBe(ANNOTATION_1.id)
@@ -132,21 +132,21 @@ describe('GET /streams/:id/annotations', () => {
   describe('Invalid', () => {
     test('Invalid Params', async () => {
       const params = {
-        start: ANNOTATION_1.start,
+        start: ANNOTATION_1.start
       }
-      
+
       const response = await request(app).get(`/${ANNOTATION_1.stream_id}/annotations`).query(params)
-  
+
       expect(response.statusCode).toBe(400)
     })
 
     test('Not found Stream', async () => {
       const params = {
-        start: ANNOTATION_1.start,
+        start: ANNOTATION_1.start
       }
-      
-      const response = await request(app).get(`/aaaaaaaaaaaa/annotations`).query(params)
-  
+
+      const response = await request(app).get('/aaaaaaaaaaaa/annotations').query(params)
+
       expect(response.statusCode).toBe(404)
     })
   })

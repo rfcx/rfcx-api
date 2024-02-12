@@ -1,4 +1,3 @@
-
 function notFound (req, res, next) {
   const err = new Error('Not Found')
   err.status = 404
@@ -12,7 +11,7 @@ function exceptionOccurred (err, req, res, next) {
   const log = {
     req: req.guid,
     url: req.url,
-    status: status,
+    status,
     ...isError ? { err } : {}
   }
   console[loggerType]('Express.js handler', log)

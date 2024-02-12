@@ -35,10 +35,10 @@ const STREAM_4 = { id: 'LilSjZJkRK46', name: 'Stream 4', projectId: PROJECT_1.id
 const STREAMS = [STREAM_1, STREAM_2, STREAM_3, STREAM_4]
 
 const ANNOTATION_1 = { id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', start: '2021-04-14T00:00:00.000Z', end: '2021-04-14T00:01:00.000Z', stream_id: STREAM_1.id, classification_id: CLASSIFICATION_1.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
-const ANNOTATION_2 = { id: '11111111-2222-3333-4444-555555555555', start: '2021-04-14T00:02:00.000Z', end: '2021-04-14T00:03:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId  }
-const ANNOTATION_3 = { id: '11111111-2222-3333-4444-666666666666', start: '2021-04-14T00:03:00.000Z', end: '2021-04-14T00:04:00.000Z', stream_id: STREAM_3.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.otherUserId, updated_by_id: seedValues.otherUserId  }
-const ANNOTATION_4 = { id: '11111111-2222-3333-4444-777777777777', start: '2021-04-14T00:04:00.000Z', end: '2021-04-14T00:05:00.000Z', stream_id: STREAM_4.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId  }
-const ANNOTATION_5 = { id: '11111111-2222-3333-4444-888888888888', start: '2021-04-16T00:04:00.000Z', end: '2021-04-16T00:05:00.000Z', stream_id: STREAM_4.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId  }
+const ANNOTATION_2 = { id: '11111111-2222-3333-4444-555555555555', start: '2021-04-14T00:02:00.000Z', end: '2021-04-14T00:03:00.000Z', stream_id: STREAM_2.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
+const ANNOTATION_3 = { id: '11111111-2222-3333-4444-666666666666', start: '2021-04-14T00:03:00.000Z', end: '2021-04-14T00:04:00.000Z', stream_id: STREAM_3.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.otherUserId, updated_by_id: seedValues.otherUserId }
+const ANNOTATION_4 = { id: '11111111-2222-3333-4444-777777777777', start: '2021-04-14T00:04:00.000Z', end: '2021-04-14T00:05:00.000Z', stream_id: STREAM_4.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
+const ANNOTATION_5 = { id: '11111111-2222-3333-4444-888888888888', start: '2021-04-16T00:04:00.000Z', end: '2021-04-16T00:05:00.000Z', stream_id: STREAM_4.id, classification_id: CLASSIFICATION_2.id, created_by_id: seedValues.primaryUserId, updated_by_id: seedValues.primaryUserId }
 const ANNOTATIONS = [ANNOTATION_1, ANNOTATION_2, ANNOTATION_3, ANNOTATION_4, ANNOTATION_5]
 
 async function commonSetup () {
@@ -56,9 +56,9 @@ describe('GET /streams/:id/annotations', () => {
         start: ANNOTATION_1.start,
         end: ANNOTATION_1.end
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].time_bucket).toBe(ANNOTATION_1.start)
@@ -73,9 +73,9 @@ describe('GET /streams/:id/annotations', () => {
         start: ANNOTATION_1.start,
         end: ANNOTATION_2.end
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].time_bucket).toBe(ANNOTATION_1.start)
@@ -96,9 +96,9 @@ describe('GET /streams/:id/annotations', () => {
         end: ANNOTATION_2.end,
         stream_id: ANNOTATION_2.stream_id
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].time_bucket).toBe(ANNOTATION_1.start)
@@ -114,9 +114,9 @@ describe('GET /streams/:id/annotations', () => {
         end: ANNOTATION_4.end,
         streams_public: false
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].time_bucket).toBe(ANNOTATION_1.start)
@@ -138,9 +138,9 @@ describe('GET /streams/:id/annotations', () => {
         end: ANNOTATION_4.end,
         streams_public: true
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].time_bucket).toBe(ANNOTATION_1.start)
@@ -157,9 +157,9 @@ describe('GET /streams/:id/annotations', () => {
         end: ANNOTATION_5.end,
         interval: '2d'
       }
-      
+
       const response = await request(app).get('/').query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].time_bucket).toBe(ANNOTATION_1.start)
@@ -181,7 +181,7 @@ describe('GET /streams/:id/annotations', () => {
       const params = {
         start: ANNOTATION_4.start
       }
-      
+
       const response = await request(app).get('/').query(params)
 
       expect(response.statusCode).toBe(400)
@@ -193,7 +193,7 @@ describe('GET /streams/:id/annotations', () => {
         end: ANNOTATION_4.end,
         stream_id: 'aaaaaaaaaaa'
       }
-      
+
       const response = await request(app).get('/').query(params)
 
       expect(response.statusCode).toBe(404)

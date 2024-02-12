@@ -13,8 +13,8 @@ function query (limit, offset) {
         }
       ],
       attributes: models.Index.attributes.lite,
-      offset: offset,
-      limit: limit,
+      offset,
+      limit,
       order: ['name']
     })
 }

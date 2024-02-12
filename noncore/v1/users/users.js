@@ -20,13 +20,14 @@ router.route('/touchapi')
     res.status(200).json({ success: true })
   })
 
+/* eslint-disable camelcase */
 router.route('/accept-terms')
   .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function (req, res) {
     const app = req.body.app || ''
 
     return auth0Service.getToken()
       .then((token) => {
-        const user_metadata = { // eslint-disable-line camelcase
+        const user_metadata = {
           consentGivenRangerApp: 'true',
           consentGivenDashboard: 'true',
           consentGivenAcousticsExplorer: 'true'
@@ -223,7 +224,7 @@ router.route('/avatar-change')
         return auth0Service.getToken()
           .then((token) => {
             return auth0Service.updateAuth0User(token, {
-              user_id: user_id,
+              user_id,
               picture: url
             })
               .then(() => {

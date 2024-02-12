@@ -61,21 +61,21 @@ describe('GET /indices', () => {
       }
 
       const response = await request(app).get(`/${STREAM_1.id}/indices/${INDEX_1.code}/values`).query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(1)
       expect(response.body[0].time).toBe(INDEX_VALUE_1.time)
       expect(response.body[0].value).toBe(INDEX_VALUE_1.value)
     })
 
-    test('with [`start`, `end`] params', async () => {
+    test('with [`start`, `end`] params 2 outputs', async () => {
       const params = {
         start: INDEX_VALUE_3.time,
         end: '2021-04-14T04:00:00.000Z'
       }
 
       const response = await request(app).get(`/${STREAM_1.id}/indices/${INDEX_3.code}/values`).query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.length).toBe(2)
       expect(response.body[0].time).toBe(INDEX_VALUE_3.time)
@@ -92,7 +92,7 @@ describe('GET /indices', () => {
       }
 
       const response = await request(app).get(`/${STREAM_1.id}/indices/${INDEX_3.code}/values`).query(params)
-  
+
       expect(response.statusCode).toBe(400)
     })
 
@@ -103,7 +103,7 @@ describe('GET /indices', () => {
       }
 
       const response = await request(app).get(`/aaaaaaaaaaaa/indices/${INDEX_3.code}/values`).query(params)
-  
+
       expect(response.statusCode).toBe(404)
     })
 
@@ -114,7 +114,7 @@ describe('GET /indices', () => {
       }
 
       const response = await request(app).get(`/${STREAM_2.id}/indices/${INDEX_3.code}/values`).query(params)
-  
+
       expect(response.statusCode).toBe(403)
     })
   })

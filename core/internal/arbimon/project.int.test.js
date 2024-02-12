@@ -37,7 +37,7 @@ describe('PATCH /internal/arbimon/projects/:externalId', () => {
       }
 
       const response = await request(app).patch(`/projects/${PROJECT_1.externalId}`).send(body)
-  
+
       expect(response.statusCode).toBe(200)
       const project = await models.Project.findByPk(PROJECT_1.id)
       expect(project.name).toBe(body.name)
@@ -50,7 +50,7 @@ describe('PATCH /internal/arbimon/projects/:externalId', () => {
       }
 
       const response = await request(app).patch(`/projects/${PROJECT_1.externalId}`).send(body)
-  
+
       expect(response.statusCode).toBe(200)
       const project = await models.Project.findByPk(PROJECT_1.id)
       expect(project.name).toBe(body.name)
@@ -65,7 +65,7 @@ describe('PATCH /internal/arbimon/projects/:externalId', () => {
       }
 
       const response = await request(app).patch(`/projects/${PROJECT_1.externalId}`).send(body)
-  
+
       expect(response.statusCode).toBe(400)
     })
 
@@ -75,8 +75,8 @@ describe('PATCH /internal/arbimon/projects/:externalId', () => {
         is_public: 123
       }
 
-      const response = await request(app).patch(`/projects/123`).send(body)
-  
+      const response = await request(app).patch('/projects/123').send(body)
+
       expect(response.statusCode).toBe(404)
     })
   })

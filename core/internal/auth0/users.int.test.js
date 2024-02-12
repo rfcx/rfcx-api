@@ -28,8 +28,8 @@ describe('POST /internal/auth0/new-login', () => {
       }
       const fn = jest.spyOn(arbimonService, 'createUser').mockReturnValue('')
 
-      const response = await request(app).post(`/new-login`).send(body)
-  
+      const response = await request(app).post('/new-login').send(body)
+
       expect(response.statusCode).toBe(200)
       expect(fn).toHaveBeenCalled()
       const user = await models.User.findOne({ where: { username: body.user_id } })

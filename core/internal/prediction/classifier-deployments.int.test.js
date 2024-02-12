@@ -1,5 +1,4 @@
 const request = require('supertest')
-const moment = require('moment')
 const routes = require('./classifier-deployments')
 const models = require('../../_models')
 const { expressApp, seedValues, truncateNonBase, muteConsole } = require('../../../common/testing/sequelize')
@@ -53,8 +52,8 @@ describe('GET /classifier-deployments', () => {
     test('Normal', async () => {
       const params = { }
 
-      const response = await request(app).get(`/classifier-deployments`).query(params)
-  
+      const response = await request(app).get('/classifier-deployments').query(params)
+
       expect(response.statusCode).toBe(200)
       expect(response.body.results.length).toBe(2)
     })
@@ -64,8 +63,8 @@ describe('GET /classifier-deployments', () => {
         deployed: false
       }
 
-      const response = await request(app).get(`/classifier-deployments`).query(params)
-  
+      const response = await request(app).get('/classifier-deployments').query(params)
+
       expect(response.statusCode).toBe(200)
       expect(response.body.results.length).toBe(0)
     })
@@ -75,8 +74,8 @@ describe('GET /classifier-deployments', () => {
         start: CLASSIFIER_DEPLOYMENT_1.end
       }
 
-      const response = await request(app).get(`/classifier-deployments`).query(params)
-  
+      const response = await request(app).get('/classifier-deployments').query(params)
+
       expect(response.statusCode).toBe(200)
       expect(response.body.results.length).toBe(1)
       expect(response.body.results[0].id).toBe(CLASSIFIER_DEPLOYMENT_2.id)
@@ -90,7 +89,7 @@ describe('GET /classifier-deployments/:id', () => {
       const params = { }
 
       const response = await request(app).get(`/classifier-deployments/${CLASSIFIER_DEPLOYMENT_1.id}`).query(params)
-  
+
       expect(response.statusCode).toBe(200)
       expect(response.body.id).toBe(CLASSIFIER_DEPLOYMENT_1.id)
     })
@@ -99,8 +98,8 @@ describe('GET /classifier-deployments/:id', () => {
     test('Not found', async () => {
       const params = { }
 
-      const response = await request(app).get(`/classifier-deployments/12`).query(params)
-  
+      const response = await request(app).get('/classifier-deployments/12').query(params)
+
       expect(response.statusCode).toBe(404)
     })
   })
@@ -114,7 +113,7 @@ describe('PATCH /classifier-deployments/:id', () => {
       }
 
       const response = await request(app).patch(`/classifier-deployments/${CLASSIFIER_DEPLOYMENT_1.id}`).send(body)
-  
+
       expect(response.statusCode).toBe(200)
       const deployment = await models.ClassifierDeployment.findByPk(CLASSIFIER_DEPLOYMENT_1.id)
       expect(deployment.deployed).toBe(body.deployed)
