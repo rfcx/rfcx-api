@@ -1,3 +1,7 @@
+## 1.3.6 (2024-02-xx)
+### Common
+* **core**: Change Production Arbimon API prefix from `api` to `legacy-api`
+
 ## 1.3.5 (2024-01-xx)
 ### Common
 * Upgrade all possible dependencies
