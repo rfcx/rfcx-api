@@ -105,8 +105,7 @@ async function queryByKeyword (keyword, types, allClassifiers, classifiers, limi
   }
 
   const bind = { types, limit, offset }
-
-  if (keyword !== undefined || keyword !== '') {
+  if (keyword && keyword !== '') {
     conditions.push('(c.title ILIKE $keyword OR can.name ILIKE $keyword)')
     bind.keyword = `%${keyword}%`
   }

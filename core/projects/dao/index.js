@@ -206,6 +206,7 @@ function getProjectLocation (id) {
   })
 }
 
+/* eslint-disable camelcase */
 function formatProject (project) {
   const { id, name, description, is_public, created_at, updated_at, min_latitude, min_longitude, max_latitude, max_longitude } = project
   return {

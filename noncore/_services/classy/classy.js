@@ -2,6 +2,7 @@
 const request = require('request')
 const Promise = require('bluebird')
 
+/* eslint-disable camelcase */
 function requestAccessToken (client_id, client_secret) {
   return new Promise((resolve, reject) => {
     const options = {

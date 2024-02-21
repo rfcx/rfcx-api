@@ -41,6 +41,7 @@ function get (id, opts = {}) {
     })
 }
 
+/* eslint-disable camelcase */
 /**
  * Creates source file item
  * @param {*} data source file attributes

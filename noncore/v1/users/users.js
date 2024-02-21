@@ -21,6 +21,7 @@ router.route('/touchapi')
     res.status(200).json({ success: true })
   })
 
+/* eslint-disable camelcase */
 router.route('/accept-terms')
   .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function (req, res) {
     const app = req.body.app || ''
