@@ -52,8 +52,11 @@ module.exports = async (req, res) => {
 
     // Upload model if included
     let modelUrl = ''
-    if (req.files && req.files.file) {
-      const file = req.files.file
+    if (req.files && req.files.length > 0) {
+      if (req.files.length > 1) {
+        throw new ValidationError('Can upload only 1 file at a time')
+      }
+      const file = req.files[0]
       if (!file.originalname.endsWith('.tar.gz')) {
         throw new ValidationError('File must be .tar.gz')
       }

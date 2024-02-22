@@ -207,15 +207,15 @@ router.route('/avatar-change')
       })
       .then(() => {
         const opts = {
-          filePath: req.files.file.path,
-          fileName: `/userpics/${guid}${path.extname(req.files.file.originalname)}`,
+          filePath: req.files[0].path,
+          fileName: `/userpics/${guid}${path.extname(req.files[0].originalname)}`,
           bucket: process.env.USERS_BUCKET,
           acl: 'public-read'
         }
         return usersService.uploadImageFile(opts)
       })
       .then(() => {
-        const url = `https://${process.env.USERS_BUCKET}.s3-${process.env.AWS_REGION_ID}.amazonaws.com/userpics/${guid}${path.extname(req.files.file.originalname)}`
+        const url = `https://${process.env.USERS_BUCKET}.s3-${process.env.AWS_REGION_ID}.amazonaws.com/userpics/${guid}${path.extname(req.files[0].originalname)}`
         return usersService.prepareUserUrlPicture(user, url)
           .then(() => {
             return url

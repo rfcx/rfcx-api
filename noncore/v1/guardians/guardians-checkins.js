@@ -110,7 +110,8 @@ router.route('/:guardian_id/checkins')
       })
       .then(function () {
         // parse, review and save screenshots
-        const screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(this.json.screenshots, '|', '*'),
+        const screenshotFile = req.files.find(x => x.fieldname === 'screenshot')
+        const screenShotInfo = checkInHelpers.screenshots.info(screenshotFile, strArrToJSArr(this.json.screenshots, '|', '*'),
           this.dbGuardian.id, this.dbGuardian.guid, this.dbCheckIn.id)
         const proms = []
         for (const screenShotInfoInd in screenShotInfo) {
@@ -126,7 +127,8 @@ router.route('/:guardian_id/checkins')
       .then(function () {
         const self = this
         // parse, review and save audio
-        const audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(this.json.audio, '|', '*'), this.dbGuardian, this.dbCheckIn)
+        const audioFile = req.files.find(x => x.fieldname === 'audio')
+        const audioInfo = checkInHelpers.audio.info(audioFile, req.rfcx.api_url_domain, strArrToJSArr(this.json.audio, '|', '*'), this.dbGuardian, this.dbCheckIn)
         const proms = []
         for (const audioInfoInd in audioInfo) {
           const info = audioInfo[audioInfoInd]
