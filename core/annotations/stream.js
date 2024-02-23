@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
@@ -127,15 +128,15 @@ router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
   return params.validate()
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
-      const { start, end, frequency_min, frequency_max } = convertedParams // eslint-disable-line camelcase
+      const { start, end, frequency_min, frequency_max } = convertedParams
       const annotation = {
         streamId,
         classificationId,
         userId,
         start,
         end,
-        frequencyMin: frequency_min,
-        frequencyMax: frequency_max
+        frequencyMin: frequency_min, // eslint-disable-line camelcase
+        frequencyMax: frequency_max // eslint-disable-line camelcase
       }
       return dao.create(annotation)
     })

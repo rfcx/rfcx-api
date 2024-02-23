@@ -1,4 +1,10 @@
-## 1.3.5 (2023-12-xx)
+## 1.3.6 (2024-02-xx)
+### Common
+* **core**: Change Production Arbimon API prefix from `api` to `legacy-api`
+
+## 1.3.5 (2024-01-xx)
+### Common
+* Upgrade all possible dependencies
 ### Bug Fixes
 * **core**: Fix Arbimon API path to separated the path between staging as `legacy-api` and production as `api`
 * **core**: Fix logging request error on endpoint `streams/:id/detections` receiving array of objects

@@ -48,7 +48,7 @@ function getUserByGuid (guid, ignoreMissing) {
 }
 
 function getUserByEmail (email, ignoreMissing, options = {}) {
-  return getUserByParams({ email: email }, ignoreMissing, options)
+  return getUserByParams({ email }, ignoreMissing, options)
 }
 
 function getUserByGuidOrEmail (field1, field2) {
@@ -89,10 +89,10 @@ function update (user, attrs) {
 
 function checkUserPicture (files) {
   return new Promise((resolve, reject) => {
-    if (Array.isArray(files.file)) {
+    if (files.length > 1) {
       return reject(new ValidationError('It is only one file allowed to be uploaded.'))
     }
-    const file = files.file
+    const file = files[0]
     if (!file) {
       return reject(new ValidationError('No file provided.'))
     }

@@ -24,7 +24,7 @@ module.exports = {
         if (!permissionData) {
           await queryInterface.sequelize.query(`insert into role_permissions (role_id, permission) values (${roleId}, '${permissionValue}')`, { transaction })
           insertedRolePermissions.push({
-            roleId: roleId,
+            roleId,
             permission: permissionValue
           })
         }

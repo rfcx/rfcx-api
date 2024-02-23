@@ -62,16 +62,16 @@ exports.token = {
     const tokenHash = hashedCredentials(salt, token)
 
     const output_token = {
-      reference_tag: reference_tag,
-      owner_primary_key: owner_primary_key,
-      token_type: token_type,
+      reference_tag,
+      owner_primary_key,
+      token_type,
       token_guid: null,
-      token: token,
+      token,
       token_expires_at: expires_at,
-      only_allow_access_to: only_allow_access_to,
-      created_for: created_for,
-      allowed_redemptions: allowed_redemptions,
-      created_by: created_by
+      only_allow_access_to,
+      created_for,
+      allowed_redemptions,
+      created_by
     }
 
     // build generic token (type-specific attributes to be added later)

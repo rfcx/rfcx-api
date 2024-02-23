@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const express = require('express')
 const router = express.Router()
 const { httpErrorResponse } = require('../../../common/error-handling/http')
@@ -20,13 +21,14 @@ router.route('/touchapi')
     res.status(200).json({ success: true })
   })
 
+/* eslint-disable camelcase */
 router.route('/accept-terms')
   .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function (req, res) {
     const app = req.body.app || ''
 
     return auth0Service.getToken()
       .then((token) => {
-        const user_metadata = { // eslint-disable-line camelcase
+        const user_metadata = {
           consentGivenRangerApp: 'true',
           consentGivenDashboard: 'true',
           consentGivenAcousticsExplorer: 'true'
@@ -205,15 +207,15 @@ router.route('/avatar-change')
       })
       .then(() => {
         const opts = {
-          filePath: req.files.file.path,
-          fileName: `/userpics/${guid}${path.extname(req.files.file.originalname)}`,
+          filePath: req.files[0].path,
+          fileName: `/userpics/${guid}${path.extname(req.files[0].originalname)}`,
           bucket: process.env.USERS_BUCKET,
           acl: 'public-read'
         }
         return usersService.uploadImageFile(opts)
       })
       .then(() => {
-        const url = `https://${process.env.USERS_BUCKET}.s3-${process.env.AWS_REGION_ID}.amazonaws.com/userpics/${guid}${path.extname(req.files.file.originalname)}`
+        const url = `https://${process.env.USERS_BUCKET}.s3-${process.env.AWS_REGION_ID}.amazonaws.com/userpics/${guid}${path.extname(req.files[0].originalname)}`
         return usersService.prepareUserUrlPicture(user, url)
           .then(() => {
             return url
@@ -223,7 +225,7 @@ router.route('/avatar-change')
         return auth0Service.getToken()
           .then((token) => {
             return auth0Service.updateAuth0User(token, {
-              user_id: user_id,
+              user_id,
               picture: url
             })
               .then(() => {

@@ -1,7 +1,9 @@
+/* eslint-disable camelcase */
 const request = require('request')
 const Promise = require('bluebird')
 
-function requestAccessToken (client_id, client_secret) { // eslint-disable-line camelcase
+/* eslint-disable camelcase */
+function requestAccessToken (client_id, client_secret) {
   return new Promise((resolve, reject) => {
     const options = {
       method: 'POST',
@@ -33,7 +35,7 @@ function saveCampaignTransaction (campaignId, memberInfo, items, offlinePaymentI
 
   const body = {
     member_email_address: memberInfo.member_email_address,
-    items: items,
+    items,
     offline_payment_info: offlinePaymentInfo,
     is_anonymous: !!memberInfo.is_anonymous
   }

@@ -116,7 +116,7 @@ router.get('/', (req, res) => {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams // eslint-disable-line camelcase
+      const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
       const streamsOnlyPublic = convertedParams.streams_public
       const annotation = {
         start,

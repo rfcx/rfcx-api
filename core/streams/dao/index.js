@@ -325,7 +325,7 @@ function ensureStreamExistsForGuardian (dbGuardian) {
 }
 
 async function getPublicStreamIds () {
-  return (await query({ is_public: true })).results.map(d => d.id)
+  return (await query({}, { onlyPublic: true })).results.map(d => d.id)
 }
 
 function getStreamRangeToken (stream, start, end) {

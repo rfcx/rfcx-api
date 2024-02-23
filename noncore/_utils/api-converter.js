@@ -24,7 +24,7 @@ const SequelizeApiConverter = function (type, req, selfProperty) {
   function createApiObj (id, attrs) {
     const api = {
       data: {
-        id: id,
+        id,
         type: converter.type,
         attributes: attrs || {}
       },

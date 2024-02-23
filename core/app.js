@@ -9,6 +9,7 @@ const routeMiddleware = require('../common/middleware/route')
 const { authenticate } = require('../common/middleware/authorization/authorization')
 const coreRoutes = require('./routes')
 const internalRoutes = require('./internal/routes')
+const passport = require('passport')
 
 const app = express()
 
@@ -16,6 +17,7 @@ app.use(addRequestId({ attributeName: 'guid' }))
 app.use(cors()) // TODO Should we limit which routes need cors?
 app.use(logging, metrics)
 app.use(urlEncoded, json, multipartFile.any())
+app.use(passport.initialize())
 
 // Main routes
 for (const routeName in coreRoutes) {
