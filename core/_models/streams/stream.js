@@ -90,6 +90,11 @@ module.exports = function (sequelize, DataTypes) {
     countryCode: {
       type: DataTypes.STRING(2),
       allowNull: true
+    },
+    hidden: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
     }
   }, {
     paranoid: true,

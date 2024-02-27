@@ -121,10 +121,11 @@ module.exports = (req, res) => {
   converter.convert('sort').optional().toString()
   converter.convert('fields').optional().toArray()
   converter.convert('permission').default(READ).toString().isEqualToAny([CREATE, READ, UPDATE, DELETE])
+  converter.convert('hidden').optional().toBoolean()
 
   return converter.validate()
     .then(async params => {
-      const { name, keyword, organizations, projects, start, end, updatedAfter, onlyPublic, onlyDeleted, limit, offset, sort, fields, permission } = params
+      const { name, keyword, organizations, projects, start, end, updatedAfter, onlyPublic, onlyDeleted, limit, offset, sort, fields, permission, hidden } = params
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = permissableBy
@@ -145,7 +146,8 @@ module.exports = (req, res) => {
         fields: fields !== undefined
           ? fields
           : [...Stream.attributes.full, 'created_by', 'project', 'permissions'],
-        permission
+        permission,
+        hidden
       }
       const streamsData = await dao.query(filters, options)
       return res.header('Total-Items', streamsData.total).json(streamsData.results)
