@@ -179,6 +179,17 @@ describe('GET /streams', () => {
     expect(response.body.length).toBe(3)
   })
 
+  test('results include only hidden streams using hidden', async () => {
+    await models.Stream.create({ id: 'public1', createdById: seedValues.primaryUserId, isPublic: true, name: 'AB01', latitude: 10.1, longitude: 101.1, hidden: true })
+    await models.Stream.create({ id: 'private2', createdById: seedValues.primaryUserId, name: 'AB02', latitude: 10.2, longitude: 101.2, hidden: false })
+
+    const response = await request(app).get('/').query({ hidden: true })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].id).toBe('public1')
+  })
+
   test('filter by name without *', async () => {
     await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
     await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })

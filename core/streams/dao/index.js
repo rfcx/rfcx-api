@@ -17,7 +17,7 @@ const availableIncludes = [
 function computedAdditions (data, stream = {}) {
   const additions = {}
   const { latitude, longitude } = data
-  if (latitude !== undefined && longitude !== undefined) {
+  if (latitude && longitude) {
     const country = crg.get_country(latitude, longitude)
     if (country) {
       additions.countryName = country.name
@@ -26,6 +26,8 @@ function computedAdditions (data, stream = {}) {
       additions.timezone = getTzByLatLng(latitude, longitude)
     }
     additions.countryCode = getCountryCodeByLatLng(latitude, longitude)
+  } else {
+    additions.timezone = 'UTC'
   }
   return additions
 }
@@ -104,6 +106,7 @@ async function create (stream, options = {}) {
  * @param {number} options.offset Number of results to skip
  * @param {string} options.permission Include only streams for which you have selected permission (only 'C', 'R', 'U', 'D' are available)
  * @param {number} options.permissableBy Include only streams permissable by the given user id
+ * @param {number} options.hidden Include only hidden streams
  */
 async function query (filters, options = {}) {
   const where = {}
@@ -179,6 +182,11 @@ async function query (filters, options = {}) {
         [Sequelize.Op.ne]: null
       }
     }
+  }
+
+  // Not include hidden streams by default
+  if (options.hidden != null) {
+    where.hidden = options.hidden
   }
 
   const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.lite

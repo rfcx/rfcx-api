@@ -46,6 +46,7 @@ module.exports = (req, res) => {
   converter.convert('is_public').optional().toBoolean().default(false)
   converter.convert('external_id').optional().toInt()
   converter.convert('project_id').optional().toString()
+  converter.convert('hidden').optional().toBoolean()
 
   return converter.validate()
     .then(async (params) => {
@@ -55,6 +56,14 @@ module.exports = (req, res) => {
       }
       if (!params.id) {
         stream.id = randomId()
+      }
+
+      if (params.latitude === 0) {
+        params.latitude = null
+      }
+
+      if (params.longitude === 0) {
+        params.longitude = null
       }
 
       if (params.projectId) {

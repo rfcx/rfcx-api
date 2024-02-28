@@ -460,6 +460,11 @@
         "type": "string",
         "description": "A project id",
         "example": "qwe2jDgX49"
+      },
+      "hidden": {
+        "type": "boolean",
+        "description": "Whether stream is hidden (default false)",
+        "example": "true"
       }
     },
     "required": [
@@ -493,6 +498,11 @@
         "type": "boolean",
         "description": "Whether stream is public",
         "example": false
+      },
+      "hidden": {
+        "type": "boolean",
+        "description": "Whether stream is hidden (default false)",
+        "example": "true"
       }
     },
     "required": [
