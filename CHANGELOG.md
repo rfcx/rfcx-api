@@ -3,6 +3,8 @@
 * **core**: Add `hidden` column to `streams`
 * **core**: `hidden` stream won't be calculated to max/min lat/long project
 * **core**: `null` stream lat/long won't be calculated to max/min lat/long project
+### Bug Fixes
+* **core**: Fix cannot delete the file that got re-uploaded
 
 ## 1.3.6 (2024-02-xx)
 ### Common
