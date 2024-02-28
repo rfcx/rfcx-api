@@ -90,6 +90,11 @@ module.exports = function (sequelize, DataTypes) {
     countryCode: {
       type: DataTypes.STRING(2),
       allowNull: true
+    },
+    hidden: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
     }
   }, {
     paranoid: true,
@@ -101,14 +106,16 @@ module.exports = function (sequelize, DataTypes) {
       },
       afterUpdate: async (stream, option) => {
         if (stream.projectId !== stream._previousDataValues.projectId) {
-          await updateMinMaxLatLngFromUpdate(stream.projectId)
-          await updateMinMaxLatLngFromUpdate(stream._previousDataValues.projectId)
+          await updateMinMaxLatLngFromUpdate(stream)
+          await updateMinMaxLatLngFromUpdate(stream._previousDataValues)
         } else if (stream.latitude !== stream._previousDataValues.latitude || stream.longitude !== stream._previousDataValues.longitude) {
-          await updateMinMaxLatLngFromUpdate(stream.projectId)
+          await updateMinMaxLatLngFromUpdate(stream)
+        } else if (stream.hidden !== stream._previousDataValues.hidden) {
+          await updateMinMaxLatLngFromUpdate(stream)
         }
       },
       afterDestroy: async (stream, option) => {
-        await updateMinMaxLatLngFromUpdate(stream.projectId)
+        await updateMinMaxLatLngFromUpdate(stream)
       }
     }
   })
@@ -116,6 +123,12 @@ module.exports = function (sequelize, DataTypes) {
   async function updateMinMaxLatLngFromCreate (stream) {
     const projectId = stream.projectId
     if (!projectId) {
+      return
+    }
+    if (stream.latitude === null || stream.longitude === null) {
+      return
+    }
+    if (stream.hidden) {
       return
     }
     const project = await sequelize.models.Project.findByPk(projectId)
@@ -137,10 +150,12 @@ module.exports = function (sequelize, DataTypes) {
     }
   }
 
-  async function updateMinMaxLatLngFromUpdate (projectId) {
+  async function updateMinMaxLatLngFromUpdate (stream) {
+    const projectId = stream.projectId
     if (!projectId) {
       return
     }
+
     const update = await sequelize.models.Stream.findAll({
       plain: true,
       raw: true,
@@ -150,7 +165,22 @@ module.exports = function (sequelize, DataTypes) {
         [sequelize.fn('min', sequelize.col('longitude')), 'minLongitude'],
         [sequelize.fn('max', sequelize.col('longitude')), 'maxLongitude']
       ],
-      where: { projectId }
+      where: {
+        projectId,
+        hidden: false,
+        [sequelize.Sequelize.Op.and]: [
+          {
+            latitude: {
+              [sequelize.Sequelize.Op.not]: null
+            }
+          },
+          {
+            longitude: {
+              [sequelize.Sequelize.Op.not]: null
+            }
+          }
+        ]
+      }
     })
     await sequelize.models.Project.update(update, { where: { id: projectId } })
   }
@@ -160,8 +190,8 @@ module.exports = function (sequelize, DataTypes) {
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   Stream.attributes = {
-    full: ['id', 'name', 'description', 'start', 'end', 'project_id', 'is_public', 'latitude', 'longitude', 'altitude', 'timezone', 'timezone_locked', 'max_sample_rate', 'external_id', 'created_by_id', 'country_code', 'created_at', 'updated_at'],
-    lite: ['id', 'name', 'start', 'end', 'latitude', 'longitude', 'altitude', 'is_public']
+    full: ['id', 'name', 'description', 'start', 'end', 'project_id', 'is_public', 'hidden', 'latitude', 'longitude', 'altitude', 'timezone', 'timezone_locked', 'max_sample_rate', 'external_id', 'created_by_id', 'country_code', 'created_at', 'updated_at'],
+    lite: ['id', 'name', 'start', 'end', 'latitude', 'longitude', 'altitude', 'is_public', 'hidden']
   }
   Stream.include = includeBuilder(Stream, 'stream', Stream.attributes.lite)
   return Stream

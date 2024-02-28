@@ -45,7 +45,7 @@ function updateProject (opts, idToken) {
 
 function createSite (stream, idToken) {
   const body = {};
-  ['name', 'latitude', 'longitude', 'altitude'].forEach((attr) => { body[attr] = stream[attr] })
+  ['name', 'latitude', 'longitude', 'altitude', 'hidden'].forEach((attr) => { body[attr] = stream[attr] })
   body.external_id = stream.id
   if (!body.altitude) {
     body.altitude = 0
@@ -69,7 +69,7 @@ function createSite (stream, idToken) {
 
 function updateSite (opts, idToken) {
   const body = {};
-  ['name', 'latitude', 'longitude', 'altitude', 'project_id'].forEach((attr) => { body[attr] = opts[attr] })
+  ['name', 'latitude', 'longitude', 'altitude', 'project_id', 'hidden'].forEach((attr) => { body[attr] = opts[attr] })
   const options = {
     method: 'PATCH',
     url: `${arbimonBaseUrl}${arbimonAPIPrefix}integration/sites/${opts.id}`,

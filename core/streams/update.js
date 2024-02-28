@@ -52,9 +52,19 @@ module.exports = (req, res) => {
   converter.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   converter.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
   converter.convert('altitude').optional().toFloat()
+  converter.convert('hidden').optional().toBoolean()
 
   converter.validate()
-    .then((params) => dao.update(id, params, options))
+    .then((params) => {
+      if (params.latitude === 0) {
+        params.latitude = null
+      }
+
+      if (params.longitude === 0) {
+        params.longitude = null
+      }
+      return dao.update(id, params, options)
+    })
     .then(async () => {
       // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {

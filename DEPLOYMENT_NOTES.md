@@ -1,4 +1,8 @@
 # API Deployment Notes
+## 1.3.7
+- Run `npm run migrate:core` to apply migrations:
+  - `20240227000001-add-hidden-to-streams`
+  - `20240228000001-latitude-longitude-0-to-null`
 
 ## 1.3.1
 - Run `npm run migrate:core` to apply migrations:
