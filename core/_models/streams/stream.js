@@ -125,7 +125,7 @@ module.exports = function (sequelize, DataTypes) {
     if (!projectId) {
       return
     }
-    if (stream.latitude  === null && stream.longitude === null) {
+    if (stream.latitude === null && stream.longitude === null) {
       return
     }
     if (stream.hidden) {
@@ -165,17 +165,17 @@ module.exports = function (sequelize, DataTypes) {
         [sequelize.fn('min', sequelize.col('longitude')), 'minLongitude'],
         [sequelize.fn('max', sequelize.col('longitude')), 'maxLongitude']
       ],
-      where: { 
-        projectId, 
+      where: {
+        projectId,
         hidden: false,
         [sequelize.Sequelize.Op.or]: [
           {
-            latitude : {
+            latitude: {
               [sequelize.Sequelize.Op.not]: null
             }
           },
           {
-            longitude : {
+            longitude: {
               [sequelize.Sequelize.Op.not]: null
             }
           }
