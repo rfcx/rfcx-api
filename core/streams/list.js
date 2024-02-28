@@ -85,6 +85,11 @@ const { CREATE, READ, UPDATE, DELETE } = require('../roles/dao')
  *             - "U"
  *             - "D"
  *         default: ["R"]
+ *       - name: hidden
+ *         description: Include deleted streams only
+ *         in: query
+ *         type: boolean
+ *         default: false
  *     responses:
  *       200:
  *         description: List of streams objects
@@ -121,7 +126,7 @@ module.exports = (req, res) => {
   converter.convert('sort').optional().toString()
   converter.convert('fields').optional().toArray()
   converter.convert('permission').default(READ).toString().isEqualToAny([CREATE, READ, UPDATE, DELETE])
-  converter.convert('hidden').optional().toBoolean()
+  converter.convert('hidden').default(false).toBoolean()
 
   return converter.validate()
     .then(async params => {

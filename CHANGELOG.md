@@ -1,3 +1,9 @@
+## 1.3.7 (2024-02-xx)
+### Common
+* **core**: Add `hidden` column to `streams`
+* **core**: `hidden` stream won't be calculated to max/min lat/long project
+* **core**: `null` stream lat/long won't be calculated to max/min lat/long project
+
 ## 1.3.6 (2024-02-xx)
 ### Common
 * **core**: Change Production Arbimon API prefix from `api` to `legacy-api`
