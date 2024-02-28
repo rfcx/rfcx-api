@@ -326,4 +326,78 @@ describe('POST /streams', () => {
     expect(stream.id).toBe('qwertyuiop40')
     expect(stream.countryCode).toBe(null)
   })
+
+  test('min/max latitude/longitude of project change when add stream', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 54.2, longitude: -4.5, projectId: project.id }
+    await models.Stream.create(stream)
+
+    const response = await request(app).get('/').query({ name: 'Jaguar Station' })
+
+    expect(response.statusCode).toBe(200)
+    const projectAfterCreated = await models.Project.findByPk(project.id)
+    expect(projectAfterCreated.minLatitude).toBe(stream.latitude)
+    expect(projectAfterCreated.maxLatitude).toBe(stream.latitude)
+    expect(projectAfterCreated.minLongitude).toBe(stream.longitude)
+    expect(projectAfterCreated.maxLongitude).toBe(stream.longitude)
+  })
+
+  test('min/max latitude/longitude of project change when add 2 stream', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 54.2, longitude: -4.5, projectId: project.id }
+    const stream2 = { id: 'jagu2', createdById: seedValues.primaryUserId, name: 'Jaguar Station 2', latitude: 66.2, longitude: -10.5, projectId: project.id }
+    await models.Stream.create(stream)
+    await models.Stream.create(stream2)
+
+    const response = await request(app).get('/').query({ name: 'Jaguar Station' })
+
+    expect(response.statusCode).toBe(200)
+    const projectAfterCreated = await models.Project.findByPk(project.id)
+    expect(projectAfterCreated.minLatitude).toBe(stream.latitude)
+    expect(projectAfterCreated.maxLatitude).toBe(stream2.latitude)
+    expect(projectAfterCreated.minLongitude).toBe(stream2.longitude)
+    expect(projectAfterCreated.maxLongitude).toBe(stream.longitude)
+  })
+
+  test('min/max latitude/longitude of project change when add 2 stream with 1 hidden', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 54.2, longitude: -4.5, projectId: project.id }
+    const stream2 = { id: 'jagu2', createdById: seedValues.primaryUserId, name: 'Jaguar Station 2', latitude: 66.2, longitude: -10.5, projectId: project.id, hidden: true }
+    await models.Stream.create(stream)
+    await models.Stream.create(stream2)
+
+    const response = await request(app).get('/').query({ name: 'Jaguar Station' })
+
+    expect(response.statusCode).toBe(200)
+    const projectAfterCreated = await models.Project.findByPk(project.id)
+    expect(projectAfterCreated.minLatitude).toBe(stream.latitude)
+    expect(projectAfterCreated.maxLatitude).toBe(stream.latitude)
+    expect(projectAfterCreated.minLongitude).toBe(stream.longitude)
+    expect(projectAfterCreated.maxLongitude).toBe(stream.longitude)
+  })
+
+  test('min/max latitude/longitude of project change when add 2 stream with 2 hidden', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 54.2, longitude: -4.5, projectId: project.id, hidden: true }
+    const stream2 = { id: 'jagu2', createdById: seedValues.primaryUserId, name: 'Jaguar Station 2', latitude: 66.2, longitude: -10.5, projectId: project.id, hidden: true }
+    await models.Stream.create(stream)
+    await models.Stream.create(stream2)
+
+    const response = await request(app).get('/').query({ name: 'Jaguar Station' })
+
+    expect(response.statusCode).toBe(200)
+    const projectAfterCreated = await models.Project.findByPk(project.id)
+    expect(projectAfterCreated.minLatitude).toBeNull()
+    expect(projectAfterCreated.maxLatitude).toBeNull()
+    expect(projectAfterCreated.minLongitude).toBeNull()
+    expect(projectAfterCreated.maxLongitude).toBeNull()
+  })
 })
