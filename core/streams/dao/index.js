@@ -185,7 +185,9 @@ async function query (filters, options = {}) {
   }
 
   // Not include hidden streams by default
-  where.hidden = options.hidden ?? false
+  if (options.hidden != null) {
+    where.hidden = options.hidden
+  }
 
   const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []

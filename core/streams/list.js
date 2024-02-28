@@ -126,7 +126,7 @@ module.exports = (req, res) => {
   converter.convert('sort').optional().toString()
   converter.convert('fields').optional().toArray()
   converter.convert('permission').default(READ).toString().isEqualToAny([CREATE, READ, UPDATE, DELETE])
-  converter.convert('hidden').default(false).toBoolean()
+  converter.convert('hidden').optional().toBoolean()
 
   return converter.validate()
     .then(async params => {
