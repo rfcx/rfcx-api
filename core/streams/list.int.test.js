@@ -181,7 +181,7 @@ describe('GET /streams', () => {
 
   test('results include only hidden streams using hidden', async () => {
     await models.Stream.create({ id: 'public1', createdById: seedValues.primaryUserId, isPublic: true, name: 'AB01', latitude: 10.1, longitude: 101.1, hidden: true })
-    await models.Stream.create({ id: 'private2', createdById: seedValues.primaryUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 , hidden: false})
+    await models.Stream.create({ id: 'private2', createdById: seedValues.primaryUserId, name: 'AB02', latitude: 10.2, longitude: 101.2, hidden: false })
 
     const response = await request(app).get('/').query({ hidden: true })
 
