@@ -1,6 +1,7 @@
 const streamSegmentDao = require('../../../stream-segments/dao')
 const streamSourceFileDao = require('../../../stream-source-files/dao')
 const { sequelize } = require('../../../_models')
+const { randomString } = require('../../../../common/crypto/random')
 
 const TRASHES_STREAM_ID = process.env.TRASHES_STREAM_ID
 
@@ -46,7 +47,7 @@ async function findSourceFiles (arr, options = {}) {
  */
 async function softDeleteSourceFilesBatch (arr, options = {}) {
   const ids = await findSourceFiles(arr, options)
-  await streamSourceFileDao.updateByIds(ids, { stream_id: TRASHES_STREAM_ID }, options)
+  await Promise.all(ids.map(id => streamSourceFileDao.updateByIds(id, { stream_id: TRASHES_STREAM_ID, sha1_checksum: randomString(40) }, options)))
 }
 
 module.exports = {
