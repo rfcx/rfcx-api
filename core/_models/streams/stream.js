@@ -123,6 +123,12 @@ module.exports = function (sequelize, DataTypes) {
     if (!projectId) {
       return
     }
+    if (stream.latitude  === null && stream.longitude === null) {
+      return
+    }
+    if (stream.hidden) {
+      return
+    }
     const project = await sequelize.models.Project.findByPk(projectId)
     const update = {}
     if (project.minLatitude === null || stream.latitude < project.minLatitude) {
@@ -144,6 +150,12 @@ module.exports = function (sequelize, DataTypes) {
 
   async function updateMinMaxLatLngFromUpdate (projectId) {
     if (!projectId) {
+      return
+    }
+    if (stream.latitude  === null && stream.longitude === null) {
+      return
+    }
+    if (stream.hidden) {
       return
     }
     const update = await sequelize.models.Stream.findAll({
