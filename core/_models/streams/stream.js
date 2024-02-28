@@ -106,14 +106,16 @@ module.exports = function (sequelize, DataTypes) {
       },
       afterUpdate: async (stream, option) => {
         if (stream.projectId !== stream._previousDataValues.projectId) {
-          await updateMinMaxLatLngFromUpdate(stream.projectId)
-          await updateMinMaxLatLngFromUpdate(stream._previousDataValues.projectId)
+          await updateMinMaxLatLngFromUpdate(stream)
+          await updateMinMaxLatLngFromUpdate(stream._previousDataValues)
         } else if (stream.latitude !== stream._previousDataValues.latitude || stream.longitude !== stream._previousDataValues.longitude) {
-          await updateMinMaxLatLngFromUpdate(stream.projectId)
+          await updateMinMaxLatLngFromUpdate(stream)
+        } else if (stream.hidden !== stream._previousDataValues.hidden) {
+          await updateMinMaxLatLngFromUpdate(stream)
         }
       },
       afterDestroy: async (stream, option) => {
-        await updateMinMaxLatLngFromUpdate(stream.projectId)
+        await updateMinMaxLatLngFromUpdate(stream)
       }
     }
   })
@@ -148,16 +150,12 @@ module.exports = function (sequelize, DataTypes) {
     }
   }
 
-  async function updateMinMaxLatLngFromUpdate (projectId) {
+  async function updateMinMaxLatLngFromUpdate (stream) {
+    const projectId = stream.projectId
     if (!projectId) {
       return
     }
-    if (stream.latitude  === null && stream.longitude === null) {
-      return
-    }
-    if (stream.hidden) {
-      return
-    }
+
     const update = await sequelize.models.Stream.findAll({
       plain: true,
       raw: true,
@@ -167,7 +165,22 @@ module.exports = function (sequelize, DataTypes) {
         [sequelize.fn('min', sequelize.col('longitude')), 'minLongitude'],
         [sequelize.fn('max', sequelize.col('longitude')), 'maxLongitude']
       ],
-      where: { projectId }
+      where: { 
+        projectId, 
+        hidden: false,
+        [sequelize.Sequelize.Op.or]: [
+          {
+            latitude : {
+              [sequelize.Sequelize.Op.not]: null
+            }
+          },
+          {
+            longitude : {
+              [sequelize.Sequelize.Op.not]: null
+            }
+          }
+        ]
+      }
     })
     await sequelize.models.Project.update(update, { where: { id: projectId } })
   }
