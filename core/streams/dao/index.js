@@ -17,7 +17,7 @@ const availableIncludes = [
 function computedAdditions (data, stream = {}) {
   const additions = {}
   const { latitude, longitude } = data
-  if (latitude !== undefined && longitude !== undefined) {
+  if (latitude && longitude) {
     const country = crg.get_country(latitude, longitude)
     if (country) {
       additions.countryName = country.name
@@ -26,6 +26,8 @@ function computedAdditions (data, stream = {}) {
       additions.timezone = getTzByLatLng(latitude, longitude)
     }
     additions.countryCode = getCountryCodeByLatLng(latitude, longitude)
+  } else {
+    additions.timezone = 'UTC'
   }
   return additions
 }
