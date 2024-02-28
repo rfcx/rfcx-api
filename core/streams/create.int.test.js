@@ -148,7 +148,7 @@ describe('POST /streams', () => {
     const stream = await models.Stream.findByPk(id)
     expect(stream.timezone).toBe('Asia/Bangkok')
   })
-  test('returns 201 with null latitude and longitude cause null timezone value', async () => {
+  test('returns 201 with null latitude and longitude cause UTC timezone value', async () => {
     const project = { id: 'foo', name: 'my project', createdById: seedValues.otherUserId }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
@@ -165,7 +165,7 @@ describe('POST /streams', () => {
     expect(response.statusCode).toBe(201)
     const id = response.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
-    expect(stream.timezone).toBe(null)
+    expect(stream.timezone).toBe('UTC')
   })
 
   test('returns 201 when defined id in request body', async () => {
@@ -181,6 +181,20 @@ describe('POST /streams', () => {
     const id = response.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.id).toBe(definedId)
+  })
+
+  test('returns 201 when hidden in request body', async () => {
+    const requestBody = {
+      name: 'test-stream-with-id',
+      hidden: true
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.hidden).toBe(requestBody.hidden)
   })
 
   test('returns 400 when id length less than minimum(12)', async () => {

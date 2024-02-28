@@ -53,6 +53,21 @@ describe('PATCH /streams/:id', () => {
     expect(streamUpdated.name).toBe(requestBody.name)
   })
 
+  test('hidden stream is updatable', async () => {
+    const project = { id: 'ft1', name: 'Forest village', createdById: seedValues.primaryUserId }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    const stream = { id: 'am1', name: 'Big tree', projectId: project.id, createdById: seedValues.otherUserId }
+    await models.Stream.create(stream)
+
+    const requestBody = { hidden: true }
+    const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.hidden).toBe(requestBody.hidden)
+  })
+
   test('forbidden by stream guest', async () => {
     const stream = { id: 'am1', name: 'Big tree', createdById: seedValues.otherUserId }
     await models.Stream.create(stream)
