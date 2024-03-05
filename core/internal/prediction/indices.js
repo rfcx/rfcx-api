@@ -27,7 +27,7 @@ const { hasRole } = require('../../../common/middleware/authorization/authorizat
  *       400:
  *         description: Invalid query parameters
  *       404:
- *         description: Stream not found
+ *         description: Index with given code not found
  */
 router.post('/index-values', hasRole(['systemUser']), function (req, res) {
   const convertedParams = {}
@@ -52,7 +52,7 @@ router.post('/index-values', hasRole(['systemUser']), function (req, res) {
       return indexValuesService.create(objects)
     })
     .then(detections => res.sendStatus(201))
-    .catch(httpErrorHandler(req, res, 'Failed creating detections'))
+    .catch(httpErrorHandler(req, res, 'Failed creating Index Values'))
 })
 
 module.exports = router

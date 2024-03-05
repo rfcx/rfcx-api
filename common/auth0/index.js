@@ -53,7 +53,7 @@ function requestTokenFromAuth0 (audience) {
       body: {
         client_id: `${process.env.AUTH0_CLIENT_ID}`,
         client_secret: `${process.env.AUTH0_CLIENT_SECRET}`,
-        audience: audience,
+        audience,
         grant_type: 'client_credentials'
       }
     }
@@ -198,7 +198,7 @@ function updateAuth0User (token, opts) {
         authorization: `Bearer ${token}`,
         'Content-type': 'application/json'
       },
-      body: body
+      body
     }, (err, response, body) => {
       if (err) {
         reject(err)
@@ -222,7 +222,7 @@ function updateAuth0UserPassword (token, opts, password) {
         'Content-type': 'application/json'
       },
       body: {
-        password: password
+        password
       }
     }, (err, response, body) => {
       if (err) {
@@ -304,7 +304,7 @@ function getAllUsersForExports (token, params) {
         authorization: `Bearer ${token}`,
         'Content-type': 'application/json'
       },
-      body: body
+      body
     }, (err, response, body) => {
       if (err) {
         console.error('getAllUsersForExports', err)

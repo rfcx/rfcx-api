@@ -87,7 +87,7 @@ describe('GET /events', () => {
       streamId: streamIds[0],
       classificationId: classification.id,
       classifierEventStrategyId: classifierEventStrategy.id,
-      start: start,
+      start,
       end: moment(start).add(10, 'minutes').toISOString()
     }))
     await models.Event.bulkCreate(events)
