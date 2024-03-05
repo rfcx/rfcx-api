@@ -528,7 +528,6 @@ describe('DELETE /projects/:id/users', () => {
 
     const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
 
-    console.log(response.body.message)
     expect(response.statusCode).toBe(200)
   })
 
