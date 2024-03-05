@@ -297,23 +297,58 @@ describe('POST /streams', () => {
     expect(stream.countryCode).toBe('GB')
   })
 
-  test('country code is null for undefined lat', async () => {
+  test('country code is null and timezone is UTC for undefined lat', async () => {
     const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: undefined, longitude: -4.5 })
 
     expect(response.statusCode).toBe(201)
     const id = response.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.timezone).toBe('UTC')
     expect(stream.countryCode).toBe(null)
   })
 
-  test('country code is null for null lat', async () => {
+  test('country code is null and timezone is UTC for null lat', async () => {
     const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: null, longitude: -4.5 })
 
     expect(response.statusCode).toBe(201)
     const id = response.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.timezone).toBe('UTC')
+    expect(stream.countryCode).toBe(null)
+  })
+
+  test('country code is null and timezone is UTC for null lat long', async () => {
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: null, longitude: null })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.timezone).toBe('UTC')
+    expect(stream.countryCode).toBe(null)
+  })
+
+  test('country code is null and timezone is UTC for 0 lat long', async () => {
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: 0, longitude: 0 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.timezone).toBe('UTC')
+    expect(stream.countryCode).toBe(null)
+  })
+
+  test('country code is null and timezone is UTC for 0 lat', async () => {
+    const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: 0, longitude: -4.5 })
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe('qwertyuiop40')
+    expect(stream.timezone).toBe('UTC')
     expect(stream.countryCode).toBe(null)
   })
 
