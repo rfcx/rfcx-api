@@ -1,7 +1,7 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { get } = require('./dao')
 const { gluedDateStrOrEpochToMoment } = require('../_utils/datetime/parse')
-const { getSegmentRemotePath } = require('./bl/segment-file-utils')
+const { getSegmentFullRemotePath } = require('./bl/segment-file-utils')
 const storageService = require('../_services/storage')
 
 /**
@@ -50,7 +50,7 @@ module.exports = (req, res) => {
 // TODO Move to business logic layer
 async function getSignedDownloadUrl (segment) {
   // TODO Add caching
-  const storagePath = getSegmentRemotePath(segment)
+  const storagePath = getSegmentFullRemotePath(segment)
   const url = await storageService.getSignedUrl(storageService.buckets.streams, storagePath)
   return url
 }

@@ -80,6 +80,11 @@ function getSegmentExtension (segment) {
 
 function getSegmentRemotePath (segment) {
   const ts = moment.tz(segment.start, 'UTC')
+  return `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}`
+}
+
+function getSegmentFullRemotePath (segment) {
+  const ts = moment.tz(segment.start, 'UTC')
   const segmentExtension = getSegmentExtension(segment)
   return `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
 }
@@ -87,7 +92,7 @@ function getSegmentRemotePath (segment) {
 function downloadSegments (segments) {
   const downloadProms = []
   for (const segment of segments) {
-    const remotePath = getSegmentRemotePath(segment)
+    const remotePath = getSegmentFullRemotePath(segment)
     const segmentExtension = getSegmentExtension(segment)
     segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${random.randomString(32)}${segmentExtension}`
     downloadProms.push(storageService.download(storageService.buckets.streams, remotePath, segment.sourceFilePath))
@@ -403,5 +408,6 @@ module.exports = {
   getFile,
   deleteFilesForStream,
   convertAudio,
-  getSegmentRemotePath
+  getSegmentRemotePath,
+  getSegmentFullRemotePath
 }
