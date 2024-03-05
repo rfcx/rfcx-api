@@ -12,7 +12,7 @@ const { ForbiddenError } = require('../../../common/error-handling/errors')
  * @param {string} isSuper
  * @param {string} itemId projectId, streamId
  * @param {string} itemName PROJECT, STREAM
- * @throws ValidationError when trying to set Owner role
+ * @throws ForbiddenError when Admin trying to set Owner role
  */
 async function put (params, userId, isSuper, itemId, itemName) {
   return sequelize.transaction(async (transaction) => {
@@ -39,7 +39,7 @@ async function put (params, userId, isSuper, itemId, itemName) {
  * @param {string} isSuper
  * @param {string} itemId projectId, streamId
  * @param {string} itemName PROJECT, STREAM
- * @throws ValidationError when trying to set Owner role
+ * @throws ForbiddenError when Admin trying to remove Owner role
  */
 async function remove (params, userId, isSuper, itemId, itemName) {
   return sequelize.transaction(async (transaction) => {
