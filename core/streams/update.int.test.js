@@ -390,4 +390,24 @@ describe('PATCH /streams/:id', () => {
     expect(projectAfterUpdated.minLongitude).toBe(stream2.longitude)
     expect(projectAfterUpdated.maxLongitude).toBe(stream2.longitude)
   })
+
+  test('min/max latitude/longitude of project change when update stream with 0 latitude 0 longitude', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 54.2, longitude: -4.5, projectId: project.id }
+    const stream2 = { id: 'jagu2', createdById: seedValues.primaryUserId, name: 'Jaguar Station 2', latitude: 66.2, longitude: -10.5, projectId: project.id }
+    await models.Stream.create(stream)
+    await models.Stream.create(stream2)
+
+    const requestBody = { latitude: 0, longitude: 0 }
+    const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(204)
+    const projectAfterUpdated = await models.Project.findByPk(project.id)
+    expect(projectAfterUpdated.minLatitude).toBe(stream2.latitude)
+    expect(projectAfterUpdated.maxLatitude).toBe(stream2.latitude)
+    expect(projectAfterUpdated.minLongitude).toBe(stream2.longitude)
+    expect(projectAfterUpdated.maxLongitude).toBe(stream2.longitude)
+  })
 })
