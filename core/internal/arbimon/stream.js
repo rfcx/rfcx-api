@@ -71,6 +71,15 @@ router.patch('/streams/:externalId', (req, res) => {
         }
         convertedParams.project_id = externalProject.id
       }
+
+      if (convertedParams.latitude === 0) {
+        convertedParams.latitude = null
+      }
+
+      if (convertedParams.longitude === 0) {
+        convertedParams.longitude = null
+      }
+
       await streamDao.update(stream.id, convertedParams)
       // Update project_id, timezone in MySQL Guardians
       if (convertedParams.project_id || (convertedParams.latitude !== undefined && convertedParams.longitude)) {
