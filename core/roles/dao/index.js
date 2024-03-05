@@ -1,6 +1,6 @@
 const models = require('../../_models')
 const usersService = require('../../../common/users')
-const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 const ADMIN = 1
 const MEMBER = 2
@@ -379,17 +379,6 @@ function addRole (userId, roleId, itemId, itemName, options = {}) {
       transaction = options.transaction
     }
     const columnName = `${itemName}_id`
-    const userRole = await hierarchy[itemName].roleModel.findOne({
-      where: {
-        [columnName]: itemId,
-        user_id: userId
-      },
-      transaction
-    })
-    // check if user is Owner
-    if (userRole && userRole.role_id === OWNER) {
-      throw new ForbiddenError('Cannot change Owner user to below roles')
-    }
     await hierarchy[itemName].roleModel.destroy({
       where: {
         [columnName]: itemId,
@@ -412,25 +401,17 @@ function addRole (userId, roleId, itemId, itemName, options = {}) {
  * @param {string} userId user id
  * @param {string} itemId item id
  * @param {string} itemName item model name (e.g. stream, project, organization)
+ * @param {object} options.transaction Sequelize transaction object
  */
-async function removeRole (userId, itemId, itemName) {
+function removeRole (userId, itemId, itemName, options = {}) {
+  const transaction = options.transaction
   const columnName = `${itemName}_id`
-
-  const userRole = await hierarchy[itemName].roleModel.findOne({
-    where: {
-      [columnName]: itemId,
-      user_id: userId
-    }
-  })
-  // check if user is Owner
-  if (userRole && userRole.role_id === OWNER) {
-    throw new ForbiddenError('Cannot remove Owner role')
-  }
   return hierarchy[itemName].roleModel.destroy({
     where: {
       [columnName]: itemId,
       user_id: userId
-    }
+    },
+    transaction
   })
 }
 
