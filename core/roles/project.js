@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../common/error-handling/http')
 const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 const dao = require('./dao')
-const { put } = require('./bl')
+const { put, remove } = require('./bl')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
 /**
@@ -79,6 +79,7 @@ router.get('/:id/users', hasProjectPermission('R'), function (req, res) {
 
 router.put('/:id/users', hasProjectPermission('D'), function (req, res) {
   const userId = req.rfcx.auth_token_info.id
+  const isSuper = req.rfcx.auth_token_info.is_super
   const projectId = req.params.id
   const converter = new Converter(req.body, {}, true)
   converter.convert('role').toString()
@@ -86,7 +87,7 @@ router.put('/:id/users', hasProjectPermission('D'), function (req, res) {
 
   return converter.validate()
     .then(async (params) => {
-      const result = await put(params, userId, projectId, dao.PROJECT)
+      const result = await put(params, userId, isSuper, projectId, dao.PROJECT)
       return res.status(201).json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed adding project role for user'))
@@ -112,15 +113,16 @@ router.put('/:id/users', hasProjectPermission('D'), function (req, res) {
  */
 
 router.delete('/:id/users', hasProjectPermission('D'), function (req, res) {
+  const userId = req.rfcx.auth_token_info.id
+  const isSuper = req.rfcx.auth_token_info.is_super
   const projectId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('email').toString()
 
   return params.validate()
-    .then(async () => {
-      const user = await usersService.getUserByEmail(convertedParams.email)
-      await dao.removeRole(user.id, projectId, dao.PROJECT)
+    .then(async (params) => {
+      await remove(params, userId, isSuper, projectId, dao.PROJECT)
       return res.sendStatus(200)
     })
     .catch(httpErrorHandler(req, res, 'Failed removing project role.'))
