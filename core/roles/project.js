@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 const dao = require('./dao')
 const { put, remove } = require('./bl')

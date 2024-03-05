@@ -1,6 +1,6 @@
 const models = require('../../_models')
 const usersService = require('../../../common/users')
-const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 const ADMIN = 1
 const MEMBER = 2

@@ -1,7 +1,7 @@
 const dao = require('../dao')
 const usersService = require('../../../common/users')
 const { sequelize } = require('../../_models')
-const { ValidationError, ForbiddenError } = require('../../../common/error-handling/errors')
+const { ForbiddenError } = require('../../../common/error-handling/errors')
 
 /**
  * put role
