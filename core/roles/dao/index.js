@@ -401,14 +401,17 @@ function addRole (userId, roleId, itemId, itemName, options = {}) {
  * @param {string} userId user id
  * @param {string} itemId item id
  * @param {string} itemName item model name (e.g. stream, project, organization)
+ * @param {object} options.transaction Sequelize transaction object
  */
-function removeRole (userId, itemId, itemName) {
+function removeRole (userId, itemId, itemName, options = {}) {
+  const transaction = options.transaction
   const columnName = `${itemName}_id`
   return hierarchy[itemName].roleModel.destroy({
     where: {
       [columnName]: itemId,
       user_id: userId
-    }
+    },
+    transaction
   })
 }
 
