@@ -236,7 +236,7 @@ describe('PATCH /streams/:id', () => {
     expect(streamUpdated.countryCode).toBe('PL')
   })
 
-  test('country code is not changed for undefined lat', async () => {
+  test('country code is changed to null and timezone is UTC for undefined lat', async () => {
     const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
@@ -245,10 +245,11 @@ describe('PATCH /streams/:id', () => {
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
     expect(response.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(stream.id)
-    expect(streamUpdated.countryCode).toBe('GB')
+    expect(streamUpdated.timezone).toBe('UTC')
+    expect(streamUpdated.countryCode).toBeNull()
   })
 
-  test('country code is not changed for null lat', async () => {
+  test('country code is changed to null and timezone is UTC for null lat', async () => {
     const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
@@ -257,7 +258,47 @@ describe('PATCH /streams/:id', () => {
     const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(stream.id)
-    expect(streamUpdated.countryCode).toBe('GB')
+    expect(streamUpdated.timezone).toBe('UTC')
+    expect(streamUpdated.countryCode).toBeNull()
+  })
+
+  test('country code is changed to null and timezone is UTC for null lat long', async () => {
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
+
+    const requestBody = { latitude: null, longitude: null }
+    const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
+    expect(response2.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.timezone).toBe('UTC')
+    expect(streamUpdated.countryCode).toBeNull()
+  })
+
+  test('country code is changed to null and timezone is UTC for 0 lat long', async () => {
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
+
+    const requestBody = { latitude: 0, longitude: 0 }
+    const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
+    expect(response2.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.timezone).toBe('UTC')
+    expect(streamUpdated.countryCode).toBeNull()
+  })
+
+  test('country code is changed to null and timezone is UTC for 0 lat', async () => {
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+    await models.Stream.create(stream)
+    await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
+
+    const requestBody = { latitude: 0, longitude: -4.5 }
+    const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
+    expect(response2.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.timezone).toBe('UTC')
+    expect(streamUpdated.countryCode).toBeNull()
   })
 
   test('country code is null for coordinates somewhere in the ocean', async () => {

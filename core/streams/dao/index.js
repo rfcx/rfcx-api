@@ -28,6 +28,7 @@ function computedAdditions (data, stream = {}) {
     additions.countryCode = getCountryCodeByLatLng(latitude, longitude)
   } else {
     additions.timezone = 'UTC'
+    additions.countryCode = null
   }
   return additions
 }
