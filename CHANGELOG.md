@@ -3,6 +3,9 @@
 * **core**: Add `hidden` column to `streams`
 * **core**: `hidden` stream won't be calculated to max/min lat/long project
 * **core**: `null` stream lat/long won't be calculated to max/min lat/long project
+* **core**: Allow super user and owner to change project owner
+### Bug Fixes
+* **core**: Fix super user cannot add himself to the project role
 
 ## 1.3.6 (2024-02-xx)
 ### Common

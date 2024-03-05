@@ -4,8 +4,10 @@ const { expressApp, seedValues, truncateNonBase } = require('../../common/testin
 const request = require('supertest')
 
 const app = expressApp()
+const superUserApp = expressApp({ is_super: true })
 
 app.use('/', routes)
+superUserApp.use('/', routes)
 
 beforeAll(async () => {
   await truncateNonBase(models)
@@ -312,7 +314,7 @@ describe('PUT /projects/:id/users', () => {
     expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('Validation error Owner add user as Owner', async () => {
+  test('Success can add user as Owner', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Owner'
@@ -320,17 +322,16 @@ describe('PUT /projects/:id/users', () => {
     const project = { id: 'x456y', createdById: seedValues.primaryUserId, name: 'Project Test' }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
-    const user = await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+    await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
-    expect(response.statusCode).toBe(400)
-    expect(response.body.message).toBe('You are not able to change Owner role')
-    const userRole = await models.UserProjectRole.findOne({ where: { user_id: user.id, project_id: project.id } })
-    expect(userRole).toBeNull()
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('Validation error Owner change Admin as Owner', async () => {
+  test('Success Owner change Admin as Owner', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Owner'
@@ -343,13 +344,29 @@ describe('PUT /projects/:id/users', () => {
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
-    expect(response.statusCode).toBe(400)
-    expect(response.body.message).toBe('You are not able to change Owner role')
-    const userRole = await models.UserProjectRole.findOne({ where: { user_id: newUser.id, project_id: project.id } })
-    expect(userRole.roleId).toBe(seedValues.roleAdmin)
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('Forbidden Owner change himself a role', async () => {
+  test('Success super user change Admin as Owner', async () => {
+    const requestBody = {
+      email: 'jonny@doe.com',
+      role: 'Owner'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    const newUser = await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
+    await models.UserProjectRole.create({ user_id: newUser.id, project_id: project.id, role_id: seedValues.roleAdmin })
+
+    const response = await request(superUserApp).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
+  })
+
+  test('Success Owner change himself a role', async () => {
     const requestBody = {
       email: seedValues.primaryUserEmail,
       role: 'Member'
@@ -360,13 +377,12 @@ describe('PUT /projects/:id/users', () => {
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
-    expect(response.statusCode).toBe(403)
-    expect(response.body.message).toBe('You are not allowed to change your role')
-    const userRole = await models.UserProjectRole.findOne({ where: { user_id: seedValues.primaryUserId, project_id: project.id } })
-    expect(userRole.roleId).toBe(seedValues.roleOwner)
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('Forbidden error Admin change himself a role', async () => {
+  test('Success Admin change himself a role', async () => {
     const requestBody = {
       email: seedValues.primaryUserEmail,
       role: 'Member'
@@ -377,13 +393,42 @@ describe('PUT /projects/:id/users', () => {
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
-    expect(response.statusCode).toBe(403)
-    expect(response.body.message).toBe('You are not allowed to change your role')
-    const userRole = await models.UserProjectRole.findOne({ where: { user_id: seedValues.primaryUserId, project_id: project.id } })
-    expect(userRole.roleId).toBe(seedValues.roleAdmin)
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
   })
 
-  test('Validation error Admin add user as Owner', async () => {
+  test('Success super user add himself as Member', async () => {
+    const requestBody = {
+      email: seedValues.primaryUserEmail,
+      role: 'Member'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+
+    const response = await request(superUserApp).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
+  })
+
+  test('Success super user add himself as Owner', async () => {
+    const requestBody = {
+      email: seedValues.primaryUserEmail,
+      role: 'Owner'
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+
+    const response = await request(superUserApp).put(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.body.email).toBe(requestBody.email)
+    expect(response.body.role).toBe(requestBody.role)
+  })
+
+  test('Forbidden error Admin add user as Owner', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Owner'
@@ -395,13 +440,13 @@ describe('PUT /projects/:id/users', () => {
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
-    expect(response.statusCode).toBe(400)
-    expect(response.body.message).toBe('You are not able to change Owner role')
+    expect(response.statusCode).toBe(403)
+    expect(response.body.message).toBe('Admin are not allow to add Owner role')
     const userRole = await models.UserProjectRole.findOne({ where: { user_id: user.id, project_id: project.id } })
     expect(userRole).toBeNull()
   })
 
-  test('Validation error Admin change Member as Owner', async () => {
+  test('Forbidden error Admin change Member as Owner', async () => {
     const requestBody = {
       email: 'jonny@doe.com',
       role: 'Owner'
@@ -414,8 +459,8 @@ describe('PUT /projects/:id/users', () => {
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
-    expect(response.statusCode).toBe(400)
-    expect(response.body.message).toBe('You are not able to change Owner role')
+    expect(response.statusCode).toBe(403)
+    expect(response.body.message).toBe('Admin are not allow to add Owner role')
     const userRole = await models.UserProjectRole.findOne({ where: { user_id: newUser.id, project_id: project.id } })
     expect(userRole.roleId).toBe(seedValues.roleMember)
   })
@@ -500,6 +545,32 @@ describe('DELETE /projects/:id/users', () => {
     expect(response.statusCode).toBe(200)
   })
 
+  test('delete owner success', async () => {
+    const requestBody = {
+      email: seedValues.primaryUserEmail
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+
+    const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(200)
+  })
+
+  test('super user delete owner success', async () => {
+    const requestBody = {
+      email: seedValues.otherUserEmail
+    }
+    const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleOwner })
+
+    const response = await request(superUserApp).delete(`/${project.id}/users`).send(requestBody)
+
+    expect(response.statusCode).toBe(200)
+  })
+
   test('delete failed without access', async () => {
     const requestBody = {
       email: seedValues.otherUserEmail
@@ -527,17 +598,18 @@ describe('DELETE /projects/:id/users', () => {
     expect(response.statusCode).toBe(403)
   })
 
-  test('delete owner failed', async () => {
+  test('admin delete owner role failed', async () => {
     const requestBody = {
-      email: seedValues.primaryUserEmail
+      email: seedValues.otherUserEmail
     }
     const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
     await models.Project.create(project)
-    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.otherUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
 
     const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
 
     expect(response.statusCode).toBe(403)
-    expect(response.body.message).toBe('Cannot remove Owner role')
+    expect(response.body.message).toBe('Admin are not allow to remove Owner role')
   })
 })
