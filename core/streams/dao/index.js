@@ -116,7 +116,7 @@ async function query (filters, options = {}) {
   if (filters.names) {
     where.name = {
       [Sequelize.Op.iLike]: {
-        [Sequelize.Op.any]: filters.names.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%')}`)
+        [Sequelize.Op.any]: filters.names.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%').replaceAll('_', '\\_')}`)
       }
     }
   }
@@ -127,7 +127,7 @@ async function query (filters, options = {}) {
       },
       name: {
         [Sequelize.Op.iLike]: {
-          [Sequelize.Op.any]: filters.namesOrIds.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%')}`)
+          [Sequelize.Op.any]: filters.namesOrIds.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%').replaceAll('_', '\\_')}`)
         }
       }
     }
