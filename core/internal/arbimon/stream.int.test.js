@@ -65,6 +65,11 @@ describe('PATCH /internal/arbimon/streams/:externalId', () => {
       const stream = await models.Stream.findByPk(STREAM_1.id)
       expect(stream.name).toBe(body.name)
       expect(stream.latitude).toBe(body.latitude)
+      const projectAfterUpdated = await models.Project.findByPk(PROJECT_1.id)
+      expect(projectAfterUpdated.minLatitude).toBeNull()
+      expect(projectAfterUpdated.maxLatitude).toBeNull()
+      expect(projectAfterUpdated.minLongitude).toBeNull()
+      expect(projectAfterUpdated.maxLongitude).toBeNull()
     })
 
     test('with [`name`, `latitude`, `project_external_id`] params', async () => {
@@ -81,6 +86,75 @@ describe('PATCH /internal/arbimon/streams/:externalId', () => {
       expect(stream.name).toBe(body.name)
       expect(stream.latitude).toBe(body.latitude)
       expect(stream.project_id).toBe(PROJECT_3.id)
+      const projectAfterUpdated = await models.Project.findByPk(PROJECT_1.id)
+      expect(projectAfterUpdated.minLatitude).toBeNull()
+      expect(projectAfterUpdated.maxLatitude).toBeNull()
+      expect(projectAfterUpdated.minLongitude).toBeNull()
+      expect(projectAfterUpdated.maxLongitude).toBeNull()
+    })
+
+    test('with [`name`, `latitude`, `longitude`] params', async () => {
+      const body = {
+        name: 'New Stream 1',
+        latitude: 19.9,
+        longitude: 10.9
+      }
+
+      const response = await request(app).patch(`/streams/${STREAM_1.externalId}`).send(body)
+
+      expect(response.statusCode).toBe(200)
+      const stream = await models.Stream.findByPk(STREAM_1.id)
+      expect(stream.name).toBe(body.name)
+      expect(stream.latitude).toBe(body.latitude)
+      expect(stream.project_id).toBe(PROJECT_1.id)
+      const projectAfterUpdated = await models.Project.findByPk(PROJECT_1.id)
+      expect(projectAfterUpdated.minLatitude).toBe(body.latitude)
+      expect(projectAfterUpdated.maxLatitude).toBe(body.latitude)
+      expect(projectAfterUpdated.minLongitude).toBe(body.longitude)
+      expect(projectAfterUpdated.maxLongitude).toBe(body.longitude)
+    })
+
+    test('with [`name`, `latitude=0`, `longitude=0`] params', async () => {
+      const body = {
+        name: 'New Stream 1',
+        latitude: 0,
+        longitude: 0
+      }
+
+      const response = await request(app).patch(`/streams/${STREAM_1.externalId}`).send(body)
+
+      expect(response.statusCode).toBe(200)
+      const stream = await models.Stream.findByPk(STREAM_1.id)
+      expect(stream.name).toBe(body.name)
+      expect(stream.latitude).toBeNull()
+      expect(stream.longitude).toBeNull()
+      expect(stream.project_id).toBe(PROJECT_1.id)
+      const projectAfterUpdated = await models.Project.findByPk(PROJECT_1.id)
+      expect(projectAfterUpdated.minLatitude).toBeNull()
+      expect(projectAfterUpdated.maxLatitude).toBeNull()
+      expect(projectAfterUpdated.minLongitude).toBeNull()
+      expect(projectAfterUpdated.maxLongitude).toBeNull()
+    })
+
+    test('with [`name`, `latitude=0`, `longitude=19`] params', async () => {
+      const body = {
+        name: 'New Stream 1',
+        latitude: 0,
+        longitude: 19
+      }
+
+      const response = await request(app).patch(`/streams/${STREAM_1.externalId}`).send(body)
+
+      expect(response.statusCode).toBe(200)
+      const stream = await models.Stream.findByPk(STREAM_1.id)
+      expect(stream.name).toBe(body.name)
+      expect(stream.latitude).toBeNull()
+      expect(stream.project_id).toBe(PROJECT_1.id)
+      const projectAfterUpdated = await models.Project.findByPk(PROJECT_1.id)
+      expect(projectAfterUpdated.minLatitude).toBeNull()
+      expect(projectAfterUpdated.maxLatitude).toBeNull()
+      expect(projectAfterUpdated.minLongitude).toBeNull()
+      expect(projectAfterUpdated.maxLongitude).toBeNull()
     })
   })
   describe('Invalid', () => {
