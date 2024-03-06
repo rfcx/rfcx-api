@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 const moment = require('moment-timezone')
 const { EmptyResultError, ValidationError, ForbiddenError } = require('../../../common/error-handling/errors')
-const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../_models')
+const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat, sequelize } = require('../../_models')
 const { getAccessibleObjectsIDs, STREAM } = require('../../roles/dao')
 const streamSegmentDao = require('../../stream-segments/dao')
 const pagedQuery = require('../../_utils/db/paged-query')
@@ -268,6 +268,25 @@ async function updateByIds (existingSourceFilesId, data, options = {}) {
   return await StreamSourceFile.update(data, { where: { id: existingSourceFilesId }, transaction })
 }
 
+async function softDelete(ids, trashId) {
+  if (ids.length === 0) return
+
+  const data = ids.map(id => `('${id}'::uuid, '${trashId}', substr(md5(random()::text), 1, 40))`)
+  const sql = `UPDATE stream_source_files AS ssf SET
+                  stream_id = ssf2.stream_id,
+                  sha1_checksum = ssf2.sha1_checksum
+                FROM 
+                  (values
+                    ${data.join(',')}
+                  ) as ssf2(id, stream_id, sha1_checksum)
+                WHERE ssf2.id = ssf.id`
+  const options = {
+    raw: true,
+    nest: true
+  }
+  return await sequelize.query(sql, options)
+}
+
 module.exports = {
   get,
   create,
@@ -278,5 +297,6 @@ module.exports = {
   transformMetaAttr,
   format,
   calcAvailability,
-  updateByIds
+  updateByIds,
+  softDelete
 }
