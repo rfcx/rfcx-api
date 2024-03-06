@@ -519,4 +519,44 @@ describe('POST /streams', () => {
     expect(projectAfterCreated.minLongitude).toBe(stream.longitude)
     expect(projectAfterCreated.maxLongitude).toBe(stream.longitude)
   })
+
+  test('Can create site with similar name (hyphen to underscore)', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream1 = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar-Station', latitude: null, longitude: -4.5, projectId: project.id }
+    await models.Stream.create(stream1)
+
+    const requestBody = {
+      name: 'Jaguar_Station',
+      project_id: project.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.name).toBe(requestBody.name)
+  })
+
+  test('Can create site with similar name (2 hyphen to 1 underscore)', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream1 = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar-Station-1', latitude: null, longitude: -4.5, projectId: project.id }
+    await models.Stream.create(stream1)
+
+    const requestBody = {
+      name: 'Jaguar_Station-1',
+      project_id: project.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.name).toBe(requestBody.name)
+  })
 })
