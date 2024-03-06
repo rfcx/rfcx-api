@@ -104,4 +104,28 @@ describe('PATCH /users/{email}', () => {
     expect(dataToUpdate.family_name).toBe(requestBody.lastname)
     expect(dataToUpdate.picture).toBe(requestBody.picture)
   })
+
+  test('Google Auth0 update has failed', async () => {
+    mockAuth.updateAuth0User.mockImplementationOnce(() => {
+      return Promise.resolve([null, 400])
+    })
+    const requestBody = {
+      firstname: 'Foo1',
+      lastname: 'Bar1',
+      picture: 'https://foo1.bar1'
+    }
+    const response = await request(app).patch(`/${user.email}`).send(requestBody)
+    const userAfter = await models.User.findOne({ where: { email: user.email } })
+    expect(userAfter.firstname).toBe(user.firstname)
+    expect(userAfter.lastname).toBe(user.lastname)
+    expect(userAfter.picture).toBe(user.picture)
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe('Failed updating user')
+    const token = mockAuth.updateAuth0User.mock.calls[0][0]
+    expect(token).toBe(mockedToken)
+    const dataToUpdate = mockAuth.updateAuth0User.mock.calls[0][1]
+    expect(dataToUpdate.given_name).toBe(requestBody.firstname)
+    expect(dataToUpdate.family_name).toBe(requestBody.lastname)
+    expect(dataToUpdate.picture).toBe(requestBody.picture)
+  })
 })

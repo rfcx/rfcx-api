@@ -2,10 +2,17 @@ const { update, getUserByEmail } = require('../../../common/users')
 const { updateAuth0User, getToken } = require('../../../common/auth0')
 const { ValidationError, ForbiddenError } = require('../../../common/error-handling/errors')
 
+const GOOGLE_AUTH = 'google-oauth2'
+
 async function updateInCoreAndAuth0 (email, data, options) {
   if (options.updatableByEmail !== email) {
     throw new ForbiddenError()
   }
+
+  if (options.auth0Sub.includes(GOOGLE_AUTH)) {
+    throw new ValidationError('Changing user data is not possible for social login account type. Please update this data on the social network side.')
+  }
+
   const user = await getUserByEmail(email)
   const token = await getToken()
   const [body, statusCode] = await updateAuth0User(token, {

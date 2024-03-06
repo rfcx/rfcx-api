@@ -61,6 +61,12 @@ const differentUserEmail = 'slim@shady.com'
 const differentUserSub = 'auth0|5e710676eb1ba30c80aeb004'
 const differentUserFirstname = 'Slim'
 const differentUserLastname = 'Shady'
+const googleUserId = 6
+const googleUserGuid = 'b7cc2c4e-bea3-11ed-afa1-0242ac120005'
+const googleUserEmail = 'goo@gmail.com'
+const googleUserSub = 'google-oauth2|5e710676eb1ba30c80aeb004'
+const googleUserFirstname = 'goo'
+const googleUserLastname = 'gle'
 const roleAdmin = 1
 const roleMember = 2
 const roleGuest = 3
@@ -90,6 +96,12 @@ const seedValues = {
   differentUserSub,
   differentUserFirstname,
   differentUserLastname,
+  googleUserId,
+  googleUserGuid,
+  googleUserEmail,
+  googleUserSub,
+  googleUserFirstname,
+  googleUserLastname,
   roleAdmin,
   roleMember,
   roleGuest,
@@ -104,6 +116,7 @@ async function seed (models) {
   await models.User.findOrCreate({ where: { id: otherUserId, guid: otherUserGuid, username: 'em', firstname: otherUserFirstname, lastname: otherUserLastname, email: otherUserEmail } })
   await models.User.findOrCreate({ where: { id: anotherUserId, guid: anotherUserGuid, username: 'st', firstname: anotherUserFirstname, lastname: anotherUserLastname, email: anotherUserEmail } })
   await models.User.findOrCreate({ where: { id: differentUserId, guid: differentUserGuid, username: 'sl', firstname: differentUserFirstname, lastname: differentUserLastname, email: differentUserEmail } })
+  await models.User.findOrCreate({ where: { id: googleUserId, guid: googleUserGuid, username: 'sl', firstname: googleUserFirstname, lastname: googleUserLastname, email: googleUserEmail } })
   await models.ClassificationSource.findOrCreate({ where: { id: 1, value: 'unknown' } })
   await models.ClassificationType.findOrCreate({ where: { id: 1, value: 'unknown' } })
 }
