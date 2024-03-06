@@ -268,8 +268,8 @@ async function updateByIds (existingSourceFilesId, data, options = {}) {
   return await StreamSourceFile.update(data, { where: { id: existingSourceFilesId }, transaction })
 }
 
-async function softDelete(ids, trashId) {
-  if (ids.length === 0) return
+async function softDelete (ids, trashId) {
+  if (ids.length === 0) { return }
 
   const data = ids.map(id => `('${id}'::uuid, '${trashId}', substr(md5(random()::text), 1, 40))`)
   const sql = `UPDATE stream_source_files AS ssf SET
