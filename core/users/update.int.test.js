@@ -106,26 +106,20 @@ describe('PATCH /users/{email}', () => {
   })
 
   test('Google Auth0 update has failed', async () => {
-    mockAuth.updateAuth0User.mockImplementationOnce(() => {
-      return Promise.resolve([null, 400])
-    })
+    const goolgeUserApp = expressApp({ id: seedValues.googleUserId, guid: seedValues.googleUserGuid, email: seedValues.googleUserEmail, sub: seedValues.googleUserSub }).use('/', router)
     const requestBody = {
       firstname: 'Foo1',
       lastname: 'Bar1',
       picture: 'https://foo1.bar1'
     }
-    const response = await request(app).patch(`/${user.email}`).send(requestBody)
-    const userAfter = await models.User.findOne({ where: { email: user.email } })
-    expect(userAfter.firstname).toBe(user.firstname)
-    expect(userAfter.lastname).toBe(user.lastname)
-    expect(userAfter.picture).toBe(user.picture)
+    
+    const response = await request(goolgeUserApp).patch(`/${seedValues.googleUserEmail}`).send(requestBody)
+
+    const userAfter = await models.User.findOne({ where: { email: seedValues.googleUserEmail } })
+    expect(userAfter.firstname).toBe(seedValues.googleUserFirstname)
+    expect(userAfter.lastname).toBe(seedValues.googleUserLastname)
+    expect(userAfter.picture).toBeNull()
     expect(response.statusCode).toBe(400)
-    expect(response.body.message).toBe('Failed updating user')
-    const token = mockAuth.updateAuth0User.mock.calls[0][0]
-    expect(token).toBe(mockedToken)
-    const dataToUpdate = mockAuth.updateAuth0User.mock.calls[0][1]
-    expect(dataToUpdate.given_name).toBe(requestBody.firstname)
-    expect(dataToUpdate.family_name).toBe(requestBody.lastname)
-    expect(dataToUpdate.picture).toBe(requestBody.picture)
+    expect(response.body.message).toBe('Changing user data is not possible for social login account type. Please update this data on the social network side.')
   })
 })
