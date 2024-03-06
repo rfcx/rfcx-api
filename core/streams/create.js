@@ -59,11 +59,11 @@ module.exports = (req, res) => {
       }
 
       if (params.latitude === 0) {
-        params.latitude = null
+        stream.latitude = null
       }
 
       if (params.longitude === 0) {
-        params.longitude = null
+        stream.longitude = null
       }
 
       if (params.projectId) {
