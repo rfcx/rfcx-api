@@ -68,6 +68,54 @@ describe('PATCH /streams/:id', () => {
     expect(streamUpdated.hidden).toBe(requestBody.hidden)
   })
 
+  test('Success update latitude and longitude to 0, latitude and longitude to null', async () => {
+    const project = { id: 'ft1', name: 'Forest village', createdById: seedValues.primaryUserId }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    const stream = { id: 'am1', name: 'Big tree', latitude: 12, longitude: 13, projectId: project.id, createdById: seedValues.otherUserId }
+    await models.Stream.create(stream)
+
+    const requestBody = { latitude: 0, longitude: 0 }
+    const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBeNull()
+    expect(streamUpdated.longitude).toBeNull()
+  })
+
+  test('Success update longitude to 0, longitude to null', async () => {
+    const project = { id: 'ft1', name: 'Forest village', createdById: seedValues.primaryUserId }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    const stream = { id: 'am1', name: 'Big tree', latitude: 12, longitude: 13, projectId: project.id, createdById: seedValues.otherUserId }
+    await models.Stream.create(stream)
+
+    const requestBody = { latitude: 12, longitude: 0 }
+    const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBe(stream.latitude)
+    expect(streamUpdated.longitude).toBeNull()
+  })
+
+  test('Success update latitude to 0, latitude to null', async () => {
+    const project = { id: 'ft1', name: 'Forest village', createdById: seedValues.primaryUserId }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleOwner })
+    const stream = { id: 'am1', name: 'Big tree', latitude: 12, longitude: 13, projectId: project.id, createdById: seedValues.otherUserId }
+    await models.Stream.create(stream)
+
+    const requestBody = { latitude: 0, longitude: 13 }
+    const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBeNull()
+    expect(streamUpdated.longitude).toBe(stream.longitude)
+  })
+
   test('forbidden by stream guest', async () => {
     const stream = { id: 'am1', name: 'Big tree', createdById: seedValues.otherUserId }
     await models.Stream.create(stream)
@@ -409,5 +457,35 @@ describe('PATCH /streams/:id', () => {
     expect(projectAfterUpdated.maxLatitude).toBe(stream2.latitude)
     expect(projectAfterUpdated.minLongitude).toBe(stream2.longitude)
     expect(projectAfterUpdated.maxLongitude).toBe(stream2.longitude)
+  })
+
+  test('Can update site with similar name (hyphen to underscore)', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream1 = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar-Station', latitude: null, longitude: -4.5, projectId: project.id }
+    await models.Stream.create(stream1)
+    const requestBody = { name: 'Jaguar_Station' }
+
+    const response = await request(app).patch(`/${stream1.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(204)
+    const stream = await models.Stream.findByPk(stream1.id)
+    expect(stream.name).toBe(requestBody.name)
+  })
+
+  test('Can update site with similar name (2 hyphen to 1 underscore)', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream1 = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar-Station-1', latitude: null, longitude: -4.5, projectId: project.id }
+    await models.Stream.create(stream1)
+    const requestBody = { name: 'Jaguar_Station-1' }
+
+    const response = await request(app).patch(`/${stream1.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(204)
+    const stream = await models.Stream.findByPk(stream1.id)
+    expect(stream.name).toBe(requestBody.name)
   })
 })

@@ -104,4 +104,22 @@ describe('PATCH /users/{email}', () => {
     expect(dataToUpdate.family_name).toBe(requestBody.lastname)
     expect(dataToUpdate.picture).toBe(requestBody.picture)
   })
+
+  test('Google Auth0 update has failed', async () => {
+    const goolgeUserApp = expressApp({ id: seedValues.googleUserId, guid: seedValues.googleUserGuid, email: seedValues.googleUserEmail, sub: seedValues.googleUserSub }).use('/', router)
+    const requestBody = {
+      firstname: 'Foo1',
+      lastname: 'Bar1',
+      picture: 'https://foo1.bar1'
+    }
+
+    const response = await request(goolgeUserApp).patch(`/${seedValues.googleUserEmail}`).send(requestBody)
+
+    const userAfter = await models.User.findOne({ where: { email: seedValues.googleUserEmail } })
+    expect(userAfter.firstname).toBe(seedValues.googleUserFirstname)
+    expect(userAfter.lastname).toBe(seedValues.googleUserLastname)
+    expect(userAfter.picture).toBeNull()
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe('Changing user data is not possible for social login account type. Please update this data on the social network side.')
+  })
 })

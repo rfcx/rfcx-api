@@ -183,6 +183,54 @@ describe('POST /streams', () => {
     expect(stream.id).toBe(definedId)
   })
 
+  test('returns 201 when latitude 0 and longitude 0 in request body, latitude and longitude to null', async () => {
+    const requestBody = {
+      name: 'test-stream-with-id',
+      latitude: 0,
+      longitude: 0
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.latitude).toBeNull()
+    expect(stream.longitude).toBeNull()
+  })
+
+  test('returns 201 when longitude 0 in request body, longitude to null', async () => {
+    const requestBody = {
+      name: 'test-stream-with-id',
+      latitude: 20,
+      longitude: 0
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.latitude).toBe(requestBody.latitude)
+    expect(stream.longitude).toBeNull()
+  })
+
+  test('returns 201 when latitude 0 in request body, latitude to null', async () => {
+    const requestBody = {
+      name: 'test-stream-with-id',
+      latitude: 0,
+      longitude: 19
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.latitude).toBeNull()
+    expect(stream.longitude).toBe(requestBody.longitude)
+  })
+
   test('returns 201 when hidden in request body', async () => {
     const requestBody = {
       name: 'test-stream-with-id',
@@ -470,5 +518,45 @@ describe('POST /streams', () => {
     expect(projectAfterCreated.maxLatitude).toBe(stream.latitude)
     expect(projectAfterCreated.minLongitude).toBe(stream.longitude)
     expect(projectAfterCreated.maxLongitude).toBe(stream.longitude)
+  })
+
+  test('Can create site with similar name (hyphen to underscore)', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream1 = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar-Station', latitude: null, longitude: -4.5, projectId: project.id }
+    await models.Stream.create(stream1)
+
+    const requestBody = {
+      name: 'Jaguar_Station',
+      project_id: project.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.name).toBe(requestBody.name)
+  })
+
+  test('Can create site with similar name (2 hyphen to 1 underscore)', async () => {
+    const project = { id: 'p123p', createdById: seedValues.primaryUserId, name: 'Primary User Project' }
+    await models.Project.create(project)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream1 = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar-Station-1', latitude: null, longitude: -4.5, projectId: project.id }
+    await models.Stream.create(stream1)
+
+    const requestBody = {
+      name: 'Jaguar_Station-1',
+      project_id: project.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.name).toBe(requestBody.name)
   })
 })
