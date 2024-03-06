@@ -112,7 +112,7 @@ describe('PATCH /users/{email}', () => {
       lastname: 'Bar1',
       picture: 'https://foo1.bar1'
     }
-    
+
     const response = await request(goolgeUserApp).patch(`/${seedValues.googleUserEmail}`).send(requestBody)
 
     const userAfter = await models.User.findOne({ where: { email: seedValues.googleUserEmail } })
