@@ -132,7 +132,6 @@ async function query (filters, options = {}) {
       }
     }
   }
-  console.log(where.name)
   if (filters.keywords) {
     where.name = {
       [Sequelize.Op.iLike]: {
