@@ -183,6 +183,54 @@ describe('POST /streams', () => {
     expect(stream.id).toBe(definedId)
   })
 
+  test('returns 201 when latitude 0 and longitude 0 in request body, latitude and longitude to null', async () => {
+    const requestBody = {
+      name: 'test-stream-with-id',
+      latitude: 0,
+      longitude: 0
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.latitude).toBeNull()
+    expect(stream.longitude).toBeNull()
+  })
+
+  test('returns 201 when longitude 0 in request body, longitude to null', async () => {
+    const requestBody = {
+      name: 'test-stream-with-id',
+      latitude: 20,
+      longitude: 0
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.latitude).toBe(requestBody.latitude)
+    expect(stream.longitude).toBeNull()
+  })
+
+  test('returns 201 when latitude 0 in request body, latitude to null', async () => {
+    const requestBody = {
+      name: 'test-stream-with-id',
+      latitude: 0,
+      longitude: 19
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.latitude).toBeNull()
+    expect(stream.longitude).toBe(requestBody.longitude)
+  })
+
   test('returns 201 when hidden in request body', async () => {
     const requestBody = {
       name: 'test-stream-with-id',
