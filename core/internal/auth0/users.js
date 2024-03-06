@@ -66,6 +66,7 @@ router.post('/new-login', hasRole(['systemUser']), function (req, res) {
       })
     })
     .catch((err) => {
+      console.error('Failed syncing user from Auth0', err)
       httpErrorHandler(req, res, 'Failed syncing user from Auth0')(err)
     })
 })

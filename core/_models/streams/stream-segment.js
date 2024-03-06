@@ -6,6 +6,10 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
+    path: {
+      type: DataTypes.STRING(23),
+      allowNull: true
+    },
     start: {
       // Hypertable key
       type: DataTypes.DATE(3),
@@ -53,7 +57,7 @@ module.exports = function (sequelize, DataTypes) {
     StreamSegment.belongsTo(models.FileExtension, { as: 'file_extension', foreignKey: 'file_extension_id' })
   }
   StreamSegment.attributes = {
-    full: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'file_extension_id', 'availability', 'created_at', 'updated_at'],
+    full: ['id', 'start', 'end', 'path', 'sample_count', 'stream_id', 'stream_source_file_id', 'file_extension_id', 'availability', 'created_at', 'updated_at'],
     lite: ['id', 'start', 'end']
   }
   return StreamSegment

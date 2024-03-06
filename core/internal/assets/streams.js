@@ -73,7 +73,7 @@ router.get('/streams/:attrs', function (req, res) {
     const start = gluedDateStrToMoment(attrs.time.starts)
     const end = gluedDateStrToMoment(attrs.time.ends)
     const queryData = await streamSegmentDao.query({ streamId: attrs.streamId, start, end }, {
-      fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension', 'availability'],
+      fields: ['id', 'start', 'end', 'path', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension', 'availability'],
       strict: false,
       readableBy
     })
