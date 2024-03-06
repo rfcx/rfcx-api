@@ -1,4 +1,5 @@
 const { Stream, Project, User, Sequelize } = require('../../_models')
+const { escape } = require('sequelize/lib/sql-string')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../../projects/dao')
@@ -116,7 +117,7 @@ async function query (filters, options = {}) {
   if (filters.names) {
     where.name = {
       [Sequelize.Op.iLike]: {
-        [Sequelize.Op.any]: filters.names.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%').replaceAll('_', '\\_')}`)
+        [Sequelize.Op.any]: filters.names.map(n => `${n.replace(/(_|%|\\)/g, '\\$1').replace(/^\*/, '%').replace(/\*$/, '%')}`)
       }
     }
   }
@@ -127,11 +128,12 @@ async function query (filters, options = {}) {
       },
       name: {
         [Sequelize.Op.iLike]: {
-          [Sequelize.Op.any]: filters.namesOrIds.map(n => `${n.replace(/^\*/, '%').replace(/\*$/, '%').replaceAll('_', '\\_')}`)
+          [Sequelize.Op.any]: filters.namesOrIds.map(n => `${n.replace(/(_|%|\\)/g, '\\$1').replace(/^\*/, '%').replace(/\*$/, '%')}`)
         }
       }
     }
   }
+  console.log(where.name)
   if (filters.keywords) {
     where.name = {
       [Sequelize.Op.iLike]: {
