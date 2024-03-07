@@ -46,7 +46,8 @@ async function findSourceFiles (arr, options = {}) {
  */
 async function softDeleteSourceFilesBatch (arr, options = {}) {
   const ids = await findSourceFiles(arr, options)
-  await streamSourceFileDao.updateByIds(ids, { stream_id: TRASHES_STREAM_ID }, options)
+  const update = { stream_id: TRASHES_STREAM_ID, sha1_checksum: sequelize.literal('substr(md5(random()::text), 1, 40)') }
+  await streamSourceFileDao.updateByIds(ids, update, options)
 }
 
 module.exports = {

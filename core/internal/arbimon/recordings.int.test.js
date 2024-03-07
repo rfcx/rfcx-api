@@ -77,10 +77,14 @@ describe('DELETE internal/arbimon/recordings', () => {
 
     const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
     const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+    const trashStreamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: trashesStream.id } })
+    const trashStreamSegments = await models.StreamSegment.findAll({ where: { stream_id: trashesStream.id } })
 
     expect(response.statusCode).toBe(200)
     expect(streamSourceFiles.length).toBe(0)
     expect(streamSegments.length).toBe(0)
+    expect(trashStreamSourceFiles.length).toBe(1)
+    expect(trashStreamSegments.length).toBe(1)
   })
   test('can delete 1 recording', async () => {
     const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T12-11-11.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74211', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
@@ -89,10 +93,14 @@ describe('DELETE internal/arbimon/recordings', () => {
 
     const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
     const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+    const trashStreamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: trashesStream.id } })
+    const trashStreamSegments = await models.StreamSegment.findAll({ where: { stream_id: trashesStream.id } })
 
     expect(response.statusCode).toBe(200)
     expect(streamSourceFiles.length).toBe(1)
     expect(streamSegments.length).toBe(1)
+    expect(trashStreamSourceFiles.length).toBe(1)
+    expect(trashStreamSegments.length).toBe(1)
   })
   test('can delete 2 recordings', async () => {
     const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T12-11-11.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74211', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
@@ -105,10 +113,14 @@ describe('DELETE internal/arbimon/recordings', () => {
 
     const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
     const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+    const trashStreamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: trashesStream.id } })
+    const trashStreamSegments = await models.StreamSegment.findAll({ where: { stream_id: trashesStream.id } })
 
     expect(response.statusCode).toBe(200)
     expect(streamSourceFiles.length).toBe(1)
     expect(streamSegments.length).toBe(1)
+    expect(trashStreamSourceFiles.length).toBe(2)
+    expect(trashStreamSegments.length).toBe(2)
   })
   test('can delete 3 recordings', async () => {
     const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T12-11-11.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74211', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
@@ -123,10 +135,37 @@ describe('DELETE internal/arbimon/recordings', () => {
 
     const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
     const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+    const trashStreamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: trashesStream.id } })
+    const trashStreamSegments = await models.StreamSegment.findAll({ where: { stream_id: trashesStream.id } })
 
     expect(response.statusCode).toBe(200)
     expect(streamSourceFiles.length).toBe(1)
     expect(streamSegments.length).toBe(1)
+    expect(trashStreamSourceFiles.length).toBe(3)
+    expect(trashStreamSegments.length).toBe(3)
+  })
+  test('can delete 1 recordings then reupload then delete', async () => {
+    // First delete
+    testRequestData[0].starts.push('2021-04-18T14:12:00.000Z')
+    const sourceFile2 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T13-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74212', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T14:12:00.000Z', end: '2021-04-18T14:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFile2.id })
+    await request(app).delete('/recordings').send(testRequestData)
+
+    // Second delete
+    const sourceFiles3 = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T13-11-12.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74212', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+    await models.StreamSegment.create({ ...testPayload.stream_segments[0], start: '2021-04-18T14:12:00.000Z', end: '2021-04-18T14:13:00.000Z', stream_id: stream.id, file_extension_id: fileExtensionId, stream_source_file_id: sourceFiles3.id })
+    const response2 = await request(app).delete('/recordings').send(testRequestData)
+
+    const streamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: stream.id } })
+    const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
+    const trashStreamSourceFiles = await models.StreamSourceFile.findAll({ where: { stream_id: trashesStream.id } })
+    const trashStreamSegments = await models.StreamSegment.findAll({ where: { stream_id: trashesStream.id } })
+
+    expect(response2.statusCode).toBe(200)
+    expect(streamSourceFiles.length).toBe(0)
+    expect(streamSegments.length).toBe(0)
+    expect(trashStreamSourceFiles.length).toBe(3)
+    expect(trashStreamSegments.length).toBe(3)
   })
   test('can delete recordings from different streams', async () => {
     const sourceFile = await models.StreamSourceFile.create({ ...testPayload.stream_source_file, filename: '0d99db29f26d-2021-04-19T12-11-11.flac', sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74211', stream_id: stream.id, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
