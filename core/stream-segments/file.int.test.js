@@ -44,7 +44,7 @@ describe('GET /streams/:id/segments/:start/file', () => {
     const response = await request(app).get(`/${stream.id}/segments/20210726T101010000Z/file`)
 
     expect(response.statusCode).toBe(302)
-    expect(console.error).toBeCalledTimes(0)
+    expect(console.error).toHaveBeenCalledTimes(0)
     expect(response.header.location).toContain(`${segment.path}/${segment.id}.wav`)
   })
   test('segment path is obtained from path column when path and start dont match by date', async () => {
@@ -57,7 +57,7 @@ describe('GET /streams/:id/segments/:start/file', () => {
     const response = await request(app).get(`/${stream.id}/segments/20210726T101010000Z/file`)
 
     expect(response.statusCode).toBe(302)
-    expect(console.error).toBeCalledTimes(0)
+    expect(console.error).toHaveBeenCalledTimes(0)
     expect(response.header.location).toContain(`${segment.path}/${segment.id}.wav`)
   })
   test('segment path is calculated from start when path col not undefined', async () => {
@@ -70,7 +70,7 @@ describe('GET /streams/:id/segments/:start/file', () => {
     const response = await request(app).get(`/${stream.id}/segments/20210726T101010000Z/file`)
 
     expect(response.statusCode).toBe(302)
-    expect(console.error).toBeCalledWith(`Segment ${segment.id} 'path' field is NULL`)
+    expect(console.error).toHaveBeenCalledWith(`Segment ${segment.id} 'path' field is NULL`)
     expect(response.header.location).toContain(`2021/07/26/${stream.id}/${segment.id}.wav`)
   })
 })
