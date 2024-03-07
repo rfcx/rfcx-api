@@ -2,7 +2,7 @@ const { computedAdditions } = require('./index')
 
 describe('test computedAdditions function', () => {
   test('return an empty object if lat or lng is undefined', async () => {
-    const additions = computedAdditions({ latitude: 54.2, longitude: undefined })
+    const additions = await computedAdditions({ latitude: 54.2, longitude: undefined })
     expect(additions).toStrictEqual({
       timezone: 'UTC',
       countryCode: null
@@ -14,7 +14,7 @@ describe('test computedAdditions function', () => {
       countryCode: 'GB'
     }
 
-    const additions = computedAdditions({ latitude: 54.2, longitude: -4.5 })
+    const additions = await computedAdditions({ latitude: 54.2, longitude: -4.5 })
     expect(additions).toStrictEqual(expects)
   })
 })

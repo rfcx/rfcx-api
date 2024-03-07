@@ -14,7 +14,7 @@ const availableIncludes = [
   Project.include({ required: false })
 ]
 
-function computedAdditions (data, stream = {}) {
+async function computedAdditions (data, stream = {}) {
   const additions = {}
   const { latitude, longitude } = data
   if (latitude && longitude) {
@@ -23,9 +23,9 @@ function computedAdditions (data, stream = {}) {
       additions.countryName = country.name
     }
     if (!stream.timezone_locked) {
-      additions.timezone = getTzByLatLng(latitude, longitude)
+      additions.timezone = await getTzByLatLng(latitude, longitude)
     }
-    additions.countryCode = getCountryCodeByLatLng(latitude, longitude)
+    additions.countryCode = await getCountryCodeByLatLng(latitude, longitude)
   } else {
     additions.timezone = 'UTC'
     additions.countryCode = null
@@ -76,7 +76,7 @@ async function get (idOrWhere, options = {}) {
  * @param {*} options
  */
 async function create (stream, options = {}) {
-  const fullStream = { ...stream, ...computedAdditions(stream) }
+  const fullStream = { ...stream, ...(await computedAdditions(stream)) }
   if (fullStream.projectId && options.creatableBy && !(await hasPermission(UPDATE, options.creatableBy, fullStream.projectId, PROJECT))) {
     throw new ForbiddenError()
   }
@@ -205,12 +205,12 @@ async function query (filters, options = {}) {
     transaction: options.transaction
   })
 
-  streamsData.results = streamsData.results.map(stream => {
+  streamsData.results = streamsData.results.map(async (stream) => {
     const { latitude, longitude } = stream
     if (latitude !== undefined && longitude !== undefined) {
-      const countryCode = getCountryCodeByLatLng(latitude, longitude)
+      const countryCode = await getCountryCodeByLatLng(latitude, longitude)
       stream.country_name = getCountryNameByCode(countryCode)
-      stream.timezone = getTzByLatLng(latitude, longitude)
+      stream.timezone = await getTzByLatLng(latitude, longitude)
     }
     return stream
   })
@@ -246,7 +246,7 @@ async function update (id, data, options = {}) {
   if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, STREAM))) {
     throw new ForbiddenError()
   }
-  const fullStream = { ...data, ...computedAdditions(data, stream) }
+  const fullStream = { ...data, ...(await computedAdditions(data, stream)) }
   if (fullStream.name) {
     if (stream && stream.project_id && stream.name !== fullStream.name) {
       const duplicateStreamInProject = await query({ names: [fullStream.name], projects: [fullStream.project_id || stream.project_id] }, { fields: 'id', transaction })

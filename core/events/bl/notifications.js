@@ -60,7 +60,7 @@ async function notify (event) {
       streamId: event.stream.id,
       streamName: event.stream.name,
       classificationName: event.classification.title,
-      time: moment.tz(event.start, getTzByLatLng(event.stream.latitude, event.stream.longitude)).format('HH:mm YYYY-MM-DD')
+      time: moment.tz(event.start, await getTzByLatLng(event.stream.latitude, event.stream.longitude)).format('HH:mm YYYY-MM-DD')
     }
     const pnData = {
       ...data,
