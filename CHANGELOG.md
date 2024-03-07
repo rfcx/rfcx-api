@@ -6,6 +6,7 @@
 * **core**: Allow super user and owner to change project owner
 ### Bug Fixes
 * **core**: Fix super user cannot add himself to the project role
+* **core**: Fix cannot delete the file that got re-uploaded
 * **core**: Prevent sending google-oauth update to auth0
 
 ## 1.3.6 (2024-02-xx)
