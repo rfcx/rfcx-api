@@ -1,9 +1,9 @@
-const tzlookup = require('tz-lookup')
+const tz = require('geo-tz/all')
 const { ValidationError } = require('../../../common/error-handling/errors')
 
 function getTzByLatLng (latitude, longitude) {
   try {
-    return tzlookup(latitude, longitude)
+    return tz.find(latitude, longitude)
   } catch (err) {
     throw new ValidationError(err.message)
   }
