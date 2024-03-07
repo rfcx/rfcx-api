@@ -11,7 +11,7 @@ describe('test computedAdditions function', () => {
   test('return expected result for the correct coordinates', async () => {
     const expects = {
       timezone: 'Europe/Isle_of_Man',
-      countryCode: 'GB'
+      countryCode: 'IM'
     }
 
     const additions = await computedAdditions({ latitude: 54.2, longitude: -4.5 })

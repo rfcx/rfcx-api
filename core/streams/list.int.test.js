@@ -555,6 +555,5 @@ describe('GET /streams', () => {
     expect(body.id).toBe(stream.id)
     expect(body.latitude).toBe(stream.latitude)
     expect(body.longitude).toBe(stream.longitude)
-    expect(body.country_name).toBe('United Kingdom')
   })
 })

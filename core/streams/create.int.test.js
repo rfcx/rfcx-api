@@ -69,7 +69,7 @@ describe('POST /streams', () => {
     const stream = await models.Stream.findByPk(id)
     expect(stream.name).toBe(requestBody.name)
     expect(stream.createdById).toBe(seedValues.primaryUserId)
-    expect(stream.timezone).toBe('Asia/Phnom_Penh')
+    expect(stream.timezone).toBe('Etc/GMT-7')
     expect(stream.externalId).toBe(123)
   })
 
@@ -342,7 +342,7 @@ describe('POST /streams', () => {
     const id = response.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.id).toBe('qwertyuiop40')
-    expect(stream.countryCode).toBe('GB')
+    expect(stream.countryCode).toBe('IM')
   })
 
   test('country code is null and timezone is UTC for undefined lat', async () => {

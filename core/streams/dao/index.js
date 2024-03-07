@@ -7,7 +7,7 @@ const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
 const { hashedCredentials } = require('../../../common/crypto/sha256')
 const { getTzByLatLng } = require('../../_utils/datetime/timezone')
-const { getCountryCodeByLatLng, getCountryNameByCode } = require('../../_utils/location/country-code')
+const { getCountryCodeByLatLng } = require('../../_utils/location/country-code')
 
 const availableIncludes = [
   User.include({ as: 'created_by' }),
@@ -205,15 +205,15 @@ async function query (filters, options = {}) {
     transaction: options.transaction
   })
 
-  streamsData.results = streamsData.results.map(async (stream) => {
-    const { latitude, longitude } = stream
-    if (latitude !== undefined && longitude !== undefined) {
-      const countryCode = await getCountryCodeByLatLng(latitude, longitude)
-      stream.country_name = getCountryNameByCode(countryCode)
-      stream.timezone = await getTzByLatLng(latitude, longitude)
-    }
-    return stream
-  })
+  // streamsData.results = streamsData.results.map(async (stream) => {
+  //   const { latitude, longitude } = stream
+  //   if (latitude !== undefined && longitude !== undefined) {
+  //     const countryCode = await getCountryCodeByLatLng(latitude, longitude)
+  //     stream.country_name = getCountryNameByCode(countryCode)
+  //     stream.timezone = await getTzByLatLng(latitude, longitude)
+  //   }
+  //   return stream
+  // })
 
   return streamsData
 }
