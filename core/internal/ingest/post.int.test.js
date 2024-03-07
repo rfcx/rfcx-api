@@ -2,7 +2,8 @@ const request = require('supertest')
 const moment = require('moment')
 const routes = require('./index')
 const models = require('../../_models')
-const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../../common/testing/sequelize')
+const { truncateNonBase, expressApp, seedValues } = require('../../../common/testing/sequelize')
+const arbimonService = require('../../_services/arbimon')
 
 const app = expressApp()
 
@@ -12,7 +13,10 @@ let stream, audioFileFormat, audioCodec, fileExtension, testPayload, audioFileFo
 resetTestData()
 
 beforeAll(async () => {
-  muteConsole('warn')
+  jest.spyOn(arbimonService, 'createRecordingsFromSegments').mockImplementation(() => { return Promise.resolve() })
+  jest.spyOn(console, 'error')
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+  arbimonService.isEnabled = true
 })
 afterEach(async () => {
   await truncateNonBase(models)
@@ -20,6 +24,8 @@ afterEach(async () => {
 })
 afterAll(async () => {
   await models.sequelize.close()
+  arbimonService.isEnabled = false
+  jest.clearAllMocks()
 })
 
 function resetTestData () {
@@ -92,6 +98,10 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
     expect(response.body.stream_segments.length).toBe(1)
     expect(response.body.stream_segments[0].id).toBeDefined()
     expect(response.body.stream_segments[0].start).toBe(testPayload.stream_segments[0].start)
+    expect(arbimonService.createRecordingsFromSegments).toHaveBeenCalledTimes(1)
+    const arbimonData = arbimonService.createRecordingsFromSegments.mock.calls[0][1]
+    expect(arbimonData[0].path).toBe(streamSegments[0].path)
+    expect(console.error).toHaveBeenCalledTimes(0)
   })
 
   test('one stream_source_file and two stream_segments are created', async () => {

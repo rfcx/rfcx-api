@@ -1,7 +1,7 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { get } = require('./dao')
 const { gluedDateStrOrEpochToMoment } = require('../_utils/datetime/parse')
-const { getSegmentFullRemotePath } = require('./bl/segment-file-utils')
+const { calcSegmentPath } = require('./bl/segment-file-utils')
 const storageService = require('../_services/storage')
 
 /**
@@ -37,7 +37,7 @@ module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const options = {
     readableBy: user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id,
-    fields: ['id', 'start', 'stream_id', 'file_extension']
+    fields: ['id', 'start', 'path', 'stream_id', 'file_extension']
   }
   get(streamId, start, options)
     .then(async (segment) => {
@@ -49,8 +49,7 @@ module.exports = (req, res) => {
 
 // TODO Move to business logic layer
 async function getSignedDownloadUrl (segment) {
-  // TODO Add caching
-  const storagePath = getSegmentFullRemotePath(segment)
+  const storagePath = calcSegmentPath(segment)
   const url = await storageService.getSignedUrl(storageService.buckets.streams, storagePath)
   return url
 }

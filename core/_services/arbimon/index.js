@@ -3,7 +3,7 @@ const moment = require('moment')
 const arbimonBaseUrl = process.env.ARBIMON_BASE_URL
 const arbimonAPIPrefix = process.env.ARBIMON_API_PREFIX
 const { rpErrorHandler } = require('../../../common/error-handling/http')
-const { getSegmentFullRemotePath } = require('../../stream-segments/bl/segment-file-utils')
+const { calcSegmentPath } = require('../../stream-segments/bl/segment-file-utils')
 const { getClientToken } = require('../../../common/auth0')
 
 const isEnabled = `${process.env.ARBIMON_ENABLED}` === 'true'
@@ -114,7 +114,7 @@ function parseStreamSourceFileMeta (sfParams) {
 function matchSegmentToRecording (sfParams, segment) {
   return {
     site_external_id: segment.stream_id,
-    uri: getSegmentFullRemotePath(segment),
+    uri: calcSegmentPath(segment),
     datetime: moment.utc(segment.start).format('YYYY-MM-DD HH:mm:ss.SSS'),
     duration: (segment.end - segment.start) / 1000,
     samples: segment.sample_count,

@@ -4,7 +4,7 @@ const streamSourceFileDao = require('../../stream-source-files/dao')
 const streamSegmentDao = require('../../stream-segments/dao')
 const fileFormatDao = require('../../stream-segments/dao/file-extensions')
 const { sequelize } = require('../../_models')
-const { getSegmentRemotePath } = require('../../stream-segments/bl/segment-file-utils')
+const { calcSegmentDirname } = require('../../stream-segments/bl/segment-file-utils')
 
 const Converter = require('../../../common/converter')
 const ArrayConverter = require('../../../common/converter/array')
@@ -97,7 +97,7 @@ module.exports = function (req, res) {
             .filter((s) => { return !existingSegments.map(e => e.start.toISOString()).includes(s.start.toISOString()) })
             .map((s) => {
               const fileExtensionId = fileExtensionObjects.find(obj => obj.value === s.file_extension).id
-              const path = getSegmentRemotePath({
+              const path = calcSegmentDirname({
                 start: s.start,
                 stream_id: streamId
               })
@@ -113,7 +113,7 @@ module.exports = function (req, res) {
           if (dataToCreate.length) {
             createdSegments = (await streamSegmentDao.bulkCreate(dataToCreate, {
               transaction,
-              returning: ['id', 'stream_id', 'start', 'sample_count']
+              returning: ['id', 'stream_id', 'start', 'path', 'sample_count']
             })).map(s => {
               const fileExtension = fileExtensionObjects.find(e => e.id === s.file_extension_id)
               return {

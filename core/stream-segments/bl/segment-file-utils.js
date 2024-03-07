@@ -78,21 +78,24 @@ function getSegmentExtension (segment) {
   return segment.file_extension ? (typeof segment.file_extension === 'string' ? segment.file_extension : segment.file_extension.value) : path.extname(segment.stream_source_file.filename)
 }
 
-function getSegmentRemotePath (segment) {
+function calcSegmentDirname (segment) {
   const ts = moment.tz(segment.start, 'UTC')
   return `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}`
 }
 
-function getSegmentFullRemotePath (segment) {
-  const ts = moment.tz(segment.start, 'UTC')
+function calcSegmentPath (segment) {
+  if (!segment.path) {
+    console.error(`Segment ${segment.id} 'path' field is NULL`)
+    segment.path = calcSegmentDirname(segment)
+  }
   const segmentExtension = getSegmentExtension(segment)
-  return `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
+  return `${segment.path}/${segment.id}${segmentExtension}`
 }
 
 function downloadSegments (segments) {
   const downloadProms = []
   for (const segment of segments) {
-    const remotePath = getSegmentFullRemotePath(segment)
+    const remotePath = calcSegmentPath(segment)
     const segmentExtension = getSegmentExtension(segment)
     segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${random.randomString(32)}${segmentExtension}`
     downloadProms.push(storageService.download(storageService.buckets.streams, remotePath, segment.sourceFilePath))
@@ -408,6 +411,6 @@ module.exports = {
   getFile,
   deleteFilesForStream,
   convertAudio,
-  getSegmentRemotePath,
-  getSegmentFullRemotePath
+  calcSegmentDirname,
+  calcSegmentPath
 }
