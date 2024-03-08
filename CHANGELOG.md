@@ -4,6 +4,8 @@
 * **core**: `hidden` stream won't be calculated to max/min lat/long project
 * **core**: `null` stream lat/long won't be calculated to max/min lat/long project
 * **core**: Allow super user and owner to change project owner
+* **core**: Add test data for locally running core with arbimon
+
 ### Bug Fixes
 * **core**: Fix super user cannot add himself to the project role
 * **core**: Fix cannot delete the file that got re-uploaded
