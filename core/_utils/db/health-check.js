@@ -22,10 +22,13 @@ async function check (req, res) {
     status: false,
     timescaledb: false
   }
-  if (req.query.headers === '1') { rtrnJson.http_headers = {}; for (const i in req.headers) { rtrnJson.http_headers[i] = req.headers[i] } }
-  const proms = [timescaleDBConnected()]
-
-  return Promise.all(proms)
+  if (req.query.headers === '1') {
+    rtrnJson.http_headers = {}
+    for (const i in req.headers) {
+      rtrnJson.http_headers[i] = req.headers[i]
+    }
+  }
+  timescaleDBConnected()
     .then((data) => {
       rtrnJson.timescaledb = data[1]
       rtrnJson.status = !data.includes(false)
