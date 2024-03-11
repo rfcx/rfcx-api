@@ -1,7 +1,7 @@
 kind: HorizontalPodAutoscaler
 apiVersion: autoscaling/v2beta1
 metadata:
-  name: arbimon-scaler
+  name: core-api
   namespace: production
 spec:
   scaleTargetRef:
