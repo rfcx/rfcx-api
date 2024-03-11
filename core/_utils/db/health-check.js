@@ -30,8 +30,8 @@ async function check (req, res) {
   }
   timescaleDBConnected()
     .then((data) => {
-      rtrnJson.timescaledb = data[1]
-      rtrnJson.status = !data.includes(false)
+      rtrnJson.timescaledb = data
+      rtrnJson.status = data.status
       res.json(rtrnJson)
     })
     .catch(() => {
