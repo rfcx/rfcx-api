@@ -16,6 +16,14 @@ spec:
       - name: media-api
         image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-api:latest
         args: ["yarn", "start:core"]
+        readinessProbe:
+          httpGet:
+            path: /health-check
+            port: 80
+          initialDelaySeconds: 5
+          successThreshold: 1
+          failureThreshold: 1
+          periodSeconds: 10
         envFrom:
         - secretRef:
             name: core-secrets
