@@ -1,3 +1,7 @@
+## 1.3.8 (2024-03-xx)
+### Common
+* **core**: Use Google Map API for getting timezone and country from latitude and longitude
+
 ## 1.3.7 (2024-02-xx)
 ### Common
 * **core**: Add `hidden` column to `streams`

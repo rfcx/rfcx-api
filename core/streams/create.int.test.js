@@ -1,4 +1,5 @@
 const arbimonService = require('../_services/arbimon')
+const googleMap = require('../_services/google')
 const routes = require('.')
 const models = require('../_models')
 const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
@@ -60,6 +61,16 @@ describe('POST /streams', () => {
       latitude: 10.123,
       longitude: 101.456
     }
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
 
     const response = await request(app).post('/').send(requestBody)
 
@@ -77,13 +88,22 @@ describe('POST /streams', () => {
     const project = { id: 'foo', name: 'not my project', createdById: seedValues.otherUserId }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
-
     const requestBody = {
       name: 'Trail 40',
       latitude: 10.123,
       longitude: 101.456,
       project_id: 'foo'
     }
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
 
     const response = await request(app).post('/').send(requestBody)
 
@@ -97,13 +117,22 @@ describe('POST /streams', () => {
     const project = { id: 'foo', name: 'not my project', createdById: seedValues.otherUserId }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
-
     const requestBody = {
       name: 'Trail 41',
       latitude: 10.123,
       longitude: 101.456,
       project_id: 'foo'
     }
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
 
     const response = await request(app).post('/').send(requestBody)
 
@@ -117,13 +146,22 @@ describe('POST /streams', () => {
     const project = { id: 'foo', name: 'not my project', createdById: seedValues.otherUserId }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleGuest })
-
     const requestBody = {
       name: 'Trail 42',
       latitude: 10.123,
       longitude: 101.456,
       project_id: 'foo'
     }
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
 
     const response = await request(app).post('/').send(requestBody)
 
@@ -133,13 +171,24 @@ describe('POST /streams', () => {
     const project = { id: 'foo', name: 'my project', createdById: seedValues.otherUserId }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
-
     const requestBody = {
       name: 'Trail 43',
       latitude: 15,
       longitude: 100,
       project_id: 'foo'
     }
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {
+        timeZoneId: 'Asia/Bangkok'
+      }
+    })
 
     const response = await request(app).post('/').send(requestBody)
 
@@ -336,6 +385,21 @@ describe('POST /streams', () => {
   })
 
   test('country code works well for a new stream', async () => {
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: [{
+          address_components: [{
+            short_name: 'IM'
+          }]
+        }]
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
+
     const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5 })
 
     expect(response.statusCode).toBe(201)
@@ -401,6 +465,17 @@ describe('POST /streams', () => {
   })
 
   test('country code is null for coordinates in the ocean', async () => {
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
+
     const response = await request(app).post('/').send({ id: 'qwertyuiop40', name: 'my stream 4', latitude: 40, longitude: -40 })
 
     expect(response.statusCode).toBe(201)
