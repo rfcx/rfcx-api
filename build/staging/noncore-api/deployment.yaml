@@ -21,9 +21,10 @@ spec:
             path: /v1/health-check
             port: 8080
           initialDelaySeconds: 5
+          timeoutSeconds: 2
+          periodSeconds: 15
           successThreshold: 1
           failureThreshold: 1
-          periodSeconds: 10
         envFrom:
         - secretRef:
             name: noncore-secrets
