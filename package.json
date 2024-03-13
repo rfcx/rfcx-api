@@ -83,10 +83,11 @@
     "swagger-jsdoc": "6.2.8",
     "swagger-ui-express": "5.0.0",
     "twilio": "4.20.0",
-    "tz-lookup": "^6.1.25",
     "uuid": "9.0.1",
     "winston": "3.11.0",
-    "@xmldom/xmldom": "0.8.10"
+    "@xmldom/xmldom": "0.8.10",
+    "geo-tz": "^8.0.1",
+    "@googlemaps/google-maps-services-js": "^3.3.42"
   },
   "devDependencies": {
     "eslint": "8.56.0",

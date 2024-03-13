@@ -87,7 +87,7 @@ router.patch('/streams/:externalId', (req, res) => {
           const dbGuardian = await guardiansService.getGuardianByStreamId(stream.id, true)
           const options = {
             ...convertedParams.project_id !== undefined && { project_id: convertedParams.project_id },
-            ...convertedParams.latitude !== undefined && convertedParams.longitude !== undefined && { timezone: getTzByLatLng(convertedParams.latitude, convertedParams.longitude) }
+            ...convertedParams.latitude !== undefined && convertedParams.longitude !== undefined && { timezone: await getTzByLatLng(convertedParams.latitude, convertedParams.longitude) }
           }
           await guardiansService.updateGuardian(dbGuardian, options)
         } catch (error) {

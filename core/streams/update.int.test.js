@@ -1,4 +1,5 @@
 const request = require('supertest')
+const googleMap = require('../_services/google')
 const routes = require('.')
 const models = require('../_models')
 const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
@@ -238,12 +239,24 @@ describe('PATCH /streams/:id', () => {
     expect(response.statusCode).toBe(204)
   })
 
-  test('timezone is updated when coordinates are changed', async () => {
+  test('timezone and country code are updated when coordinates are changed', async () => {
     const newLat = 10
     const newLon = 20
     const stream = { id: 'am1', name: 'Big tree', latitude: 18, longitude: -66, timezone: 'America/Puerto_Rico', timezoneLocked: false, createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {
+        timeZoneId: 'Africa/Ndjamena'
+      }
+    })
 
     const requestBody = { latitude: newLat, longitude: newLon }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
@@ -261,6 +274,18 @@ describe('PATCH /streams/:id', () => {
     const stream = { id: 'am1', name: 'Big tree', latitude: 18, longitude: -66, timezone: 'America/Puerto_Rico', timezoneLocked: true, createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {
+        timeZoneId: 'Africa/Ndjamena'
+      }
+    })
 
     const requestBody = { latitude: newLat, longitude: newLon }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
@@ -276,6 +301,20 @@ describe('PATCH /streams/:id', () => {
     const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: [{
+          address_components: [{
+            short_name: 'PL'
+          }]
+        }]
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
 
     const requestBody = { latitude: 52.775435, longitude: 23.9068233 }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
@@ -353,6 +392,16 @@ describe('PATCH /streams/:id', () => {
     const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
 
     const requestBody = { latitude: 40, longitude: -40 }
     const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
