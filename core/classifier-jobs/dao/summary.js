@@ -11,7 +11,6 @@ async function createJobSummary (classificationData, options = {}) {
 
 async function getJobSummaries (classifierJobId, filters, options = {}) {
   const transaction = options.transaction
-  console.log('here')
   if (!classifierJobId) {
     throw new Error('Classifier job id must be set to get job summary')
   }
@@ -20,8 +19,8 @@ async function getJobSummaries (classifierJobId, filters, options = {}) {
     where.classificationId = filters.classificationId
   }
   if (filters.keyword) {
-    where.name = {
-      [Sequelize.Op.iLike]: `%${filters.keyword}%`
+    where['$classification.title$'] = {
+      [sequelize.Sequelize.Op.iLike]: `%${filters.keyword}%`
     }
   }
 
