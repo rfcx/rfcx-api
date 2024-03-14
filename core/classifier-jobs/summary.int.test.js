@@ -256,6 +256,30 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       expect(result.classificationsSummary[3].title).toBe(CLASSIFICATION_2.title)
     })
 
+    test('returns valid data with limit sort by name DESC', async () => {
+      await models.ClassifierJobSummary.bulkCreate([
+        { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 0 },
+        { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_2.id, total: 1, confirmed: 0, rejected: 1, uncertain: 0 },
+        { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_3.id, total: 1, confirmed: 0, rejected: 0, uncertain: 1 },
+        { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
+        { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
+      ])
+
+      const response = await request(app).get(`/${JOB_1.id}/summary`).query({ sort: 'name', order: 'desc' })
+
+      const result = response.body
+      expect(response.statusCode).toBe(200)
+      expect(result.reviewStatus.total).toBe(3)
+      expect(result.reviewStatus.confirmed).toBe(1)
+      expect(result.reviewStatus.rejected).toBe(1)
+      expect(result.reviewStatus.uncertain).toBe(1)
+      expect(result.classificationsSummary.length).toBe(4)
+      expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_2.title)
+      expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_3.title)
+      expect(result.classificationsSummary[2].title).toBe(CLASSIFICATION_1.title)
+      expect(result.classificationsSummary[3].title).toBe(CLASSIFICATION_4.title)
+    })
+
     test('returns valid data with unvalidated ASC', async () => {
       await models.ClassifierJobSummary.bulkCreate([
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 10, rejected: 0, uncertain: 0 },
