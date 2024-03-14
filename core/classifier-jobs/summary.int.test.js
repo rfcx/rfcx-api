@@ -91,9 +91,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query()
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(3)
@@ -140,9 +140,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ limit: 1 })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(1)
@@ -168,9 +168,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ offset: 1 })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(2)
@@ -212,9 +212,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ limit: 1, offset: 1 })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(1)
@@ -240,9 +240,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ sort: 'name' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(3)
@@ -264,9 +264,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ sort: 'unvalidated' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(120)
@@ -288,9 +288,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ sort: 'unvalidated', order: 'desc' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(120)
@@ -312,9 +312,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ sort: 'confirmed', order: 'desc' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(120)
@@ -336,9 +336,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ sort: 'rejected', order: 'desc' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(120)
@@ -360,9 +360,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ sort: 'uncertain', order: 'desc' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(120)
@@ -384,9 +384,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ order: 'desc' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(120)
@@ -408,9 +408,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ keyword: 'i' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(90)
@@ -431,9 +431,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ keyword: 'air' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(30)
@@ -452,9 +452,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ keyword: 'adbasd' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(0)
@@ -472,9 +472,9 @@ describe('GET /classifier-jobs/{id}/summary', () => {
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
         { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
       ])
-  
+
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ limit: 2, offset: 1, sort: 'confirmed', order: 'desc', keyword: 'i' })
-  
+
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(result.reviewStatus.total).toBe(60)
@@ -492,10 +492,10 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const response = await request(app).get(`/${JOB_5.id}/summary`)
       expect(response.statusCode).toBe(403)
     })
-  
+
     test('returns empty error', async () => {
       const response = await request(app).get('/230000123/summary')
-  
+
       expect(response.statusCode).toBe(404)
     })
   })
