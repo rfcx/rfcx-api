@@ -1,6 +1,7 @@
 ## 1.3.8 (2024-03-xx)
 ### Common
 * **core**: Use Google Map API for getting timezone and country from latitude and longitude
+* **core**: Endpoint `GET /classifier-job/:id/summary` receive params `limit, offset, sort, order, keyword`
 
 ## 1.3.7 (2024-02-xx)
 ### Common

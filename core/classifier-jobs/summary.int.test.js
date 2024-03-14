@@ -376,6 +376,30 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       expect(result.classificationsSummary[3].title).toBe(CLASSIFICATION_2.title)
     })
 
+    test('returns valid data with order DESC', async () => {
+      await models.ClassifierJobSummary.bulkCreate([
+        { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 10, rejected: 0, uncertain: 0 },
+        { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_2.id, total: 30, confirmed: 12, rejected: 5, uncertain: 0 },
+        { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_3.id, total: 30, confirmed: 5, rejected: 4, uncertain: 2 },
+        { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 30, confirmed: 0, rejected: 11, uncertain: 7 },
+        { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 13, rejected: 0, uncertain: 3 }
+      ])
+  
+      const response = await request(app).get(`/${JOB_1.id}/summary`).query({ order: 'desc' })
+  
+      const result = response.body
+      expect(response.statusCode).toBe(200)
+      expect(result.reviewStatus.total).toBe(120)
+      expect(result.reviewStatus.confirmed).toBe(27)
+      expect(result.reviewStatus.rejected).toBe(20)
+      expect(result.reviewStatus.uncertain).toBe(9)
+      expect(result.classificationsSummary.length).toBe(4)
+      expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_1.title)
+      expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_2.title)
+      expect(result.classificationsSummary[2].title).toBe(CLASSIFICATION_3.title)
+      expect(result.classificationsSummary[3].title).toBe(CLASSIFICATION_4.title)
+    })
+
     test('returns valid data with keyword 1', async () => {
       await models.ClassifierJobSummary.bulkCreate([
         { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_1.id, total: 30, confirmed: 10, rejected: 0, uncertain: 0 },
