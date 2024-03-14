@@ -1,4 +1,4 @@
-const { Classification, ClassifierJobSummary } = require('../../_models')
+const { Classification, ClassifierJobSummary, sequelize } = require('../../_models')
 
 const availableIncludes = [
   Classification.include({ attributes: ['value', 'title', 'image'] })
@@ -11,6 +11,7 @@ async function createJobSummary (classificationData, options = {}) {
 
 async function getJobSummaries (classifierJobId, filters, options = {}) {
   const transaction = options.transaction
+  console.log('here')
   if (!classifierJobId) {
     throw new Error('Classifier job id must be set to get job summary')
   }
@@ -18,10 +19,31 @@ async function getJobSummaries (classifierJobId, filters, options = {}) {
   if (filters.classificationId) {
     where.classificationId = filters.classificationId
   }
+  if (filters.keyword) {
+    where.name = {
+      [Sequelize.Op.iLike]: `%${filters.keyword}%`
+    }
+  }
+
+  let order
+  if (options.sort) {
+    order = [[options.sort, options.order ?? 'ASC']]
+    if (options.sort === 'unvalidated') {
+      const orderRaw = 'total - (confirmed + rejected + uncertain)'
+      order = [[sequelize.literal(orderRaw), options.order ?? 'ASC']]
+    }
+    if (options.sort === 'name') {
+      order = [[{ model: Classification, as: 'classification' }, 'title', options.order ?? 'ASC']]
+    }
+  }
+
   return await ClassifierJobSummary.findAll({
     where,
     attributes: ClassifierJobSummary.attributes.lite,
     include: availableIncludes,
+    limit: options.limit,
+    offset: options.offset,
+    order,
     transaction
   })
 }

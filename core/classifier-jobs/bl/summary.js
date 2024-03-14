@@ -59,9 +59,8 @@ async function calcSummary (id, options = {}) {
   return Object.values(classificationsSummary)
 }
 
-async function getSummary (classifierJobId, options = {}) {
-  await get(classifierJobId, options)
-  const summaries = await dao.getJobSummaries(classifierJobId, {}, options)
+async function getSummary (classifierJobId, filters = {}, options = {}) {
+  const summaries = await dao.getJobSummaries(classifierJobId, filters, options)
   return summaries.reduce((acc, cur) => {
     acc.reviewStatus.total += cur.total
     acc.reviewStatus.confirmed += cur.confirmed
