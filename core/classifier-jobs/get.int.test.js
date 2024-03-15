@@ -40,6 +40,15 @@ const CLASSIFIER_JOB_4_STREAM_1 = { classifierJobId: JOB_4.id, streamId: STREAM_
 const CLASSIFIER_JOB_5_STREAM_1 = { classifierJobId: JOB_5.id, streamId: STREAM_5.id }
 const CLASSIFIER_JOB_STREAMS = [CLASSIFIER_JOB_1_STREAM_1, CLASSIFIER_JOB_1_STREAM_2, CLASSIFIER_JOB_2_STREAM_1, CLASSIFIER_JOB_3_STREAM_1, CLASSIFIER_JOB_4_STREAM_1, CLASSIFIER_JOB_5_STREAM_1]
 
+const CLASSIFICATION_1 = { id: 1, value: 'chainsaw', title: 'chainsaw', typeId: 1, sourceId: null, parent_id: null, source_external_id: null, created_at: '2021-04-14T00:00:00.000Z' }
+const CLASSIFICATION_2 = { id: 2, value: 'vehicle', title: 'vehicle', typeId: 1, sourceId: null, parent_id: null, source_external_id: null, created_at: '2021-04-14T00:00:00.000Z' }
+const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2]
+
+const CLASSIFICATION_JOB_SUMMARIES = [
+  { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 0 },
+  { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_2.id, total: 1, confirmed: 0, rejected: 1, uncertain: 0 }
+]
+
 beforeAll(() => {
   muteConsole('warn')
 })
@@ -63,6 +72,8 @@ async function seedTestData () {
   await models.UserProjectRole.bulkCreate(ROLES)
   await models.ClassifierJob.bulkCreate(JOBS)
   await models.ClassifierJobStream.bulkCreate(CLASSIFIER_JOB_STREAMS)
+  await models.Classification.bulkCreate(CLASSIFICATIONS)
+  await models.ClassifierJobSummary.bulkCreate(CLASSIFICATION_JOB_SUMMARIES)
 }
 
 describe('GET /classifier-jobs/{id}', () => {
@@ -100,6 +111,7 @@ describe('GET /classifier-jobs/{id}', () => {
     expect(result.streams[0].name).toBe(STREAM_1.name)
     expect(result.streams[1].id).toBe(STREAM_2.id)
     expect(result.streams[1].name).toBe(STREAM_2.name)
+    expect(result.totalDistinctClassifications).toBe(2)
   })
 
   test('customizable fields', async () => {

@@ -62,13 +62,13 @@ yarn
 We can use docker-compose to run a local Timescale database and other services. You can use `docker compose up -d` or `docker compose down`, or simply:
 
 ```
-yarn serve:core
+yarn serve-db:core
 ```
 
 Or for noncore:
 
 ```
-yarn serve:noncore
+yarn serve-db:noncore
 ```
 
 For some users that have a local database driver installed on port 5432, the command up top might not work because it's trying to access your local database. Please change your local database port before trying to run the command again.
