@@ -2,6 +2,9 @@
 ### Common
 * **core**: Use Google Map API for getting timezone and country from latitude and longitude
 
+### Features
+* **core**: GET `classifier-jobs/:id` now includes totalDistinctClassifications field with the number of linked classifications
+
 ## 1.3.7 (2024-02-xx)
 ### Common
 * **core**: Add `hidden` column to `streams`
