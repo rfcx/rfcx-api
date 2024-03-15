@@ -1,7 +1,6 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { getSummary } = require('./bl/summary')
 const Converter = require('../../common/converter')
-const { ValidationError } = require('../../common/error-handling/errors')
 
 /**
  * @swagger
@@ -62,26 +61,16 @@ module.exports = (req, res) => {
   const converter = new Converter(req.query, convertedParams, true)
   converter.convert('limit').optional().default(25).toInt()
   converter.convert('offset').optional().default(0).toInt()
-  converter.convert('sort').optional().toString()
-  converter.convert('order').optional().toString()
+  converter.convert('sort').optional().toString().toLowerCase().isEqualToAny(['name', 'unvalidated', 'confirmed', 'rejected', 'uncertain'])
+  converter.convert('order').optional().toString().toLowerCase().isEqualToAny(['asc', 'desc'])
   converter.convert('keyword').optional().toString()
   return converter.validate()
     .then(async (params) => {
       const { limit, offset, sort, order, keyword } = params
-      if (sort) {
-        if (!['name', 'unvalidated', 'confirmed', 'rejected', 'uncertain'].includes(sort)) {
-          throw new ValidationError('The given sort_by is not allowed. sort_by options (name, unvalidated, confirmed, rejected, uncertain)')
-        }
-      }
-      if (order) {
-        if (!['asc', 'desc'].includes(order.toLowerCase())) {
-          throw new ValidationError('The given order is not allowed. order options (asc, desc)')
-        }
-      }
       const options = { readableBy, limit, offset, sort, order }
       const filters = { keyword }
       const result = await getSummary(req.params.id, filters, options)
-      return res.json(result)
+      return res.header('Total-Items', result.total).json(result.results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting classificatier job summary'))
 }

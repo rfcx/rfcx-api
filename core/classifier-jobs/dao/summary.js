@@ -1,4 +1,5 @@
 const { Classification, ClassifierJobSummary, sequelize } = require('../../_models')
+const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
   Classification.include({ attributes: ['value', 'title', 'image'] })
@@ -36,13 +37,14 @@ async function getJobSummaries (classifierJobId, filters, options = {}) {
     }
   }
 
-  return await ClassifierJobSummary.findAll({
+  return await pagedQuery(ClassifierJobSummary, {
     where,
     attributes: ClassifierJobSummary.attributes.lite,
     include: availableIncludes,
     limit: options.limit,
     offset: options.offset,
     order,
+    col: 'classifier_job_id',
     transaction
   })
 }

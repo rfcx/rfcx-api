@@ -173,6 +173,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(2)
       expect(result.reviewStatus.confirmed).toBe(0)
       expect(result.reviewStatus.rejected).toBe(1)
@@ -217,6 +218,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(1)
       expect(result.reviewStatus.confirmed).toBe(0)
       expect(result.reviewStatus.rejected).toBe(1)
@@ -245,6 +247,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(3)
       expect(result.reviewStatus.confirmed).toBe(1)
       expect(result.reviewStatus.rejected).toBe(1)
@@ -269,6 +272,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(3)
       expect(result.reviewStatus.confirmed).toBe(1)
       expect(result.reviewStatus.rejected).toBe(1)
@@ -293,6 +297,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(120)
       expect(result.reviewStatus.confirmed).toBe(27)
       expect(result.reviewStatus.rejected).toBe(20)
@@ -317,6 +322,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(120)
       expect(result.reviewStatus.confirmed).toBe(27)
       expect(result.reviewStatus.rejected).toBe(20)
@@ -341,6 +347,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(120)
       expect(result.reviewStatus.confirmed).toBe(27)
       expect(result.reviewStatus.rejected).toBe(20)
@@ -365,6 +372,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(120)
       expect(result.reviewStatus.confirmed).toBe(27)
       expect(result.reviewStatus.rejected).toBe(20)
@@ -389,6 +397,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(120)
       expect(result.reviewStatus.confirmed).toBe(27)
       expect(result.reviewStatus.rejected).toBe(20)
@@ -413,6 +422,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('4')
       expect(result.reviewStatus.total).toBe(120)
       expect(result.reviewStatus.confirmed).toBe(27)
       expect(result.reviewStatus.rejected).toBe(20)
@@ -437,6 +447,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('3')
       expect(result.reviewStatus.total).toBe(90)
       expect(result.reviewStatus.confirmed).toBe(22)
       expect(result.reviewStatus.rejected).toBe(16)
@@ -460,6 +471,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('1')
       expect(result.reviewStatus.total).toBe(30)
       expect(result.reviewStatus.confirmed).toBe(0)
       expect(result.reviewStatus.rejected).toBe(11)
@@ -481,6 +493,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('0')
       expect(result.reviewStatus.total).toBe(0)
       expect(result.reviewStatus.confirmed).toBe(0)
       expect(result.reviewStatus.rejected).toBe(0)
@@ -501,6 +514,7 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
+      expect(response.headers['total-items']).toBe('3')
       expect(result.reviewStatus.total).toBe(60)
       expect(result.reviewStatus.confirmed).toBe(10)
       expect(result.reviewStatus.rejected).toBe(11)
@@ -521,6 +535,20 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const response = await request(app).get('/230000123/summary')
 
       expect(response.statusCode).toBe(404)
+    })
+
+    test('returns sort validation error', async () => {
+      const response = await request(app).get(`/${JOB_1.id}/summary`).query({ sort: 'idontknow' })
+
+      expect(response.statusCode).toBe(400)
+      expect(response.body.message).toBe('Validation errors: Parameter \'sort\' should be one of these values: name, unvalidated, confirmed, rejected, uncertain.')
+    })
+
+    test('returns order validation error', async () => {
+      const response = await request(app).get(`/${JOB_1.id}/summary`).query({ order: 'ascs' })
+
+      expect(response.statusCode).toBe(400)
+      expect(response.body.message).toBe('Validation errors: Parameter \'order\' should be one of these values: asc, desc.')
     })
   })
 })
