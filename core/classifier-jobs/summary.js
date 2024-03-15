@@ -43,6 +43,11 @@ const Converter = require('../../common/converter')
  *     responses:
  *       200:
  *         description: Classifier jobs summary object
+ *         headers:
+ *           Total-Items:
+ *             schema:
+ *               type: integer
+ *             description: Total number of items without limit and offset.
  *         content:
  *           application/json:
  *             schema:
