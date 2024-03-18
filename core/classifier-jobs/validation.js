@@ -30,9 +30,9 @@ const { getValidationStatus } = require('./bl/summary')
 module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
-  const object = { readableBy }
+  const options = { readableBy }
   const jobId = req.params.id
-  return getValidationStatus(jobId, object)
+  return getValidationStatus(jobId, options)
     .then((result) => res.json(result))
     .catch(httpErrorHandler(req, res, 'Failed getting classificatier job validation status'))
 }
