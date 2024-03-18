@@ -1,6 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { getValidationStatus } = require('./bl/summary')
-const Converter = require('../../common/converter')
 
 /**
  * @swagger

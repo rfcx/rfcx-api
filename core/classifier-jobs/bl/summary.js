@@ -77,7 +77,7 @@ async function getSummary (classifierJobId, filters = {}, options = {}) {
   return { total: summaries.total, results: reducedSummaries }
 }
 
-async function getValidationStatus(classifierJobId, options = {}) {
+async function getValidationStatus (classifierJobId, options = {}) {
   await get(classifierJobId, options)
   const summaries = await dao.getJobSummaries(classifierJobId, {}, options)
   const reducedSummaries = summaries.results.reduce((acc, cur) => {

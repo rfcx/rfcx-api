@@ -4,7 +4,7 @@ const { get } = require('./dao')
 
 /**
  * @swagger
- * 
+ *
  * /classifiers/{id}/file:
  *  get:
  *    summary: Download a classifier file
