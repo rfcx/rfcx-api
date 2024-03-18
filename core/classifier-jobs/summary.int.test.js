@@ -96,10 +96,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
-      expect(result.reviewStatus.total).toBe(3)
-      expect(result.reviewStatus.confirmed).toBe(1)
-      expect(result.reviewStatus.rejected).toBe(1)
-      expect(result.reviewStatus.uncertain).toBe(1)
       expect(result.classificationsSummary.length).toBe(4)
       const output1 = result.classificationsSummary.find(o => CLASSIFICATION_1.value === o.value)
       expect(output1.id).toBeUndefined()
@@ -145,10 +141,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
 
       const result = response.body
       expect(response.statusCode).toBe(200)
-      expect(result.reviewStatus.total).toBe(1)
-      expect(result.reviewStatus.confirmed).toBe(1)
-      expect(result.reviewStatus.rejected).toBe(0)
-      expect(result.reviewStatus.uncertain).toBe(0)
       expect(result.classificationsSummary.length).toBe(1)
       const output1 = result.classificationsSummary.find(o => CLASSIFICATION_1.value === o.value)
       expect(output1.id).toBeUndefined()
@@ -174,10 +166,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(2)
-      expect(result.reviewStatus.confirmed).toBe(0)
-      expect(result.reviewStatus.rejected).toBe(1)
-      expect(result.reviewStatus.uncertain).toBe(1)
       expect(result.classificationsSummary.length).toBe(3)
       const output1 = result.classificationsSummary.find(o => CLASSIFICATION_2.value === o.value)
       expect(output1.id).toBeUndefined()
@@ -219,10 +207,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(1)
-      expect(result.reviewStatus.confirmed).toBe(0)
-      expect(result.reviewStatus.rejected).toBe(1)
-      expect(result.reviewStatus.uncertain).toBe(0)
       expect(result.classificationsSummary.length).toBe(1)
       const output1 = result.classificationsSummary.find(o => CLASSIFICATION_2.value === o.value)
       expect(output1.id).toBeUndefined()
@@ -248,10 +232,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(3)
-      expect(result.reviewStatus.confirmed).toBe(1)
-      expect(result.reviewStatus.rejected).toBe(1)
-      expect(result.reviewStatus.uncertain).toBe(1)
       expect(result.classificationsSummary.length).toBe(4)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_4.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_1.title)
@@ -273,10 +253,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(3)
-      expect(result.reviewStatus.confirmed).toBe(1)
-      expect(result.reviewStatus.rejected).toBe(1)
-      expect(result.reviewStatus.uncertain).toBe(1)
       expect(result.classificationsSummary.length).toBe(4)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_2.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_3.title)
@@ -298,10 +274,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(120)
-      expect(result.reviewStatus.confirmed).toBe(27)
-      expect(result.reviewStatus.rejected).toBe(20)
-      expect(result.reviewStatus.uncertain).toBe(9)
       expect(result.classificationsSummary.length).toBe(4)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_4.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_2.title)
@@ -323,10 +295,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(120)
-      expect(result.reviewStatus.confirmed).toBe(27)
-      expect(result.reviewStatus.rejected).toBe(20)
-      expect(result.reviewStatus.uncertain).toBe(9)
       expect(result.classificationsSummary.length).toBe(4)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_1.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_3.title)
@@ -348,10 +316,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(120)
-      expect(result.reviewStatus.confirmed).toBe(27)
-      expect(result.reviewStatus.rejected).toBe(20)
-      expect(result.reviewStatus.uncertain).toBe(9)
       expect(result.classificationsSummary.length).toBe(4)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_2.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_1.title)
@@ -373,10 +337,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(120)
-      expect(result.reviewStatus.confirmed).toBe(27)
-      expect(result.reviewStatus.rejected).toBe(20)
-      expect(result.reviewStatus.uncertain).toBe(9)
       expect(result.classificationsSummary.length).toBe(4)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_4.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_2.title)
@@ -398,10 +358,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(120)
-      expect(result.reviewStatus.confirmed).toBe(27)
-      expect(result.reviewStatus.rejected).toBe(20)
-      expect(result.reviewStatus.uncertain).toBe(9)
       expect(result.classificationsSummary.length).toBe(4)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_4.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_3.title)
@@ -423,10 +379,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('4')
-      expect(result.reviewStatus.total).toBe(120)
-      expect(result.reviewStatus.confirmed).toBe(27)
-      expect(result.reviewStatus.rejected).toBe(20)
-      expect(result.reviewStatus.uncertain).toBe(9)
       expect(result.classificationsSummary.length).toBe(4)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_1.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_2.title)
@@ -448,10 +400,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('3')
-      expect(result.reviewStatus.total).toBe(90)
-      expect(result.reviewStatus.confirmed).toBe(22)
-      expect(result.reviewStatus.rejected).toBe(16)
-      expect(result.reviewStatus.uncertain).toBe(7)
       expect(result.classificationsSummary.length).toBe(3)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_1.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_2.title)
@@ -472,10 +420,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('1')
-      expect(result.reviewStatus.total).toBe(30)
-      expect(result.reviewStatus.confirmed).toBe(0)
-      expect(result.reviewStatus.rejected).toBe(11)
-      expect(result.reviewStatus.uncertain).toBe(7)
       expect(result.classificationsSummary.length).toBe(1)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_4.title)
     })
@@ -494,10 +438,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('0')
-      expect(result.reviewStatus.total).toBe(0)
-      expect(result.reviewStatus.confirmed).toBe(0)
-      expect(result.reviewStatus.rejected).toBe(0)
-      expect(result.reviewStatus.uncertain).toBe(0)
       expect(result.classificationsSummary.length).toBe(0)
     })
 
@@ -515,10 +455,6 @@ describe('GET /classifier-jobs/{id}/summary', () => {
       const result = response.body
       expect(response.statusCode).toBe(200)
       expect(response.headers['total-items']).toBe('3')
-      expect(result.reviewStatus.total).toBe(60)
-      expect(result.reviewStatus.confirmed).toBe(10)
-      expect(result.reviewStatus.rejected).toBe(11)
-      expect(result.reviewStatus.uncertain).toBe(7)
       expect(result.classificationsSummary.length).toBe(2)
       expect(result.classificationsSummary[0].title).toBe(CLASSIFICATION_1.title)
       expect(result.classificationsSummary[1].title).toBe(CLASSIFICATION_4.title)

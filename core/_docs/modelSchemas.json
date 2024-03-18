@@ -1234,14 +1234,18 @@
   },
   "ClassifierJobSummary": {
     "properties": {
-      "reviewStatus": {
-        "$ref": "#/components/schemas/ClassifierJobReviewStatus"
-      },
       "classificationsSummary": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/ClassificationSummary"
         }
+      }
+    }
+  },
+  "ClassifierJobValidation": {
+    "properties": {
+      "reviewStatus": {
+        "$ref": "#/components/schemas/ClassifierJobReviewStatus"
       }
     }
   }

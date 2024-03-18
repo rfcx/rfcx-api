@@ -63,10 +63,6 @@ async function getSummary (classifierJobId, filters = {}, options = {}) {
   await get(classifierJobId, options)
   const summaries = await dao.getJobSummaries(classifierJobId, filters, options)
   const reducedSummaries = summaries.results.reduce((acc, cur) => {
-    acc.reviewStatus.total += cur.total
-    acc.reviewStatus.confirmed += cur.confirmed
-    acc.reviewStatus.rejected += cur.rejected
-    acc.reviewStatus.uncertain += cur.uncertain
     acc.classificationsSummary.push({
       ...cur.classification,
       total: cur.total,
@@ -76,18 +72,33 @@ async function getSummary (classifierJobId, filters = {}, options = {}) {
     })
     return acc
   }, {
-    reviewStatus: {
-      total: 0,
-      confirmed: 0,
-      rejected: 0,
-      uncertain: 0
-    },
     classificationsSummary: []
   })
   return { total: summaries.total, results: reducedSummaries }
 }
 
+async function getValidationStatus(classifierJobId, options = {}) {
+  await get(classifierJobId, options)
+  const summaries = await dao.getJobSummaries(classifierJobId, {}, options)
+  const reducedSummaries = summaries.results.reduce((acc, cur) => {
+    acc.reviewStatus.total += cur.total
+    acc.reviewStatus.confirmed += cur.confirmed
+    acc.reviewStatus.rejected += cur.rejected
+    acc.reviewStatus.uncertain += cur.uncertain
+    return acc
+  }, {
+    reviewStatus: {
+      total: 0,
+      confirmed: 0,
+      rejected: 0,
+      uncertain: 0
+    }
+  })
+  return reducedSummaries
+}
+
 module.exports = {
   updateSummary,
-  getSummary
+  getSummary,
+  getValidationStatus
 }
