@@ -1,4 +1,5 @@
-const { Classification, ClassifierJobSummary } = require('../../_models')
+const { Classification, ClassifierJobSummary, sequelize } = require('../../_models')
+const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
   Classification.include({ attributes: ['value', 'title', 'image'] })
@@ -18,10 +19,32 @@ async function getJobSummaries (classifierJobId, filters, options = {}) {
   if (filters.classificationId) {
     where.classificationId = filters.classificationId
   }
-  return await ClassifierJobSummary.findAll({
+  if (filters.keyword) {
+    where['$classification.title$'] = {
+      [sequelize.Sequelize.Op.iLike]: `%${filters.keyword}%`
+    }
+  }
+
+  let order
+  if (options.sort) {
+    order = [[options.sort, options.order ?? 'ASC']]
+    if (options.sort === 'unvalidated') {
+      const orderRaw = 'total - (confirmed + rejected + uncertain)'
+      order = [[sequelize.literal(orderRaw), options.order ?? 'ASC']]
+    }
+    if (options.sort === 'name') {
+      order = [[{ model: Classification, as: 'classification' }, 'title', options.order ?? 'ASC']]
+    }
+  }
+
+  return await pagedQuery(ClassifierJobSummary, {
     where,
     attributes: ClassifierJobSummary.attributes.lite,
     include: availableIncludes,
+    limit: options.limit,
+    offset: options.offset,
+    order,
+    col: 'classifier_job_id',
     transaction
   })
 }

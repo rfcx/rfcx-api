@@ -1119,6 +1119,23 @@
       }
     ]
   },
+  "SingleClassifierJob": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassifierJob"
+      },
+      {
+        "properties": {
+          "totalDistinctClassifications": {
+            "title": "Total distinct classifications",
+            "description": "How many different species (or other sources of sound) are detected in a job",
+            "type": "number",
+            "example": 4000
+          }
+        }
+      }
+    ]
+  },
   "ClassifierJob": {
     "properties": {
       "classifierId": {
@@ -1217,14 +1234,18 @@
   },
   "ClassifierJobSummary": {
     "properties": {
-      "reviewStatus": {
-        "$ref": "#/components/schemas/ClassifierJobReviewStatus"
-      },
       "classificationsSummary": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/ClassificationSummary"
         }
+      }
+    }
+  },
+  "ClassifierJobValidation": {
+    "properties": {
+      "reviewStatus": {
+        "$ref": "#/components/schemas/ClassifierJobReviewStatus"
       }
     }
   }
