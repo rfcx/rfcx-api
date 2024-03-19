@@ -12,6 +12,9 @@ const app = require('./app')
 
 // Serve
 const port = process.env.PORT || 8080
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.info(`info: Core: Started ${new Date() - startTime}ms (port ${port}) (env ${process.env.NODE_ENV})`)
 })
+
+server.keepAliveTimeout = 61 * 1000
+server.headersTimeout = 70 * 1000 // This should be bigger than `keepAliveTimeout + your server's expected response time`
