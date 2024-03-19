@@ -25,6 +25,11 @@ module.exports = expressWinston.logger({
       body.classification_values = body.classification_values.slice(0, 10)
       body.classification_values.push(`Other ${totalLength - 10} items were cropped...`)
     }
+    if (/internal\/classifier-jobs\/(\d+)\/results/.test(req.url) && req.body.detections && req.body.detections.length > 10) {
+      const totalLength = body.detections.length
+      body.detections = body.detections.slice(0, 10)
+      body.detections.push(`Other ${totalLength - 10} items were cropped...`)
+    }
     const userEmail = (req.rfcx && req.rfcx.auth_token_info && req.rfcx.auth_token_info.email) ? req.rfcx.auth_token_info.email : 'none'
     return `${req.method} ${res.statusCode} ${req.url} Response Time: ${res.responseTime} Authorization: ${req.headers.authorization} Email: ${userEmail} Body: ${JSON.stringify(body)}`
   },
