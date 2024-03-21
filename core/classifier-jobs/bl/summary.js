@@ -65,6 +65,7 @@ async function getSummary (classifierJobId, filters = {}, options = {}) {
   const reducedSummaries = summaries.results.reduce((acc, cur) => {
     acc.classificationsSummary.push({
       ...cur.classification,
+      unreviewed: (cur.total - (cur.confirmed + cur.rejected + cur.uncertain)),
       total: cur.total,
       confirmed: cur.confirmed,
       rejected: cur.rejected,
@@ -82,6 +83,7 @@ async function getValidationStatus (classifierJobId, options = {}) {
   const summaries = await dao.getJobSummaries(classifierJobId, {}, options)
   const reducedSummaries = summaries.results.reduce((acc, cur) => {
     acc.reviewStatus.total += cur.total
+    acc.reviewStatus.unreviewed += (cur.total - (cur.confirmed + cur.rejected + cur.uncertain))
     acc.reviewStatus.confirmed += cur.confirmed
     acc.reviewStatus.rejected += cur.rejected
     acc.reviewStatus.uncertain += cur.uncertain
@@ -89,6 +91,7 @@ async function getValidationStatus (classifierJobId, options = {}) {
   }, {
     reviewStatus: {
       total: 0,
+      unreviewed: 0,
       confirmed: 0,
       rejected: 0,
       uncertain: 0
