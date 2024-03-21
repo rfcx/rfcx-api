@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER
     },
     status: {
-      type: DataTypes.SMALLINT
+      type: DataTypes.SMALLINT,
+      allowNull: false
     }
   }, {
     underscored: true

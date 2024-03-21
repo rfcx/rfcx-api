@@ -33,9 +33,15 @@ async function createOrUpdate (options) {
       let review = (await reviewsDao.query({ detectionIds: [detection.id], userId }, { fields: ['id'], transaction }))[0]
       const exists = !!review
       if (exists) {
-        await reviewsDao.update(review.id, { status }, { transaction })
+        if (status === 'null') {
+          await reviewsDao.remove(review.id, { transaction })
+        } else {
+          await reviewsDao.update(review.id, { status }, { transaction })
+        }
       } else {
-        review = await reviewsDao.create({ detectionId: detection.id, userId, status }, { transaction })
+        if (status !== 'null') {
+          review = await reviewsDao.create({ detectionId: detection.id, userId, status }, { transaction })
+        }
       }
       await refreshDetectionReviewStatus(detection.id, streamId, start, transaction)
     }
@@ -68,8 +74,6 @@ function calculateReviewStatus (n, u, p) {
     return -1
   } else if (p > u && p > n) {
     return 1
-  } else if (n === 0 && u === 0 && p === 0) { // all reviews are updated to unreviewed
-    return null
   } else {
     return 0
   }

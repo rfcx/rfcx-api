@@ -6,7 +6,7 @@ const REVIEW_STATUS_MAPPING = {
   rejected: -1,
   uncertain: 0,
   confirmed: 1,
-  unreviewed: null
+  unreviewed: 'null'
 }
 
 async function create (data, options = {}) {
@@ -63,4 +63,9 @@ async function update (id, data, options = {}) {
   return await DetectionReview.update(upd, { where: { id }, transaction })
 }
 
-module.exports = { create, query, update, REVIEW_STATUS_MAPPING }
+async function remove (id, options = {}) {
+  const transaction = options.transaction || null
+  return await DetectionReview.destroy({ where: { id }, transaction })
+}
+
+module.exports = { create, query, update, remove, REVIEW_STATUS_MAPPING }
