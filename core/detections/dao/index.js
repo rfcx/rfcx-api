@@ -66,11 +66,11 @@ async function defaultQueryOptions (filters = {}, options = {}) {
   }
   if (reviewStatuses !== undefined) {
     const statuses = reviewStatuses.map(s => REVIEW_STATUS_MAPPING[s])
-    if (statuses.includes('null')) {
+    if (statuses.includes(null)) {
       if (statuses.length === 1) {
         where.reviewStatus = { [Sequelize.Op.eq]: null }
       } else {
-        where.reviewStatus = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: statuses.filter(s => s !== 'null') } }
+        where.reviewStatus = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: statuses.filter(s => s !== null) } }
       }
     } else {
       where.reviewStatus = { [Sequelize.Op.in]: statuses }
