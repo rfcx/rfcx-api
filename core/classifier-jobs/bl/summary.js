@@ -65,8 +65,8 @@ async function getSummary (classifierJobId, filters = {}, options = {}) {
   const reducedSummaries = summaries.results.reduce((acc, cur) => {
     acc.classificationsSummary.push({
       ...cur.classification,
-      unreviewed: (cur.total - (cur.confirmed + cur.rejected + cur.uncertain)),
       total: cur.total,
+      unreviewed: (cur.total - (cur.confirmed + cur.rejected + cur.uncertain)),
       confirmed: cur.confirmed,
       rejected: cur.rejected,
       uncertain: cur.uncertain
