@@ -7,6 +7,12 @@ async function count (status = 0) {
   })
 }
 
+async function listByStatus(status = 0) {
+  return await ClassifierJob.findAll({
+    where: { status }
+  })
+}
+
 async function dequeue (maxConcurrency, maxRows) {
   const dequeuedIds = await sequelize.transaction(async transaction => {
     const replacements = { maxConcurrency, maxRows, waiting: WAITING, running: RUNNING }
