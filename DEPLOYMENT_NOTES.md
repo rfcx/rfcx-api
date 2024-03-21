@@ -1,8 +1,4 @@
 # API Deployment Notes
-## 1.3.8
-- Run `npm run migrate:core` to apply migrations:
-  - `20240321000001-detection-review-status-can-be-null`
-
 ## 1.3.7
 - Run `npm run migrate:core` to apply migrations:
   - `20240227000001-add-hidden-to-streams`
