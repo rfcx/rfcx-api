@@ -354,6 +354,26 @@ module.exports = class Conversion {
     return this
   }
 
+  isSortEqualToAny (arr) {
+    this.conversions.push(() => {
+      let value = this.value
+      if (!Array.isArray(this.value)) {
+        value = this.value.split(',')
+      }
+      value.forEach(raw => {
+        let v = raw
+        if (raw.startsWith('-') || raw.startsWith('+')) {
+          v = raw.substring(1)
+        }
+        if (!arr.includes(v)) {
+          this.throwError(`should be one of these values: ${arr.join(', ')}`)
+        }
+      })
+    })
+
+    return this
+  }
+
   isPassingRegExp (exp, message) {
     this.conversions.push(() => {
       if (!exp.test(this.src[this.property])) {

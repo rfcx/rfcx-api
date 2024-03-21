@@ -61,7 +61,7 @@ module.exports = (req, res) => {
   const converter = new Converter(req.query, convertedParams, true)
   converter.convert('limit').optional().default(25).toInt()
   converter.convert('offset').optional().default(0).toInt()
-  converter.convert('sort').optional().toString()
+  converter.convert('sort').optional().toString().isSortEqualToAny(['name', 'unreviewed', 'confirmed', 'uncertain', 'rejected'])
   converter.convert('keyword').optional().toString()
   return converter.validate()
     .then(async (params) => {

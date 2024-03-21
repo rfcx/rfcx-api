@@ -29,8 +29,7 @@ async function getJobSummaries (classifierJobId, filters, options = {}) {
   let order
   if (options.sort) {
     order = []
-    const tempOrder = getSortFields(options.sort)
-    tempOrder.forEach(o => {
+    getSortFields(options.sort).forEach(o => {
       if (o[0] === 'unreviewed') {
         const orderRaw = 'total - (confirmed + rejected + uncertain)'
         order.push([sequelize.literal(orderRaw), o[1]])

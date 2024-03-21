@@ -485,7 +485,8 @@ describe('GET /classifier-jobs/{id}/summary', () => {
     test('returns sort validation error', async () => {
       const response = await request(app).get(`/${JOB_1.id}/summary`).query({ sort: 'idontknow' })
 
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(400)
+      expect(response.body.message).toBe('Validation errors: Parameter \'sort\' should be one of these values: name, unreviewed, confirmed, uncertain, rejected.')
     })
   })
 })
