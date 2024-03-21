@@ -27,15 +27,10 @@ const Converter = require('../../common/converter')
  *         type: int
  *         default: 0
  *       - name: sort
- *         description: Sort the classifier summary results
+ *         description: Order the results (comma-separated list of fields, prefix "-" for descending)
  *         in: query
  *         type: string
- *         example: name
- *       - name: order
- *         description: Order the classifier summary results
- *         in: query
- *         type: string
- *         example: asc
+ *         example: -name,-unreviewed
  *       - name: keyword
  *         description: Match classification names contain with keyword
  *         in: query
