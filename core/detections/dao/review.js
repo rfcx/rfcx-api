@@ -6,7 +6,7 @@ const REVIEW_STATUS_MAPPING = {
   rejected: -1,
   uncertain: 0,
   confirmed: 1,
-  unreviewed: 'null'
+  unreviewed: null
 }
 
 async function create (data, options = {}) {

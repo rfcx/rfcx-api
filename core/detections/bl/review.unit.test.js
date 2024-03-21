@@ -10,7 +10,7 @@ const { calculateReviewStatus } = require('./review')
 
 describe('calculateReviewStatus function', () => {
   test('all values are 0', async () => {
-    expect(calculateReviewStatus(0, 0, 0)).toBe(0)
+    expect(calculateReviewStatus(0, 0, 0)).toBeNull()
   })
   test('all values are equal', async () => {
     expect(calculateReviewStatus(1, 1, 1)).toBe(0)
