@@ -6,6 +6,7 @@
 
 ### Features
 * **core**: GET `classifier-jobs/:id` now includes totalDistinctClassifications field with the number of linked classifications
+* **core**: GET `/classifiers` now respects `sort` query parameter for sorting and `fields` parameter to chose a set of returned fields
 
 ## 1.3.7 (2024-02-xx)
 ### Common

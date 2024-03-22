@@ -4,6 +4,7 @@ const pagedQuery = require('../../_utils/db/paged-query')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
 const { parseClassifierOutputMapping } = require('../dao/parsing')
 const { getIds } = require('../../classifications/dao')
+const { getSortFields } = require('../../_utils/db/sort')
 
 const availableIncludes = [
   {
@@ -127,6 +128,7 @@ async function query (filters, options = {}) {
 
   const attributes = options.fields && options.fields.length > 0 ? models.Classifier.attributes.full.filter(a => options.fields.includes(a)) : models.Classifier.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+  const order = options.sort ? getSortFields(options.sort) : []
 
   return pagedQuery(models.Classifier, {
     where,
@@ -134,7 +136,7 @@ async function query (filters, options = {}) {
     include,
     limit: options.limit,
     offset: options.offset,
-    order: ['id'],
+    order,
     transaction
   })
 }
