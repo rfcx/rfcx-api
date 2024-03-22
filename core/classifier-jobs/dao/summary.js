@@ -1,5 +1,6 @@
 const { Classification, ClassifierJobSummary, sequelize } = require('../../_models')
 const pagedQuery = require('../../_utils/db/paged-query')
+const { getSortFields } = require('../../_utils/db/sort')
 
 const availableIncludes = [
   Classification.include({ attributes: ['value', 'title', 'image'] })
@@ -27,14 +28,19 @@ async function getJobSummaries (classifierJobId, filters, options = {}) {
 
   let order
   if (options.sort) {
-    order = [[options.sort, options.order ?? 'ASC']]
-    if (options.sort === 'unvalidated') {
-      const orderRaw = 'total - (confirmed + rejected + uncertain)'
-      order = [[sequelize.literal(orderRaw), options.order ?? 'ASC']]
-    }
-    if (options.sort === 'name') {
-      order = [[{ model: Classification, as: 'classification' }, 'title', options.order ?? 'ASC']]
-    }
+    order = []
+    getSortFields(options.sort).forEach(o => {
+      if (o[0] === 'unreviewed') {
+        const orderRaw = 'total - (confirmed + rejected + uncertain)'
+        order.push([sequelize.literal(orderRaw), o[1]])
+        return
+      }
+      if (o[0] === 'name') {
+        order.push([{ model: Classification, as: 'classification' }, 'title', o[1]])
+        return
+      }
+      order.push([o[0], o[1]]) // for confirmed, rejected, uncertain
+    })
   }
 
   return await pagedQuery(ClassifierJobSummary, {
