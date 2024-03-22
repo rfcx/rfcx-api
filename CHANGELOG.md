@@ -3,6 +3,7 @@
 * **core**: Use Google Map API for getting timezone and country from latitude and longitude
 * **core**: Endpoint `GET /classifier-job/:id/summary` receive params `limit, offset, sort, order, keyword`
 * **core**: New endpoint `GET /classifier-job/:id/validation` for getting validation status
+* **core**: New endpoint `GET /internal/classifier-job/cancel` for getting waiting for cancel jobs
 
 ### Features
 * **core**: GET `classifier-jobs/:id` now includes totalDistinctClassifications field with the number of linked classifications
