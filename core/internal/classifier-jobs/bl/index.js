@@ -1,4 +1,4 @@
-const { RUNNING, WAITING } = require('../../../classifier-jobs/classifier-job-status')
+const { RUNNING, WAITING, WAITING_CANCEL, CANCELLED } = require('../../../classifier-jobs/classifier-job-status')
 const { ClassifierJob, sequelize, Sequelize } = require('../../../_models')
 
 async function count (status = 0) {
@@ -7,10 +7,29 @@ async function count (status = 0) {
   })
 }
 
-async function listByStatus(status = 0) {
-  return await ClassifierJob.findAll({
-    where: { status }
+async function cancel (maxRows) {
+  const waitingCancelIds = await sequelize.transaction(async transaction => {
+    const replacements = { maxRows, waiting: WAITING_CANCEL }
+    const ids = await sequelize.query(`
+      SELECT id FROM (
+        SELECT id, status, created_at 
+        FROM classifier_jobs 
+        WHERE status in (:waiting)
+        ORDER BY status DESC, created_at
+      ) waiting_classifier_jobs
+      WHERE status = :waiting
+      ORDER BY created_at
+      LIMIT :maxRows
+    `, { type: Sequelize.QueryTypes.SELECT, replacements, transaction }).map(row => row.id)
+
+    if (ids.length === 0) { return [] }
+
+    return ids
   })
+
+  const where = { id: waitingCancelIds }
+  const order = [['created_at']]
+  return await ClassifierJob.findAll({ where, order })
 }
 
 async function dequeue (maxConcurrency, maxRows) {
@@ -42,5 +61,6 @@ async function dequeue (maxConcurrency, maxRows) {
 
 module.exports = {
   count,
-  dequeue
+  dequeue,
+  cancel
 }

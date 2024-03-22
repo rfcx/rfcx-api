@@ -3,5 +3,6 @@ module.exports = {
   RUNNING: 20,
   DONE: 30,
   ERROR: 40,
-  CANCELLED: 50
+  CANCELLED: 50,
+  WAITING_CANCEL: 60
 }
