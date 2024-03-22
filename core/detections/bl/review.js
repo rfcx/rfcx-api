@@ -74,6 +74,8 @@ function calculateReviewStatus (n, u, p) {
     return -1
   } else if (p > u && p > n) {
     return 1
+  } else if (n === 0 && u === 0 && p === 0) {
+    return null
   } else {
     return 0
   }

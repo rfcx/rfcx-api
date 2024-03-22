@@ -513,7 +513,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review2).toBeNull()
       const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
-      expect(detectionUpdated2.reviewStatus).toBe(0)
+      expect(detectionUpdated2.reviewStatus).toBeNull()
     })
 
     test('updates from rejected to unreviewed', async () => {
@@ -550,7 +550,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review2).toBeNull()
       const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
-      expect(detectionUpdated2.reviewStatus).toBe(0)
+      expect(detectionUpdated2.reviewStatus).toBeNull()
     })
 
     test('updates from uncertain to unreviewed', async () => {
@@ -587,7 +587,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review2).toBeNull()
       const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
-      expect(detectionUpdated2.reviewStatus).toBe(0)
+      expect(detectionUpdated2.reviewStatus).toBeNull()
     })
 
     test('updates from unreviewed to confirmed', async () => {
@@ -612,7 +612,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1).toBeNull()
       const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
-      expect(detectionUpdated1.reviewStatus).toBe(0)
+      expect(detectionUpdated1.reviewStatus).toBeNull()
 
       const body2 = {
         status: 'confirmed',
@@ -649,7 +649,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1).toBeNull()
       const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
-      expect(detectionUpdated1.reviewStatus).toBe(0)
+      expect(detectionUpdated1.reviewStatus).toBeNull()
 
       const body2 = {
         status: 'rejected',
@@ -686,7 +686,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1).toBeNull()
       const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
-      expect(detectionUpdated1.reviewStatus).toBe(0)
+      expect(detectionUpdated1.reviewStatus).toBeNull()
 
       const body2 = {
         status: 'uncertain',
@@ -2646,7 +2646,7 @@ describe('POST /:streamId/detections/:start/review', () => {
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.reviewStatus).toBe(1)
-        expect(detectionUpdated.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBeNull()
       })
 
       test('0 negative, 1 uncertain > unreviewed, 0 positive', async () => {
@@ -2676,7 +2676,7 @@ describe('POST /:streamId/detections/:start/review', () => {
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.reviewStatus).toBe(0)
-        expect(detectionUpdated.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBeNull()
       })
 
       test('2 negative, 1 uncertain > unreviewed, 1 positive', async () => {
