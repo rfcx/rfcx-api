@@ -1,4 +1,4 @@
-const { RUNNING, WAITING, WAITING_CANCEL, CANCELLED } = require('../../../classifier-jobs/classifier-job-status')
+const { RUNNING, WAITING, WAITING_CANCEL } = require('../../../classifier-jobs/classifier-job-status')
 const { ClassifierJob, sequelize, Sequelize } = require('../../../_models')
 
 async function count (status = 0) {
