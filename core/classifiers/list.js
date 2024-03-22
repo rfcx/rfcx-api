@@ -22,9 +22,9 @@ const Converter = require('../../common/converter')
  *         type: int
  *         default: 0
  *       - name: sort
- *         description: Fields used to sort results
+ *         description: Order the results (comma-separated list of fields, prefix "-" for descending)
  *         in: query
- *         type: int
+ *         type: string
  *         default: 'name,-version'
  *       - name: fields
  *         description: Customize included fields
