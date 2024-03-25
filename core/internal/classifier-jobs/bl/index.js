@@ -8,28 +8,10 @@ async function count (status = 0) {
 }
 
 async function cancel (maxRows) {
-  const waitingCancelIds = await sequelize.transaction(async transaction => {
-    const replacements = { maxRows, waiting: WAITING_CANCEL }
-    const ids = await sequelize.query(`
-      SELECT id FROM (
-        SELECT id, status, created_at 
-        FROM classifier_jobs 
-        WHERE status in (:waiting)
-        ORDER BY status DESC, created_at
-      ) waiting_classifier_jobs
-      WHERE status = :waiting
-      ORDER BY created_at
-      LIMIT :maxRows
-    `, { type: Sequelize.QueryTypes.SELECT, replacements, transaction }).map(row => row.id)
-
-    if (ids.length === 0) { return [] }
-
-    return ids
-  })
-
-  const where = { id: waitingCancelIds }
+  const where = { status: WAITING_CANCEL }
   const order = [['created_at']]
-  return await ClassifierJob.findAll({ where, order })
+  const limit = maxRows ?? 10
+  return await ClassifierJob.findAll({ where, order, limit })
 }
 
 async function dequeue (maxConcurrency, maxRows) {

@@ -16,7 +16,7 @@ const { cancel } = require('./bl')
  *         description: Maximum number of jobs to cancel
  *         in: query
  *         type: int
- *         default: 1
+ *         default: 10
  *     responses:
  *       200:
  *         description: List of cancel needed jobs
@@ -31,7 +31,7 @@ const { cancel } = require('./bl')
  */
 module.exports = (req, res) => {
   const converter = new Converter(req.query, {}, true)
-  converter.convert('limit').default(1).toInt()
+  converter.convert('limit').default(10).toInt()
 
   return converter.validate()
     .then(async params => {
