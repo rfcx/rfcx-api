@@ -47,7 +47,7 @@ describe('POST /internal/classifier-jobs/cancel', () => {
 
     const response = await request(app).get('/cancel')
 
-    expect(response.body).toHaveLength(1)
+    expect(response.body).toHaveLength(2)
     expect(response.body[0].id).toBe(firstJob.id)
   })
 
