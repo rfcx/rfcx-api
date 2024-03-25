@@ -1,5 +1,6 @@
-const { RUNNING, WAITING, WAITING_CANCEL } = require('../../../classifier-jobs/classifier-job-status')
+const { RUNNING, WAITING } = require('../../../classifier-jobs/classifier-job-status')
 const { ClassifierJob, sequelize, Sequelize } = require('../../../_models')
+const { getSortFields } = require('../../../_utils/db/sort')
 
 async function count (status = 0) {
   return await ClassifierJob.count({
@@ -7,11 +8,19 @@ async function count (status = 0) {
   })
 }
 
-async function cancel (maxRows) {
-  const where = { status: WAITING_CANCEL }
-  const order = [['created_at']]
-  const limit = maxRows ?? 10
-  return await ClassifierJob.findAll({ where, order, limit })
+async function query (filters, options = {}) {
+  const where = {}
+
+  if (filters.status) {
+    where.status = filters.status
+  }
+
+  const order = getSortFields(options.sort || '-updated_at')
+  return await ClassifierJob.findAll({
+    where,
+    order,
+    limit: options.limit ?? 10
+  })
 }
 
 async function dequeue (maxConcurrency, maxRows) {
@@ -44,5 +53,5 @@ async function dequeue (maxConcurrency, maxRows) {
 module.exports = {
   count,
   dequeue,
-  cancel
+  query
 }

@@ -4,5 +4,5 @@ module.exports = {
   DONE: 30,
   ERROR: 40,
   CANCELLED: 50,
-  WAITING_CANCEL: 60
+  AWAITING_CANCELLATION: 60
 }

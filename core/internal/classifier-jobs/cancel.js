@@ -1,19 +1,20 @@
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const Converter = require('../../../common/converter')
-const { cancel } = require('./bl')
+const { query } = require('./bl')
+const { AWAITING_CANCELLATION } = require('../../classifier-jobs/classifier-job-status')
 
 /**
  * @swagger
  *
- * /internal/classifier-jobs/cancel:
+ * /internal/classifier-jobs/awaiting-cancellation:
  *   post:
- *     summary: Cancel 1 or more jobs from the running jobs (automically) up to the `concurrency`
+ *     summary: Get a list of jobs which have been marked as AWAITING_CANCELLATION
  *     tags:
  *       - classifier-jobs
  *       - internal
  *     parameters:
  *       - name: limit
- *         description: Maximum number of jobs to cancel
+ *         description: Maximum number of jobs to retrieve
  *         in: query
  *         type: int
  *         default: 10
@@ -36,7 +37,9 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(async params => {
       const { limit } = params
-      const jobs = await cancel(limit)
+      const filters = { status: AWAITING_CANCELLATION }
+      const options = { limit, sort: 'updated_at' }
+      const jobs = await query(filters, options)
       return res.json(jobs)
     })
     .catch(httpErrorHandler(req, res, 'Failed cancel classifier jobs'))
