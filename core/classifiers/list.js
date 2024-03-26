@@ -21,6 +21,15 @@ const Converter = require('../../common/converter')
  *         in: query
  *         type: int
  *         default: 0
+ *       - name: sort
+ *         description: Order the results (comma-separated list of fields, prefix "-" for descending)
+ *         in: query
+ *         type: string
+ *         default: 'name,-version'
+ *       - name: fields
+ *         description: Customize included fields
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
  *         description: List of classifier objects
@@ -37,6 +46,8 @@ module.exports = (req, res) => {
   const converter = new Converter(req.query, {}, true)
   converter.convert('limit').default(100).toInt()
   converter.convert('offset').default(0).toInt()
+  converter.convert('sort').default('name,-version').toString()
+  converter.convert('fields').default(['id', 'name', 'version']).toArray()
 
   return converter.validate().then(async params => {
     const user = req.rfcx.auth_token_info
