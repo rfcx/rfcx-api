@@ -56,7 +56,9 @@ async function createOrUpdate (options) {
         if (currentStatusLabel !== 'null') {
           await classifierJobResultsDao.decrementJobSummaryMetric({ classifierJobId, classificationId }, { field: currentStatusLabel }, { transaction })
         }
-        await classifierJobResultsDao.incrementJobSummaryMetric({ classifierJobId, classificationId }, { field: updatedStatusLabel }, { transaction })
+        if (updatedStatusLabel !== 'null') {
+          await classifierJobResultsDao.incrementJobSummaryMetric({ classifierJobId, classificationId }, { field: updatedStatusLabel }, { transaction })
+        }
       }
     }
   })

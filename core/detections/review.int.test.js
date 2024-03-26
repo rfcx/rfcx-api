@@ -2940,6 +2940,99 @@ describe('POST /:streamId/detections/:start/review', () => {
     expect(summaries[0].rejected).toBe(0)
     expect(summaries[0].uncertain).toBe(2)
   })
+  test('updates 1 uncertain to unreviewed', async () => {
+    const { stream, classification, classifier, job } = await commonSetup()
+
+    const start = '2022-01-01T00:00:00.000Z'
+    const detection = await models.Detection.create({
+      streamId: stream.id,
+      classificationId: classification.id,
+      classifierId: classifier.id,
+      start,
+      end: '2022-01-01T00:00:01.000Z',
+      confidence: 0.99,
+      classifierJobId: job.id,
+      reviewStatus: 0
+    })
+    await models.ClassifierJobSummary.create({ classifierJobId: job.id, classificationId: classification.id, total: 1, confirmed: 0, rejected: 0, uncertain: 1 })
+    const body = {
+      status: 'unreviewed',
+      classification: classification.value,
+      classifier: classifier.id
+    }
+    await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+    const summaries = await models.ClassifierJobSummary.findAll()
+    expect(summaries.length).toBe(1)
+    expect(summaries[0].total).toBe(1)
+    expect(summaries[0].confirmed).toBe(0)
+    expect(summaries[0].rejected).toBe(0)
+    expect(summaries[0].uncertain).toBe(0)
+    const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+    expect(detectionUpdated.reviewStatus).toBeNull()
+  })
+  test('updates 1 rejected to unreviewed', async () => {
+    const { stream, classification, classifier, job } = await commonSetup()
+
+    const start = '2022-01-01T00:00:00.000Z'
+    const detection = await models.Detection.create({
+      streamId: stream.id,
+      classificationId: classification.id,
+      classifierId: classifier.id,
+      start,
+      end: '2022-01-01T00:00:01.000Z',
+      confidence: 0.99,
+      classifierJobId: job.id,
+      reviewStatus: -1
+    })
+    await models.ClassifierJobSummary.create({ classifierJobId: job.id, classificationId: classification.id, total: 1, confirmed: 0, rejected: 1, uncertain: 0 })
+    const body = {
+      status: 'unreviewed',
+      classification: classification.value,
+      classifier: classifier.id
+    }
+    await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+    const summaries = await models.ClassifierJobSummary.findAll()
+    expect(summaries.length).toBe(1)
+    expect(summaries[0].total).toBe(1)
+    expect(summaries[0].confirmed).toBe(0)
+    expect(summaries[0].rejected).toBe(0)
+    expect(summaries[0].uncertain).toBe(0)
+    const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+    expect(detectionUpdated.reviewStatus).toBeNull()
+  })
+  test('updates 1 confirmed to unreviewed', async () => {
+    const { stream, classification, classifier, job } = await commonSetup()
+
+    const start = '2022-01-01T00:00:00.000Z'
+    const detection = await models.Detection.create({
+      streamId: stream.id,
+      classificationId: classification.id,
+      classifierId: classifier.id,
+      start,
+      end: '2022-01-01T00:00:01.000Z',
+      confidence: 0.99,
+      classifierJobId: job.id,
+      reviewStatus: 1
+    })
+    await models.ClassifierJobSummary.create({ classifierJobId: job.id, classificationId: classification.id, total: 1, confirmed: 1, rejected: 0, uncertain: 0 })
+    const body = {
+      status: 'unreviewed',
+      classification: classification.value,
+      classifier: classifier.id
+    }
+    await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+    const summaries = await models.ClassifierJobSummary.findAll()
+    expect(summaries.length).toBe(1)
+    expect(summaries[0].total).toBe(1)
+    expect(summaries[0].confirmed).toBe(0)
+    expect(summaries[0].rejected).toBe(0)
+    expect(summaries[0].uncertain).toBe(0)
+    const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+    expect(detectionUpdated.reviewStatus).toBeNull()
+  })
   test('does not update job summary if detections is not from the job', async () => {
     const { stream, classification, classifier, job } = await commonSetup()
 
