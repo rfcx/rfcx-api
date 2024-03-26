@@ -32,6 +32,11 @@ const { AWAITING_CANCELLATION } = require('../../classifier-jobs/classifier-job-
  *     responses:
  *       200:
  *         description: List of cancel needed jobs
+ *         headers:
+ *           Total-Items:
+ *             schema:
+ *               type: integer
+ *             description: Total number of items without limit and offset.
  *         content:
  *           application/json:
  *             schema:
