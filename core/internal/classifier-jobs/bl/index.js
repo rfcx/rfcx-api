@@ -19,7 +19,8 @@ async function query (filters, options = {}) {
   return await ClassifierJob.findAll({
     where,
     order,
-    limit: options.limit ?? 10
+    limit: options.limit ?? 10,
+    offet
   })
 }
 

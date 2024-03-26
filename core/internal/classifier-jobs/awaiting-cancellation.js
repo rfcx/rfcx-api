@@ -33,6 +33,8 @@ const { AWAITING_CANCELLATION } = require('../../classifier-jobs/classifier-job-
 module.exports = (req, res) => {
   const converter = new Converter(req.query, {}, true)
   converter.convert('limit').default(10).toInt()
+  converter.convert('offset').default(0).toInt()
+  converter.convert('sort').default('updated_at').toInt()
 
   return converter.validate()
     .then(async params => {
