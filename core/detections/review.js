@@ -24,7 +24,7 @@ const Converter = require('../../common/converter')
  *         required: true
  *         type: string
  *       - name: status
- *         description: Review status ('rejected', 'uncertain', 'confirmed')
+ *         description: Review status ('rejected', 'uncertain', 'confirmed', 'unreviewed')
  *         in: query
  *         type: string
  *       - name: classification
@@ -50,7 +50,7 @@ const Converter = require('../../common/converter')
 router.post('/:streamId/detections/:start/review', (req, res) => {
   const userId = req.rfcx.auth_token_info.id
   const converter = new Converter(req.body, {}, true)
-  converter.convert('status').toString().isEqualToAny(['rejected', 'uncertain', 'confirmed'])
+  converter.convert('status').toString().isEqualToAny(['unreviewed', 'rejected', 'uncertain', 'confirmed'])
   converter.convert('classification').toString()
   converter.convert('classifier').toInt()
   converter.convert('classifier_job').optional().toInt()
