@@ -3,7 +3,7 @@ const models = require('../_models')
 const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
-const { WAITING, RUNNING, DONE, CANCELLED, ERROR } = require('./classifier-job-status')
+const { WAITING, RUNNING, DONE, CANCELLED, ERROR, AWAITING_CANCELLATION } = require('./classifier-job-status')
 const defaultMessageQueue = require('../../common/message-queue/sqs')
 const { CLASSIFIER_JOB_FINISHED } = require('../../common/message-queue/event-names')
 
@@ -41,7 +41,8 @@ const JOB_RUNNING = { id: 124, status: RUNNING, classifierId: CLASSIFIER_1.id, p
 const JOB_DONE = { id: 125, status: DONE, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: '2022-10-03T09:03:00.000Z' }
 const JOB_ERROR = { id: 126, status: ERROR, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_CANCELLED = { id: 127, status: CANCELLED, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOBS = [JOB_WAITING, JOB_RUNNING, JOB_DONE, JOB_ERROR, JOB_CANCELLED]
+const JOB_AWAIT_CANCELLATION = { id: 128, status: AWAITING_CANCELLATION, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOBS = [JOB_WAITING, JOB_RUNNING, JOB_DONE, JOB_ERROR, JOB_CANCELLED, JOB_AWAIT_CANCELLATION]
 
 const CLASSIFIER_JOB_WAITING_STREAM = { classifierJobId: JOB_WAITING.id, streamId: STREAM_1.id }
 const CLASSIFIER_JOB_RUNNING_STREAM = { classifierJobId: JOB_RUNNING.id, streamId: STREAM_1.id }
@@ -93,6 +94,7 @@ describe('PATCH /classifier-jobs/:id', () => {
 
   const ALLOWED_SOURCE_STATUS_JOBS = { JOB_WAITING, JOB_ERROR, JOB_CANCELLED }
   const NOT_ALLOWED_SOURCE_STATUS_JOBS = { JOB_RUNNING, JOB_DONE }
+  const NOT_ALLOWED_FOR_CANCEL_SOURCE_STATUS_JOBS = { JOB_DONE, JOB_ERROR, JOB_CANCELLED }
 
   describe('valid usage', () => {
     describe('superuser', () => {
@@ -212,19 +214,6 @@ describe('PATCH /classifier-jobs/:id', () => {
     })
 
     describe('has permission user', () => {
-      test.each(Object.entries(ALLOWED_SOURCE_STATUS_JOBS))('has permission user can update status to CANCELLED (50) from %s', async (label, job) => {
-        // Arrange
-        const jobUpdate = { status: CANCELLED }
-
-        // Act
-        const response1 = await request(hasPermissionApp).patch(`/${job.id}`).send(jobUpdate)
-        const jobUpdated1 = await models.ClassifierJob.findByPk(job.id)
-
-        // Assert
-        expect(response1.statusCode).toBe(200)
-        expect(jobUpdated1.status).toBe(CANCELLED)
-      })
-
       test.each(Object.entries(ALLOWED_SOURCE_STATUS_JOBS))('has permission user can update status to WAITING (20) from %s', async (label, job) => {
         // Arrange
         const jobUpdate = { status: WAITING }
@@ -236,6 +225,45 @@ describe('PATCH /classifier-jobs/:id', () => {
         // Assert
         expect(response.statusCode).toBe(200)
         expect(jobUpdated.status).toBe(WAITING)
+      })
+
+      test('has permission user can cancel WAITING job', async () => {
+        // Arrange
+        const jobUpdate = { status: CANCELLED }
+
+        // Act
+        const response = await request(hasPermissionApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+
+        // Assert
+        expect(response.statusCode).toBe(200)
+        expect(jobUpdated.status).toBe(CANCELLED)
+      })
+
+      test('has permission user can cancel RUNNING job', async () => {
+        // Arrange
+        const jobUpdate = { status: CANCELLED }
+
+        // Act
+        const response = await request(hasPermissionApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+
+        // Assert
+        expect(response.statusCode).toBe(200)
+        expect(jobUpdated.status).toBe(AWAITING_CANCELLATION)
+      })
+
+      test('has permission user can cancel AWAITING_CANCELLATION job', async () => {
+        // Arrange
+        const jobUpdate = { status: CANCELLED }
+
+        // Act
+        const response = await request(hasPermissionApp).patch(`/${JOB_AWAIT_CANCELLATION.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(JOB_AWAIT_CANCELLATION.id)
+
+        // Assert
+        expect(response.statusCode).toBe(200)
+        expect(jobUpdated.status).toBe(CANCELLED)
       })
     })
   })
@@ -350,7 +378,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       })
     })
     describe('has permission user', () => {
-      test.each(Object.entries(NOT_ALLOWED_SOURCE_STATUS_JOBS))('400 if has permission user update status to CANCELLED (50) from %s', async (label, job) => {
+      test.each(Object.entries(NOT_ALLOWED_FOR_CANCEL_SOURCE_STATUS_JOBS))('400 if has permission user update status to CANCELLED (50) from %s', async (label, job) => {
         // Arrange
         const jobUpdate = { status: CANCELLED }
 
@@ -384,6 +412,20 @@ describe('PATCH /classifier-jobs/:id', () => {
         const response = await request(hasPermissionApp).patch(`/${job.id}`).send(jobUpdate)
         const jobUpdated = await models.ClassifierJob.findByPk(job.id)
 
+        // Assert
+        expect(response.statusCode).toBe(400)
+        expect(jobUpdated.status).toBe(job.status)
+      })
+
+      test.each(Object.entries({ ...ALLOWED_SOURCE_STATUS_JOBS, ...NOT_ALLOWED_SOURCE_STATUS_JOBS }))('400 if has permission user update status to AWAITING_CANCELLATION (60) from %s', async (label, job) => {
+        // Arrange
+        const jobUpdate = { status: AWAITING_CANCELLATION }
+
+        // Act
+        const response = await request(hasPermissionApp).patch(`/${job.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(job.id)
+
+        // Assert
         expect(response.statusCode).toBe(400)
         expect(jobUpdated.status).toBe(job.status)
       })
