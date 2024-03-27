@@ -1,34 +1,9 @@
 const { RUNNING, WAITING } = require('../../../classifier-jobs/classifier-job-status')
 const { ClassifierJob, sequelize, Sequelize } = require('../../../_models')
-const { getSortFields } = require('../../../_utils/db/sort')
-const pagedQuery = require('../../../_utils/db/paged-query')
 
 async function count (status = 0) {
   return await ClassifierJob.count({
     where: { status }
-  })
-}
-
-async function query (filters, options = {}) {
-  const where = {}
-
-  if (filters.status) {
-    let statusesRaw = filters.status
-    if (!Array.isArray(statusesRaw)) {
-      statusesRaw = [filters.status]
-    }
-    where.status = {
-      [Sequelize.Op.in]: statusesRaw
-    }
-  }
-
-  const order = getSortFields(options.sort || '-updated_at')
-  return await pagedQuery(ClassifierJob, {
-    where,
-    attributes: ClassifierJob.attributes.lite,
-    limit: options.limit ?? 10,
-    offset: options.offset ?? 0,
-    order
   })
 }
 
@@ -61,6 +36,5 @@ async function dequeue (maxConcurrency, maxRows) {
 
 module.exports = {
   count,
-  dequeue,
-  query
+  dequeue
 }
