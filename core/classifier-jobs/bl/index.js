@@ -3,13 +3,14 @@ const streamsDao = require('../../streams/dao')
 const { sequelize } = require('../../_models')
 const { hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { ForbiddenError, EmptyResultError, ValidationError } = require('../../../common/error-handling/errors')
-const { CANCELLED, DONE, ERROR, WAITING } = require('../classifier-job-status')
+const { CANCELLED, DONE, ERROR, WAITING, RUNNING, AWAITING_CANCELLATION } = require('../classifier-job-status')
 const { get } = require('./get')
 const messageQueue = require('../../../common/message-queue/sqs')
 const { CLASSIFIER_JOB_FINISHED } = require('../../../common/message-queue/event-names')
 
 const ALLOWED_TARGET_STATUSES = [CANCELLED, WAITING]
 const ALLOWED_SOURCE_STATUSES = [CANCELLED, WAITING, ERROR]
+const ALLOWED_FOR_CANCEL_SOURCE_STATUSES = [WAITING, RUNNING, AWAITING_CANCELLATION]
 
 /**
  * Create a new classifier job
@@ -59,11 +60,9 @@ async function update (id, newJob, options = {}) {
     }
     // If is not super user or system user
     if (options.updatableBy && newJob.status !== undefined) {
-      if (!ALLOWED_TARGET_STATUSES.includes(newJob.status)) {
-        throw new ValidationError(`Cannot update status to ${newJob.status}`)
-      }
-      if (!ALLOWED_SOURCE_STATUSES.includes(existingJob.status)) {
-        throw new ValidationError(`Cannot update status of jobs in status ${newJob.status}`)
+      isStatusAllowToUpdate(existingJob.status, newJob.status)
+      if (newJob.status === CANCELLED && existingJob.status === RUNNING) {
+        newJob.status = AWAITING_CANCELLATION
       }
     }
 
@@ -78,6 +77,21 @@ async function update (id, newJob, options = {}) {
       await notify(id)
     }
   })
+}
+
+function isStatusAllowToUpdate (existingStatus, targetStatus) {
+  if (targetStatus === CANCELLED) {
+    if (!ALLOWED_FOR_CANCEL_SOURCE_STATUSES.includes(existingStatus)) {
+      throw new ValidationError(`Cannot cancel jobs in status ${targetStatus}`)
+    }
+    return
+  }
+  if (!ALLOWED_TARGET_STATUSES.includes(targetStatus)) {
+    throw new ValidationError(`Cannot update status to ${targetStatus}`)
+  }
+  if (!ALLOWED_SOURCE_STATUSES.includes(existingStatus)) {
+    throw new ValidationError(`Cannot update status of jobs in status ${targetStatus}`)
+  }
 }
 
 function notify (id) {
