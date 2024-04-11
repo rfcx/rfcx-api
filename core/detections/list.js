@@ -74,6 +74,11 @@ const Converter = require('../../common/converter')
  *     responses:
  *       200:
  *         description: List of detection (lite) objects
+ *         headers:
+ *           Total-Items:
+ *             schema:
+ *               type: integer
+ *             description: Total number of items without limit and offset.
  *         content:
  *           application/json:
  *             schema:
