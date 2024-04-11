@@ -99,8 +99,7 @@ router.get('/', (req, res) => {
   converter.convert('classifiers').optional().toArray()
   converter.convert('classifier_jobs').optional().toArray()
   converter.convert('min_confidence').optional().toFloat()
-  // TODO: improve validation tool to validate possible values for array items
-  converter.convert('review_statuses').optional().toArray()
+  converter.convert('review_statuses').optional().toArray().isEqualToAny(['unreviewed', 'rejected', 'uncertain', 'confirmed'])
   converter.convert('limit').optional().toInt().maximum(1000)
   converter.convert('offset').optional().toInt()
   converter.convert('descending').default(false).toBoolean()

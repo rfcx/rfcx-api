@@ -630,4 +630,30 @@ describe('GET /detections', () => {
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection4.start.toISOString())
   })
+
+  test('return 400 if first review_statuses is incorrect', async () => {
+    const query = {
+      start: '2021-05-11T00:00:00.000Z',
+      end: '2021-05-11T00:59:59.999Z',
+      review_statuses: ['uncertained', 'unreviewed', 'confirmed']
+    }
+
+    const response = await request(app).get('/').query(query)
+
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe(`Validation errors: Parameter 'review_statuses' should be one of these values: unreviewed, rejected, uncertain, confirmed.`)
+  })
+
+  test('return 400 if last review_statuses is incorrect', async () => {
+    const query = {
+      start: '2021-05-11T00:00:00.000Z',
+      end: '2021-05-11T00:59:59.999Z',
+      review_statuses: ['uncertain', 'unreviewed', 'confirm']
+    }
+
+    const response = await request(app).get('/').query(query)
+
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe(`Validation errors: Parameter 'review_statuses' should be one of these values: unreviewed, rejected, uncertain, confirmed.`)
+  })
 })
