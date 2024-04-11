@@ -49,6 +49,7 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
   })
   test('get 1 by classifier_jobs', async () => {
@@ -88,6 +89,7 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection3.start.toISOString())
   })
@@ -128,6 +130,7 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('2')
     expect(response.body.length).toBe(2)
     expect(response.body[0].start).toBe(detection2.start.toISOString())
     expect(response.body[1].start).toBe(detection3.start.toISOString())
@@ -181,6 +184,7 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('3')
     expect(response.body.length).toBe(3)
     expect(response.body[0].start).toBe(detection2.start.toISOString())
     expect(response.body[1].start).toBe(detection3.start.toISOString())
@@ -235,6 +239,7 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection2.start.toISOString())
   })
@@ -287,6 +292,7 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection3.start.toISOString())
   })
@@ -339,6 +345,7 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection4.start.toISOString())
   })
@@ -391,6 +398,7 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection.start.toISOString())
   })
@@ -443,8 +451,183 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('2')
     expect(response.body.length).toBe(2)
     expect(response.body[0].start).toBe(detection.start.toISOString())
     expect(response.body[1].start).toBe(detection3.start.toISOString())
+  })
+
+  test('limit is working', async () => {
+    const { stream, classifier, classification } = await commonSetup()
+    const detection1 = await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:00.000Z',
+      end: '2021-05-11T00:05:05.000Z',
+      confidence: 0.99
+    })
+    const detection2 = await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:05.000Z',
+      end: '2021-05-11T00:05:10.000Z',
+      confidence: 0.98
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:10.000Z',
+      end: '2021-05-11T00:05:15.000Z',
+      confidence: 0.97
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:15.000Z',
+      end: '2021-05-11T00:05:20.000Z',
+      confidence: 0.96
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:20.000Z',
+      end: '2021-05-11T00:05:25.000Z',
+      confidence: 0.95
+    })
+
+    const query = {
+      start: '2021-05-11T00:00:00.000Z',
+      end: '2021-05-11T00:59:59.999Z',
+      limit: 2
+    }
+
+    const response = await request(app).get('/').query(query)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('5')
+    expect(response.body.length).toBe(2)
+    expect(response.body[0].start).toBe(detection1.start.toISOString())
+    expect(response.body[1].start).toBe(detection2.start.toISOString())
+  })
+  test('offset is working', async () => {
+    const { stream, classifier, classification } = await commonSetup()
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:00.000Z',
+      end: '2021-05-11T00:05:05.000Z',
+      confidence: 0.99
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:05.000Z',
+      end: '2021-05-11T00:05:10.000Z',
+      confidence: 0.98
+    })
+    const detection3 = await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:10.000Z',
+      end: '2021-05-11T00:05:15.000Z',
+      confidence: 0.97
+    })
+    const detection4 = await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:15.000Z',
+      end: '2021-05-11T00:05:20.000Z',
+      confidence: 0.96
+    })
+    const detection5 = await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:20.000Z',
+      end: '2021-05-11T00:05:25.000Z',
+      confidence: 0.95
+    })
+
+    const query = {
+      start: '2021-05-11T00:00:00.000Z',
+      end: '2021-05-11T00:59:59.999Z',
+      offset: 2
+    }
+
+    const response = await request(app).get('/').query(query)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('5')
+    expect(response.body.length).toBe(3)
+    expect(response.body[0].start).toBe(detection3.start.toISOString())
+    expect(response.body[1].start).toBe(detection4.start.toISOString())
+    expect(response.body[2].start).toBe(detection5.start.toISOString())
+  })
+
+  test('limit and offset is working', async () => {
+    const { stream, classifier, classification } = await commonSetup()
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:00.000Z',
+      end: '2021-05-11T00:05:05.000Z',
+      confidence: 0.99
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:05.000Z',
+      end: '2021-05-11T00:05:10.000Z',
+      confidence: 0.98
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:10.000Z',
+      end: '2021-05-11T00:05:15.000Z',
+      confidence: 0.97
+    })
+    const detection4 = await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:15.000Z',
+      end: '2021-05-11T00:05:20.000Z',
+      confidence: 0.96
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:20.000Z',
+      end: '2021-05-11T00:05:25.000Z',
+      confidence: 0.95
+    })
+
+    const query = {
+      start: '2021-05-11T00:00:00.000Z',
+      end: '2021-05-11T00:59:59.999Z',
+      offset: 3,
+      limit: 1
+    }
+
+    const response = await request(app).get('/').query(query)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['total-items']).toBe('5')
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].start).toBe(detection4.start.toISOString())
   })
 })

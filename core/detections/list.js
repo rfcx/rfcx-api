@@ -112,7 +112,7 @@ router.get('/', (req, res) => {
         user
       }
       const result = await dao.query(filters, options)
-      return res.json(result)
+      return res.header('Total-Items', result.total).json(result.results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 })

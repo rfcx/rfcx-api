@@ -1,6 +1,7 @@
 const { Sequelize, Stream, Classification, Classifier, DetectionReview, User, Detection } = require('../../_models')
 const { propertyToFloat } = require('../../_utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../_utils/db/time-aggregated-query')
+const pagedQuery = require('../../_utils/db/paged-query')
 const streamDao = require('../../streams/dao')
 const { getAccessibleObjectsIDs, STREAM, PROJECT } = require('../../roles/dao')
 const { ValidationError } = require('../../../common/error-handling/errors')
@@ -101,8 +102,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
  */
 async function query (filters, options) {
   const opts = await defaultQueryOptions(filters, options)
-  const detections = await Detection.findAll(opts)
-  return detections.map(d => d.toJSON())
+  return await pagedQuery(Detection, opts)
 }
 
 /**
