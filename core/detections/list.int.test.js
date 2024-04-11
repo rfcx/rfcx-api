@@ -641,7 +641,7 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(400)
-    expect(response.body.message).toBe(`Validation errors: Parameter 'review_statuses' should be one of these values: unreviewed, rejected, uncertain, confirmed.`)
+    expect(response.body.message).toBe('Validation errors: Parameter \'review_statuses\' should be one of these values: unreviewed, rejected, uncertain, confirmed.')
   })
 
   test('return 400 if last review_statuses is incorrect', async () => {
@@ -654,6 +654,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(400)
-    expect(response.body.message).toBe(`Validation errors: Parameter 'review_statuses' should be one of these values: unreviewed, rejected, uncertain, confirmed.`)
+    expect(response.body.message).toBe('Validation errors: Parameter \'review_statuses\' should be one of these values: unreviewed, rejected, uncertain, confirmed.')
   })
 })
