@@ -1,7 +1,8 @@
-const { Sequelize, Stream, Classification, Classifier, DetectionReview, User, Detection } = require('../../_models')
+const { Sequelize, Stream, Classification, Classifier, DetectionReview, User, Detection, ClassifierJob, BestDetection, sequelize } = require('../../_models')
 const { propertyToFloat } = require('../../_utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../_utils/db/time-aggregated-query')
 const streamDao = require('../../streams/dao')
+const { toCamelObject } = require('../../_utils/formatters/string-cases')
 const { getAccessibleObjectsIDs, STREAM, PROJECT } = require('../../roles/dao')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const { REVIEW_STATUS_MAPPING } = require('./review')
@@ -17,6 +18,20 @@ const availableIncludes = [
     ]
   })
 ]
+
+function reviewStatusesFilter (sourceReviewStatuses) {
+  const statuses = sourceReviewStatuses.map(s => REVIEW_STATUS_MAPPING[s])
+
+  if (statuses.includes('null')) {
+    if (statuses.length === 1) {
+      return { [Sequelize.Op.eq]: null }
+    } else {
+      return { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: statuses.filter(s => s !== 'null') } }
+    }
+  } else {
+    return { [Sequelize.Op.in]: statuses }
+  }
+}
 
 async function defaultQueryOptions (filters = {}, options = {}) {
   if (!filters.start || !filters.end) {
@@ -50,35 +65,138 @@ async function defaultQueryOptions (filters = {}, options = {}) {
     const streamIds = streamsOnlyPublic
       ? await streamDao.getPublicStreamIds()
       : await getAccessibleObjectsIDs(user.id, STREAM)
-    where.streamId = { [Sequelize.Op.in]: streamIds }
+    where.streamId = streamIds
   }
   if (classifications) {
-    where['$classification.value$'] = { [Sequelize.Op.or]: classifications }
+    where['$classification.value$'] = classifications
   }
   // Always include classification so the query can group it by id
   include.push(availableIncludes.find(a => a.as === 'classification'))
 
   if (classifiers) {
-    where.classifier_id = { [Sequelize.Op.or]: classifiers }
+    where.classifier_id = classifiers
   }
   if (classifierJobs) {
-    where.classifier_job_id = { [Sequelize.Op.in]: classifierJobs }
+    where.classifier_job_id = classifierJobs
   }
   if (reviewStatuses !== undefined) {
-    const statuses = reviewStatuses.map(s => REVIEW_STATUS_MAPPING[s])
-    if (statuses.includes('null')) {
-      if (statuses.length === 1) {
-        where.reviewStatus = { [Sequelize.Op.eq]: null }
-      } else {
-        where.reviewStatus = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: statuses.filter(s => s !== 'null') } }
-      }
-    } else {
-      where.reviewStatus = { [Sequelize.Op.in]: statuses }
-    }
+    where.reviewStatus = reviewStatusesFilter(reviewStatuses)
   }
   // TODO: if minConfidence is undefined, get it from event strategy
   where.confidence = { [Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
   return { where, include, attributes, offset, limit, order }
+}
+
+/**
+ * Get a list of best detections matching the filters
+ * @param {*} filters Query options
+ * @param {number} filters.classifierJobId Job Id for which we want to find the best detections
+ * @param {string[]} filters.streams Filter by one or more stream identifiers
+ * @param {boolean} filters.byDate find best results for each date
+ * @param {Date} filters.start Find detections with start >= filters.start
+ * @param {Date} filters.end Find detections with start < filters.end
+ * @param {string[]} filters.reviewStatuses Filter by review status = passed status
+ * @param {number} filters.nPerStream Maximum number of results per stream (and per day if by_date is set)
+ * @param {*} options Additional get options
+ * @param {User} options.user User that is requesting detections
+ * @returns {Detection[]} Detections
+ */
+async function queryBestDetections (filters, opts) {
+  const { user } = opts
+  const { streams, reviewStatuses } = filters
+  const where = {}
+  const bestDetectionsWhere = { classifierJobId: filters.classifierJobId }
+  const attributes = Detection.attributes.lite
+
+  bestDetectionsWhere.start = {
+    [Sequelize.Op.gte]: filters.start,
+    [Sequelize.Op.lt]: filters.end
+  }
+
+  if (!filters.start || !filters.end) {
+    const existingJob = await ClassifierJob.findOne({
+      where: { id: filters.classifierJobId },
+      attributes: ['query_start', 'query_end']
+    })
+    let job = existingJob.toJSON()
+    job = toCamelObject(job, 2)
+
+    bestDetectionsWhere.start[Sequelize.Op.gte] = filters.start || job.queryStart
+    bestDetectionsWhere.start[Sequelize.Op.lt] = filters.end || job.queryEnd
+  }
+  where.start = bestDetectionsWhere.start
+
+  if (streams) {
+    bestDetectionsWhere.streamId = user === undefined ? streams : await getAccessibleObjectsIDs(user.id, STREAM, streams, 'R', true)
+  } else if (!user.has_system_role) {
+    const streamIds = await getAccessibleObjectsIDs(user.id, STREAM)
+    bestDetectionsWhere.streamId = streamIds
+  }
+
+  if (reviewStatuses !== undefined) {
+    where.reviewStatus = reviewStatusesFilter(reviewStatuses)
+  }
+
+  const include = [Classification.include()]
+  // no end and no start defined
+  const usesFullJobLength = !(filters.start || filters.end)
+
+  // if the date is set for 'best per stream id'
+  if (!usesFullJobLength && !filters.byDate) {
+    throw new ValidationError('Searching for the best detections of job does not support date range')
+  }
+
+  let order = []
+  if (filters.byDate) {
+    bestDetectionsWhere.dailyRanking = { [Sequelize.Op.lte]: filters.nPerStream }
+
+    include.push({
+      model: BestDetection,
+      required: true,
+      as: 'bestDetection',
+      attributes: ['daily_ranking', 'stream_ranking'],
+      where: bestDetectionsWhere,
+      on: {
+        start: sequelize.where(sequelize.col('Detection.start'), Sequelize.Op.eq, sequelize.col('bestDetection.start')),
+        detectionId: sequelize.where(sequelize.col('Detection.id'), Sequelize.Op.eq, sequelize.col('bestDetection.detection_id'))
+      }
+    })
+
+    order = [
+      [sequelize.fn('date', sequelize.fn('timezone', 'UTC', sequelize.col('Detection.start'))), 'ASC'],
+      ['stream_id', 'ASC'],
+      [{ model: BestDetection, as: 'bestDetection' }, 'daily_ranking', 'ASC']
+    ]
+  } else {
+    bestDetectionsWhere.streamRanking = { [Sequelize.Op.lte]: filters.nPerStream }
+
+    include.push({
+      model: BestDetection,
+      required: true,
+      where: bestDetectionsWhere,
+      attributes: ['daily_ranking', 'stream_ranking'],
+      order: ['stream_ranking'],
+      as: 'bestDetection',
+      on: {
+        on1: sequelize.where(sequelize.col('Detection.start'), Sequelize.Op.eq, sequelize.col('bestDetection.start')),
+        on2: sequelize.where(sequelize.col('Detection.id'), Sequelize.Op.eq, sequelize.col('bestDetection.detection_id'))
+      }
+    })
+
+    order = [
+      ['stream_id', 'ASC'],
+      [{ model: BestDetection, as: 'bestDetection' }, 'stream_ranking', 'ASC']
+    ]
+  }
+
+  const results = await Detection.findAll({
+    where,
+    attributes,
+    include,
+    order
+  })
+
+  return results.map(r => r.toJSON())
 }
 
 /**
@@ -142,6 +260,7 @@ const DEFAULT_IGNORE_THRESHOLD = 0.5
 module.exports = {
   availableIncludes,
   query,
+  queryBestDetections,
   timeAggregatedQuery,
   DEFAULT_IGNORE_THRESHOLD
 }

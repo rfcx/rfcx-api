@@ -1,4 +1,6 @@
 const { updateSummary } = require('../../core/classifier-jobs/bl/summary')
+const { get: getJob } = require('../../core/classifier-jobs/bl/get')
+const { updateBestDetections } = require('../../core/detections/bl/index')
 
 /**
  * Callback from subscribing to a message queue, one call per message
@@ -10,7 +12,9 @@ const { updateSummary } = require('../../core/classifier-jobs/bl/summary')
 async function performTask (payload) {
   const { jobId } = payload
 
-  await updateSummary(jobId)
+  const job = await getJob(jobId, { fields: ['query_start', 'query_end', 'classifier_id', 'streams'] })
+  await updateSummary(job)
+  await updateBestDetections(job)
 
   return true
 }

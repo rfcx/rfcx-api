@@ -7,7 +7,7 @@ const app = expressApp()
 
 app.use('/', routes)
 
-afterEach(async () => {
+beforeEach(async () => {
   await truncateNonBase(models)
 })
 
@@ -108,7 +108,7 @@ describe('GET /detections', () => {
       start: '2021-05-11T00:15:00.000Z',
       end: '2021-05-11T00:15:05.000Z',
       confidence: 0.95,
-      classifier_job_id: job1.id
+      classifierJobId: job1.id
     })
     const detection3 = await models.Detection.create({
       streamId: stream.id,
@@ -117,7 +117,7 @@ describe('GET /detections', () => {
       start: '2021-05-11T00:25:00.000Z',
       end: '2021-05-11T00:25:05.000Z',
       confidence: 0.95,
-      classifier_job_id: job2.id
+      classifierJobId: job2.id
     })
     const query = {
       start: '2021-05-11T00:00:00.000Z',
@@ -132,6 +132,7 @@ describe('GET /detections', () => {
     expect(response.body[0].start).toBe(detection2.start.toISOString())
     expect(response.body[1].start).toBe(detection3.start.toISOString())
   })
+
   test('get all reviewed detections', async () => {
     const { stream, classifier, classification, job1, job2 } = await commonSetup()
     await models.Detection.create({

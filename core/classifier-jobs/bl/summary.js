@@ -4,22 +4,20 @@ const classifierOutputsDao = require('../../classifiers/dao/outputs')
 const { DetectionReview } = require('../../_models')
 const { get } = require('./get')
 
-async function updateSummary (id, options = {}) {
+async function updateSummary (job, options = {}) {
   const transaction = options.transaction
-  const summary = await calcSummary(id, options)
-  await dao.deleteJobSummary(id, { transaction })
+  const summary = await calcSummary(job, options)
+  await dao.deleteJobSummary(job.id, { transaction })
   await dao.createJobSummary(summary, { transaction })
 }
 
-async function calcSummary (id, options = {}) {
-  const job = await get(id, { ...options, fields: ['query_start', 'query_end', 'classifier_id', 'streams'] })
-
+async function calcSummary (job, options = {}) {
   const detections = await detectionsDao.query({
     streams: (job.streams || []).map(s => s.id),
     start: `${job.queryStart}T00:00:00.000Z`,
     end: `${job.queryEnd}T23:59:59.999Z`,
     minConfidence: 0,
-    classifierJobs: [id]
+    classifierJobs: [job.id]
   }, {
     user: options.user,
     fields: ['review_status', 'updated_at'],
@@ -35,7 +33,7 @@ async function calcSummary (id, options = {}) {
 
   const classificationsSummary = classifierOuputs.reduce((acc, cur) => {
     acc[cur.classification.value] = {
-      classifierJobId: parseInt(id),
+      classifierJobId: parseInt(job.id),
       classificationId: cur.classification.id,
       total: 0,
       rejected: 0,
