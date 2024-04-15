@@ -48,11 +48,12 @@ module.exports = {
         CREATE INDEX IF NOT EXISTS custom_stream_per_day_index
         ON public.best_detections USING btree
         (
-          classifier_job_id DESC NULLS FIRST,
+          classifier_job_id ASC NULLS LAST,
+          stream_id COLLATE pg_catalog."default" ASC NULLS LAST,
+          daily_ranking ASC NULLS LAST,
           start ASC NULLS LAST,
-          detection_id ASC NULLS LAST,
-          daily_ranking DESC NULLS FIRST
-        );
+          detection_id ASC NULLS LAST
+        )
       `, { transaction: t })
 
       await queryInterface.sequelize.query(`
