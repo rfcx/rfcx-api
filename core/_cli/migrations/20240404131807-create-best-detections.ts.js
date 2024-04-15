@@ -74,7 +74,7 @@ module.exports = {
             FROM public.detections
           ) as detection
         WHERE daily_ranking < 10 OR stream_ranking < 10;
-      `)
+      `, { transaction: t })
     })
   },
   down: async (queryInterface) => {
