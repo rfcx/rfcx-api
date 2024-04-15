@@ -13,7 +13,7 @@
                 `streams` - which stream_ids to
                 `by_date` - value of 'true' will return best detection in each date within each stream (4 days, 3 streams = 12 * n_per_stream detections)
                           - value of 'false', or missing value will return just the best detections within the job*stream (3 streams = 3 * n_per_stream)
-                `start` - start date from which to search for best detections (by their start date)
+                `start` - start date from which to search for best detections (by their start date) (should only be used with 'by_date=true')
                 `end` - end date where the best detections should be searched (by their start date)
                 `review_statuses` - a list of review_statuses that are acceptable to find
                 `n_per_stream` - a number of detections per group. Maximun is 10.
