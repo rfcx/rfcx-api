@@ -9,6 +9,20 @@
 ### Features
 * **core**: GET `classifier-jobs/:id` now includes totalDistinctClassifications field with the number of linked classifications
 * **core**: GET `/classifiers` now respects `sort` query parameter for sorting and `fields` parameter to chose a set of returned fields
+* **core**: GET `/classifier-jobs/:jobId/best-detections` that can return best detections in a classifier job. Query parameters:
+                `streams` - which stream_ids to
+                `by_date` - value of 'true' will return best detection in each date within each stream (4 days, 3 streams = 12 * n_per_stream detections)
+                          - value of 'false', or missing value will return just the best detections within the job*stream (3 streams = 3 * n_per_stream)
+                `start` - start date from which to search for best detections (by their start date)
+                `end` - end date where the best detections should be searched (by their start date)
+                `review_statuses` - a list of review_statuses that are acceptable to find
+                `n_per_stream` - a number of detections per group. Maximun is 10.
+            Caveat:
+              When using 'review_statuses' option, notice that `n_per_stream` is taken BEFORE applying the 'review_statuses' filter, so if you have
+              reviewed best N detections, try requesting `n_per_stream` with n+1 to get remaining detections
+
+            Also updated hook that runs on job completion, to save the best detections in a finished job.
+
 
 ## 1.3.7 (2024-02-xx)
 ### Common
