@@ -58,11 +58,11 @@ let job2Stream1Day2BestDetection
 async function makeManyDetections () {
   const arbitraryDetections = []
   streams.forEach((stream) => {
-    // we want 6 days of detections, 4 detections each day
+    // we want 6 days of detections, 20 detections each day
     for (let day = 1; day < 7; day++) {
       let date = new Date('2024-01-01T08:00:00.000Z').setUTCDate(day).valueOf()
 
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 20; i++) {
         arbitraryDetections.push(oneDetection({
           streamId: stream.id,
           start: new Date(date),
@@ -242,6 +242,53 @@ test('should respect review statuses', async () => {
   expect(items).toHaveLength(2) // only has 2
   expect(items[0].id).toBe(stream1Day1BestDetection.id)
   expect(items[1].id).toBe(stream1Day3BestDetection.id)
+})
+
+test('should respect pagination parameters for dayly request', async () => {
+  const query = {
+    by_date: true,
+    n_per_stream: 6,
+    start: '2024-01-01T00:00:00.000Z',
+    end: '2024-01-07T00:00:00.000Z',
+    streams: [streams[0].id, streams[1].id],
+    offset: 0,
+    limit: 6
+  }
+
+  const { body: page1 } = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query(query) // should be stream1 only
+  const { body: page2 } = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query({
+    ...query,
+    offset: 6,
+    limit: 6
+  }) // should be stream 2 only
+
+  expect(page1).toHaveLength(6)
+  expect(page1.every(d => d.stream_id === streams[0].id)).toBeTruthy()
+
+  expect(page2).toHaveLength(6)
+  expect(page2.every(d => d.stream_id === streams[1].id)).toBeTruthy()
+})
+
+test('should respect pagination parameters for per stream request', async () => {
+  const query = {
+    by_date: false,
+    n_per_stream: 3,
+    offset: 0,
+    limit: 3
+  }
+
+  const { body: page1 } = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query(query) // should be stream1 only
+  const { body: page2 } = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query({
+    ...query,
+    offset: 3,
+    limit: 3
+  }) // should be stream 2 only
+
+  expect(page1).toHaveLength(3)
+  expect(page1.every(d => d.stream_id === streams[0].id)).toBeTruthy()
+
+  expect(page2).toHaveLength(3)
+  expect(page2.every(d => d.stream_id === streams[1].id)).toBeTruthy()
 })
 
 test('should only find detections in requested job', async () => {

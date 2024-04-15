@@ -50,6 +50,16 @@ const Converter = require('../../common/converter')
  *         in: query
  *         type: int
  *         default: 100
+ *       - name: limit
+ *         description: Maximum number of results to return
+ *         in: query
+ *         type: int
+ *         default: 100
+ *       - name: offset
+ *         description: Number of results to skip
+ *         in: query
+ *         type: int
+ *         default: 0
  *     responses:
  *       200:
  *         description: List of detection (lite) objects
@@ -73,12 +83,17 @@ router.get('/:jobId/best-detections', (req, res) => {
   converter.convert('end').optional().toMomentUtc()
   converter.convert('review_statuses').optional().toArray()
   converter.convert('n_per_stream').default(1).toInt().maximum(10)
+  converter.convert('limit').optional().toInt().maximum(1000)
+  converter.convert('offset').optional().toInt()
 
   return converter.validate()
     .then(async (filters) => {
+      const { limit, offset } = filters
       filters.classifierJobId = jobId
       const options = {
-        user
+        user,
+        limit,
+        offset
       }
       const result = await dao.queryBestDetections(filters, options)
       return res.json(result)

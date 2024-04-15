@@ -102,7 +102,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
  * @returns {Detection[]} Detections
  */
 async function queryBestDetections (filters, opts) {
-  const { user } = opts
+  const { user, limit, offset } = opts
   const { streams, reviewStatuses } = filters
   const where = {}
   const bestDetectionsWhere = { classifierJobId: filters.classifierJobId }
@@ -193,7 +193,9 @@ async function queryBestDetections (filters, opts) {
     where,
     attributes,
     include,
-    order
+    order,
+    limit,
+    offset
   })
 
   return results.map(r => r.toJSON())
