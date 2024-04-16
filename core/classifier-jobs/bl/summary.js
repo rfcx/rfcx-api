@@ -14,7 +14,7 @@ async function updateSummary (id, options = {}) {
 async function calcSummary (id, options = {}) {
   const job = await get(id, { ...options, fields: ['query_start', 'query_end', 'classifier_id', 'streams'] })
 
-  const detections = await detectionsDao.query({
+  const detections = (await detectionsDao.query({
     streams: (job.streams || []).map(s => s.id),
     start: `${job.queryStart}T00:00:00.000Z`,
     end: `${job.queryEnd}T23:59:59.999Z`,
@@ -24,7 +24,7 @@ async function calcSummary (id, options = {}) {
     user: options.user,
     fields: ['review_status', 'updated_at'],
     transaction: options.transaction
-  })
+  })).results
 
   const classifierOuputs = (await classifierOutputsDao.query({
     classifiers: [job.classifierId]
