@@ -2,7 +2,7 @@ const routes = require('./index')
 const models = require('../_models')
 const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 const request = require('supertest')
-const { WAITING, DONE } = require('./classifier-job-status')
+const { WAITING, DONE, AWAITING_CANCELLATION } = require('./classifier-job-status')
 
 const CLASSIFIER_1 = { id: 151, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
 
@@ -198,5 +198,77 @@ describe('GET /classifier-jobs', () => {
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toEqual(1)
     expect(response.body[0].projectId).toEqual(PROJECT_3.id)
+  })
+
+  test('picks the newest awaiting canncellation job', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Older job
+    await models.ClassifierJob.create({ created_at: '2022-01-02 03:15', updatedAt: '2022-01-02 03:15', classifierId, projectId, createdById: seedValues.otherUserId, status: AWAITING_CANCELLATION })
+    // Newer job
+    const secondJob = await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', updatedAt: '2022-01-02 04:10', classifierId, projectId, createdById: seedValues.otherUserId, status: AWAITING_CANCELLATION })
+
+    const response = await request(app).get('/').query({ status: AWAITING_CANCELLATION })
+    expect(response.body).toHaveLength(2)
+    expect(response.body[0].id).toBe(secondJob.id)
+  })
+
+  test('does not return non-cancel jobs', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel job
+    const firstJob = await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, queryStreams: 'RAG4,RAG5,RAG1*', queryStart: '2021-03-13', queryEnd: '2022-04-01', createdById: seedValues.otherUserId })
+    // Running job
+    await models.ClassifierJob.create({ status: DONE, classifierId, projectId, queryStreams: 'GUG1', queryStart: '2021-03-13', queryEnd: '2022-04-01', createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ status: AWAITING_CANCELLATION, limit: '2' })
+
+    expect(response.body).toHaveLength(1)
+    expect(response.body[0].id).toBe(firstJob.id)
+  })
+
+  test('respects limit', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ status: AWAITING_CANCELLATION, limit: '2' })
+
+    expect(response.body).toHaveLength(2)
+    expect(response.headers['total-items']).toBe('3')
+  })
+
+  test('respects offset', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ status: AWAITING_CANCELLATION, offset: '2' })
+
+    expect(response.body).toHaveLength(1)
+    expect(response.headers['total-items']).toBe('3')
+  })
+
+  test('respects sort', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    const job1 = await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job3 = await models.ClassifierJob.create({ status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ status: AWAITING_CANCELLATION, sort: '-created_at' })
+
+    expect(response.body).toHaveLength(3)
+    expect(response.headers['total-items']).toBe('3')
+    expect(response.body[0].id).toBe(job3.id)
+    expect(response.body[1].id).toBe(job2.id)
+    expect(response.body[2].id).toBe(job1.id)
   })
 })

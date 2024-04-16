@@ -1,12 +1,15 @@
-const iso1A2Code = require('@rapideditor/country-coder').iso1A2Code
 const featuresIn = require('@rapideditor/country-coder').featuresIn
+const googleMap = require('../../_services/google')
 
-function getCountryCodeByLatLng (latitude, longitude) {
+async function getCountryCodeByLatLng (latitude, longitude) {
   const isLatDefined = latitude !== null && latitude !== undefined
   const isLngDefined = longitude !== null && longitude !== undefined
   if (!isLatDefined || !isLngDefined) { return null }
-  // pass [lng, lat]
-  return iso1A2Code([longitude, latitude])
+  const result = (await googleMap.getCountry(latitude, longitude)).data.results[0]
+  if (result) {
+    return result.address_components[0].short_name
+  }
+  return null
 }
 
 function getCountryNameByCode (code) {

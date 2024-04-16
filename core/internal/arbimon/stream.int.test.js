@@ -1,5 +1,6 @@
 const request = require('supertest')
 const routes = require('./stream')
+const googleMap = require('../../_services/google')
 const models = require('../../_models')
 const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../../common/testing/sequelize')
 
@@ -99,6 +100,16 @@ describe('PATCH /internal/arbimon/streams/:externalId', () => {
         latitude: 19.9,
         longitude: 10.9
       }
+      const mockCountry = jest.spyOn(googleMap, 'getCountry')
+      mockCountry.mockReturnValueOnce({
+        data: {
+          results: []
+        }
+      })
+      const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+      mockTimezone.mockReturnValueOnce({
+        data: {}
+      })
 
       const response = await request(app).patch(`/streams/${STREAM_1.externalId}`).send(body)
 

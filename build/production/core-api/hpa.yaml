@@ -9,7 +9,7 @@ spec:
     kind: Deployment
     name: core-api
   minReplicas: 2
-  maxReplicas: 30
+  maxReplicas: 20
   metrics:
     - type: Resource
       resource:

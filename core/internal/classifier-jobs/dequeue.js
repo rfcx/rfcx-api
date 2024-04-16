@@ -7,7 +7,7 @@ const { dequeue } = require('./bl')
  *
  * /internal/classifier-jobs/dequeue:
  *   post:
- *     summary: Remove 1 or more jobs from the front of the queue (atomically) up to the `concurrency`
+ *     summary: Remove 1 or more jobs from the front of the queue (automically) up to the `concurrency`
  *     tags:
  *       - classifier-jobs
  *       - internal

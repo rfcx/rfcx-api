@@ -1,4 +1,4 @@
-const { sequelize } = require('../../_models')
+const { sequelize, DetectionReview } = require('../../_models')
 const { hasPermission, UPDATE, STREAM } = require('../../roles/dao')
 const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { query } = require('../dao/index')
@@ -23,7 +23,7 @@ async function createOrUpdate (options) {
   if (classifierJob) {
     where.classifierJobs = [classifierJob]
   }
-  const detections = await query(where, { fields: ['id', 'classification_id', 'classifier_job_id'] })
+  const detections = await query(where, { fields: ['id', 'classification_id', 'classifier_job_id', 'review_status'] })
   if (!detections.length) {
     throw new EmptyResultError('Detection with given parameters not found')
   }
@@ -33,16 +33,33 @@ async function createOrUpdate (options) {
       let review = (await reviewsDao.query({ detectionIds: [detection.id], userId }, { fields: ['id'], transaction }))[0]
       const exists = !!review
       if (exists) {
-        await reviewsDao.update(review.id, { status }, { transaction })
+        if (status === 'null') {
+          await reviewsDao.remove(review.id, { transaction })
+        } else {
+          await reviewsDao.update(review.id, { status }, { transaction })
+        }
       } else {
-        review = await reviewsDao.create({ detectionId: detection.id, userId, status }, { transaction })
+        if (status !== 'null') {
+          review = await reviewsDao.create({ detectionId: detection.id, userId, status }, { transaction })
+        }
       }
-      await refreshDetectionReviewStatus(detection.id, streamId, start, transaction)
-    }
-    const classificationId = detections[0].classification_id // we have only single classification here, so we can get id from the first item
-    const classifierJobIds = [...new Set(detections.filter(d => !!d.classifier_job_id).map(d => d.classifier_job_id))]
-    for (const classifierJobId of classifierJobIds) {
-      await classifierJobResultsDao.incrementJobSummaryMetric({ classifierJobId, classificationId }, { field: options.status }, { transaction })
+      const updatedStatus = await refreshDetectionReviewStatus(detection.id, streamId, start, transaction)
+      // Update summary if reviewStatus changed
+      if (updatedStatus !== detection.review_status) {
+        const updatedStatusLabel = DetectionReview.statusMapping[`${updatedStatus}`] // used for increment
+        const currentStatusLabel = DetectionReview.statusMapping[`${detection.review_status}`] // used for decrement
+        const classifierJobId = detection.classifier_job_id
+        const classificationId = detection.classification_id
+        if (!classifierJobId || !classificationId) { // won't update summary if either classifier_job_id or classification_id is null or undefined
+          continue
+        }
+        if (currentStatusLabel !== 'null') {
+          await classifierJobResultsDao.decrementJobSummaryMetric({ classifierJobId, classificationId }, { field: currentStatusLabel }, { transaction })
+        }
+        if (updatedStatusLabel !== 'null') {
+          await classifierJobResultsDao.incrementJobSummaryMetric({ classifierJobId, classificationId }, { field: updatedStatusLabel }, { transaction })
+        }
+      }
     }
   })
 }
@@ -51,6 +68,7 @@ async function refreshDetectionReviewStatus (detectionId, streamId, start, trans
   const { n, u, p } = await countReviewsForDetection(detectionId, transaction)
   const reviewStatus = calculateReviewStatus(n, u, p)
   await update(streamId, start, { reviewStatus }, { transaction })
+  return reviewStatus
 }
 
 async function countReviewsForDetection (detectionId, transaction) {
@@ -68,6 +86,8 @@ function calculateReviewStatus (n, u, p) {
     return -1
   } else if (p > u && p > n) {
     return 1
+  } else if (n === 0 && u === 0 && p === 0) {
+    return null
   } else {
     return 0
   }

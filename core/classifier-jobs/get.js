@@ -26,7 +26,7 @@ const Converter = require('../../common/converter')
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ClassifierJob'
+ *               $ref: '#/components/schemas/SingleClassifierJob'
  *       403:
  *         description: Insufficient privileges
  *       404:

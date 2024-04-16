@@ -1,4 +1,4 @@
-const { ClassifierJob, ClassifierJobStream, Classifier, Stream, Sequelize } = require('../../_models')
+const { ClassifierJob, ClassifierJobStream, ClassifierJobSummary, Classifier, Stream, Sequelize } = require('../../_models')
 const { ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, PROJECT } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -104,11 +104,22 @@ async function get (id, options = {}) {
   const attributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
   const transaction = options.transaction || null
-  const job = await ClassifierJob.findOne({ where: { id }, attributes, include, transaction })
+  let job = await ClassifierJob.findOne({ where: { id }, attributes, include, transaction })
+
   if (!job) {
     throw new EmptyResultError()
   }
-  return toCamelObject(job.toJSON(), 2)
+
+  const distinctClassificationsCount = await ClassifierJobSummary.count({
+    where: { classifierJobId: id },
+    col: 'classificationId',
+    distinct: true
+  })
+
+  job = job.toJSON()
+  job.totalDistinctClassifications = distinctClassificationsCount
+
+  return toCamelObject(job, 2)
 }
 
 /**

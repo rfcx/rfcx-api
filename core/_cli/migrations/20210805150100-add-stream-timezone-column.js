@@ -8,7 +8,7 @@ module.exports = {
       const locations = await queryInterface.sequelize.query('SELECT id, latitude, longitude FROM streams', { type: Sequelize.QueryTypes.SELECT, transaction: t })
       for (const location of locations) {
         const { id, latitude, longitude } = location
-        const timezone = latitude != null && longitude != null ? `'${getTzByLatLng(latitude, longitude)}'` : null
+        const timezone = latitude != null && longitude != null ? `'${await getTzByLatLng(latitude, longitude)}'` : null
         await queryInterface.sequelize.query(`UPDATE streams SET timezone=${timezone} WHERE id='${id}';`, { transaction: t })
       }
     })

@@ -479,6 +479,228 @@ describe('POST /:streamId/detections/:start/review', () => {
       expect(detectionUpdated2.reviewStatus).toBe(0)
     })
 
+    test('updates from positive to unreviewed', async () => {
+      const { stream, classification, classifier } = await commonSetup()
+      const start = '2022-01-01T00:00:00.000Z'
+      const detection = await models.Detection.create({
+        streamId: stream.id,
+        classificationId: classification.id,
+        classifierId: classifier.id,
+        start,
+        end: '2022-01-01T00:00:01.000Z',
+        confidence: 0.99
+      })
+
+      const body1 = {
+        status: 'confirmed',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
+      expect(response1.statusCode).toBe(200)
+      const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review1.status).toBe(1)
+      const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated1.reviewStatus).toBe(1)
+
+      const body2 = {
+        status: 'unreviewed',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
+      expect(response2.statusCode).toBe(200)
+      const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review2).toBeNull()
+      const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated2.reviewStatus).toBeNull()
+    })
+
+    test('updates from rejected to unreviewed', async () => {
+      const { stream, classification, classifier } = await commonSetup()
+      const start = '2022-01-01T00:00:00.000Z'
+      const detection = await models.Detection.create({
+        streamId: stream.id,
+        classificationId: classification.id,
+        classifierId: classifier.id,
+        start,
+        end: '2022-01-01T00:00:01.000Z',
+        confidence: 0.99
+      })
+
+      const body1 = {
+        status: 'rejected',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
+      expect(response1.statusCode).toBe(200)
+      const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review1.status).toBe(-1)
+      const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated1.reviewStatus).toBe(-1)
+
+      const body2 = {
+        status: 'unreviewed',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
+      expect(response2.statusCode).toBe(200)
+      const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review2).toBeNull()
+      const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated2.reviewStatus).toBeNull()
+    })
+
+    test('updates from uncertain to unreviewed', async () => {
+      const { stream, classification, classifier } = await commonSetup()
+      const start = '2022-01-01T00:00:00.000Z'
+      const detection = await models.Detection.create({
+        streamId: stream.id,
+        classificationId: classification.id,
+        classifierId: classifier.id,
+        start,
+        end: '2022-01-01T00:00:01.000Z',
+        confidence: 0.99
+      })
+
+      const body1 = {
+        status: 'uncertain',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
+      expect(response1.statusCode).toBe(200)
+      const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review1.status).toBe(0)
+      const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated1.reviewStatus).toBe(0)
+
+      const body2 = {
+        status: 'unreviewed',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
+      expect(response2.statusCode).toBe(200)
+      const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review2).toBeNull()
+      const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated2.reviewStatus).toBeNull()
+    })
+
+    test('updates from unreviewed to confirmed', async () => {
+      const { stream, classification, classifier } = await commonSetup()
+      const start = '2022-01-01T00:00:00.000Z'
+      const detection = await models.Detection.create({
+        streamId: stream.id,
+        classificationId: classification.id,
+        classifierId: classifier.id,
+        start,
+        end: '2022-01-01T00:00:01.000Z',
+        confidence: 0.99
+      })
+
+      const body1 = {
+        status: 'unreviewed',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
+      expect(response1.statusCode).toBe(200)
+      const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review1).toBeNull()
+      const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated1.reviewStatus).toBeNull()
+
+      const body2 = {
+        status: 'confirmed',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
+      expect(response2.statusCode).toBe(200)
+      const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review2.status).toBe(1)
+      const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated2.reviewStatus).toBe(1)
+    })
+
+    test('updates from unreviewed to rejected', async () => {
+      const { stream, classification, classifier } = await commonSetup()
+      const start = '2022-01-01T00:00:00.000Z'
+      const detection = await models.Detection.create({
+        streamId: stream.id,
+        classificationId: classification.id,
+        classifierId: classifier.id,
+        start,
+        end: '2022-01-01T00:00:01.000Z',
+        confidence: 0.99
+      })
+
+      const body1 = {
+        status: 'unreviewed',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
+      expect(response1.statusCode).toBe(200)
+      const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review1).toBeNull()
+      const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated1.reviewStatus).toBeNull()
+
+      const body2 = {
+        status: 'rejected',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
+      expect(response2.statusCode).toBe(200)
+      const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review2.status).toBe(-1)
+      const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated2.reviewStatus).toBe(-1)
+    })
+
+    test('updates from unreviewed to uncertain', async () => {
+      const { stream, classification, classifier } = await commonSetup()
+      const start = '2022-01-01T00:00:00.000Z'
+      const detection = await models.Detection.create({
+        streamId: stream.id,
+        classificationId: classification.id,
+        classifierId: classifier.id,
+        start,
+        end: '2022-01-01T00:00:01.000Z',
+        confidence: 0.99
+      })
+
+      const body1 = {
+        status: 'unreviewed',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
+      expect(response1.statusCode).toBe(200)
+      const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review1).toBeNull()
+      const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated1.reviewStatus).toBeNull()
+
+      const body2 = {
+        status: 'uncertain',
+        classification: classification.value,
+        classifier: classifier.id
+      }
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
+      expect(response2.statusCode).toBe(200)
+      const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
+      expect(review2.status).toBe(0)
+      const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+      expect(detectionUpdated2.reviewStatus).toBe(0)
+    })
+
     test('updates both duplicate detections', async () => {
       const { stream, classification, classifier } = await commonSetup()
       const data = {
@@ -598,6 +820,35 @@ describe('POST /:streamId/detections/:start/review', () => {
         expect(detection.reviewStatus).toBe(-1)
         expect(detectionUpdated.reviewStatus).toBe(0)
       })
+      test('1 negative, 0 uncertain, 0 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(-1)
+        expect(detectionUpdated.reviewStatus).toBe(-1)
+      })
       test('0 negative, 1 uncertain, 0 positive + 1 uncertain', async () => {
         const { stream, classification, classifier } = await commonSetup()
         const start = '2022-01-01T00:00:00.000Z'
@@ -676,6 +927,35 @@ describe('POST /:streamId/detections/:start/review', () => {
 
         const body = {
           status: 'confirmed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBe(0)
+      })
+      test('0 negative, 1 uncertain, 0 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 0
+        })
+
+        const body = {
+          status: 'unreviewed',
           classification: classification.value,
           classifier: classifier.id
         }
@@ -772,6 +1052,35 @@ describe('POST /:streamId/detections/:start/review', () => {
         expect(detection.reviewStatus).toBe(1)
         expect(detectionUpdated.reviewStatus).toBe(0)
       })
+      test('0 negative, 0 uncertain, 1 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(1)
+        expect(detectionUpdated.reviewStatus).toBe(1)
+      })
 
       test('1 negative, 1 uncertain, 0 positive + 1 positive', async () => {
         const { stream, classification, classifier } = await commonSetup()
@@ -866,6 +1175,40 @@ describe('POST /:streamId/detections/:start/review', () => {
 
         const body = {
           status: 'uncertain',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBe(0)
+      })
+      test('1 negative, 1 uncertain, 0 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 0
+        })
+
+        const body = {
+          status: 'unreviewed',
           classification: classification.value,
           classifier: classifier.id
         }
@@ -977,6 +1320,40 @@ describe('POST /:streamId/detections/:start/review', () => {
         expect(detection.reviewStatus).toBe(0)
         expect(detectionUpdated.reviewStatus).toBe(1)
       })
+      test('0 negative, 1 uncertain, 1 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'await',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBe(0)
+      })
       test('1 negative, 0 uncertain, 1 positive + 1 uncertain', async () => {
         const { stream, classification, classifier } = await commonSetup()
         const start = '2022-01-01T00:00:00.000Z'
@@ -1078,6 +1455,40 @@ describe('POST /:streamId/detections/:start/review', () => {
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.reviewStatus).toBe(0)
         expect(detectionUpdated.reviewStatus).toBe(1)
+      })
+      test('1 negative, 0 uncertain, 1 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBe(0)
       })
 
       test('1 negative, 1 uncertain, 1 positive + 1 negative', async () => {
@@ -1197,6 +1608,45 @@ describe('POST /:streamId/detections/:start/review', () => {
         expect(detection.reviewStatus).toBe(0)
         expect(detectionUpdated.reviewStatus).toBe(1)
       })
+      test('1 negative, 1 uncertain, 1 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.differentUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBe(0)
+      })
 
       test('2 negative, 0 uncertain, 0 positive + 1 uncertain', async () => {
         const { stream, classification, classifier } = await commonSetup()
@@ -1257,6 +1707,40 @@ describe('POST /:streamId/detections/:start/review', () => {
 
         const body = {
           status: 'confirmed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(-1)
+        expect(detectionUpdated.reviewStatus).toBe(-1)
+      })
+      test('2 negative, 0 uncertain, 0 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: -1
+        })
+
+        const body = {
+          status: 'unreviewed',
           classification: classification.value,
           classifier: classifier.id
         }
@@ -1334,6 +1818,40 @@ describe('POST /:streamId/detections/:start/review', () => {
         expect(detection.reviewStatus).toBe(0)
         expect(detectionUpdated.reviewStatus).toBe(0)
       })
+      test('0 negative, 2 uncertain, 0 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 0
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBe(0)
+      })
       test('0 negative, 0 uncertain, 2 positive + 1 negative', async () => {
         const { stream, classification, classifier } = await commonSetup()
         const start = '2022-01-01T00:00:00.000Z'
@@ -1393,6 +1911,40 @@ describe('POST /:streamId/detections/:start/review', () => {
 
         const body = {
           status: 'uncertain',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(1)
+        expect(detectionUpdated.reviewStatus).toBe(1)
+      })
+      test('0 negative, 0 uncertain, 2 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'unreviewed',
           classification: classification.value,
           classifier: classifier.id
         }
@@ -1559,6 +2111,45 @@ describe('POST /:streamId/detections/:start/review', () => {
         expect(detection.reviewStatus).toBe(-1)
         expect(detectionUpdated.reviewStatus).toBe(0)
       })
+      test('2 negative, 0 uncertain, 1 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.differentUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(-1)
+        expect(detectionUpdated.reviewStatus).toBe(-1)
+      })
       test('1 negative, 2 uncertain, 0 positive + 1 negative', async () => {
         const { stream, classification, classifier } = await commonSetup()
         const start = '2022-01-01T00:00:00.000Z'
@@ -1628,6 +2219,45 @@ describe('POST /:streamId/detections/:start/review', () => {
 
         const body = {
           status: 'confirmed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBe(0)
+      })
+      test('1 negative, 2 uncertain, 0 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.differentUserId,
+          status: 0
+        })
+
+        const body = {
+          status: 'unreviewed',
           classification: classification.value,
           classifier: classifier.id
         }
@@ -1715,6 +2345,45 @@ describe('POST /:streamId/detections/:start/review', () => {
         expect(detection.reviewStatus).toBe(0)
         expect(detectionUpdated.reviewStatus).toBe(0)
       })
+      test('0 negative, 2 uncertain, 1 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.differentUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBe(0)
+      })
       test('1 negative, 0 uncertain, 2 positive + 1 negative', async () => {
         const { stream, classification, classifier } = await commonSetup()
         const start = '2022-01-01T00:00:00.000Z'
@@ -1784,6 +2453,45 @@ describe('POST /:streamId/detections/:start/review', () => {
 
         const body = {
           status: 'uncertain',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(1)
+        expect(detectionUpdated.reviewStatus).toBe(1)
+      })
+      test('1 negative, 0 uncertain, 2 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.differentUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'unreviewed',
           classification: classification.value,
           classifier: classifier.id
         }
@@ -1869,6 +2577,195 @@ describe('POST /:streamId/detections/:start/review', () => {
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.reviewStatus).toBe(1)
+        expect(detectionUpdated.reviewStatus).toBe(0)
+      })
+      test('0 negative, 1 uncertain, 2 positive + 1 unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.anotherUserId,
+          status: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.differentUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(1)
+        expect(detectionUpdated.reviewStatus).toBe(1)
+      })
+
+      test('0 negative, 0 uncertain, 1 positive > unreviewed', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.primaryUserId,
+          status: 1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(1)
+        expect(detectionUpdated.reviewStatus).toBeNull()
+      })
+
+      test('0 negative, 1 uncertain > unreviewed, 0 positive', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.primaryUserId,
+          status: 0
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(0)
+        expect(detectionUpdated.reviewStatus).toBeNull()
+      })
+
+      test('2 negative, 1 uncertain > unreviewed, 1 positive', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.primaryUserId,
+          status: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(-1)
+        expect(detectionUpdated.reviewStatus).toBe(-1)
+      })
+
+      test('2 negative > unreviewed, 1 uncertain, 1 positive', async () => {
+        const { stream, classification, classifier } = await commonSetup()
+        const start = '2022-01-01T00:00:00.000Z'
+        const detection = await models.Detection.create({
+          streamId: stream.id,
+          classificationId: classification.id,
+          classifierId: classifier.id,
+          start,
+          end: '2022-01-01T00:00:01.000Z',
+          confidence: 0.99,
+          reviewStatus: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 0
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: 1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.primaryUserId,
+          status: -1
+        })
+        await DetectionReview.create({
+          detectionId: detection.toJSON().id,
+          userId: seedValues.otherUserId,
+          status: -1
+        })
+
+        const body = {
+          status: 'unreviewed',
+          classification: classification.value,
+          classifier: classifier.id
+        }
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+        const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+        expect(detection.reviewStatus).toBe(-1)
         expect(detectionUpdated.reviewStatus).toBe(0)
       })
     })
@@ -2042,6 +2939,99 @@ describe('POST /:streamId/detections/:start/review', () => {
     expect(summaries[0].confirmed).toBe(0)
     expect(summaries[0].rejected).toBe(0)
     expect(summaries[0].uncertain).toBe(2)
+  })
+  test('updates 1 uncertain to unreviewed', async () => {
+    const { stream, classification, classifier, job } = await commonSetup()
+
+    const start = '2022-01-01T00:00:00.000Z'
+    const detection = await models.Detection.create({
+      streamId: stream.id,
+      classificationId: classification.id,
+      classifierId: classifier.id,
+      start,
+      end: '2022-01-01T00:00:01.000Z',
+      confidence: 0.99,
+      classifierJobId: job.id,
+      reviewStatus: 0
+    })
+    await models.ClassifierJobSummary.create({ classifierJobId: job.id, classificationId: classification.id, total: 1, confirmed: 0, rejected: 0, uncertain: 1 })
+    const body = {
+      status: 'unreviewed',
+      classification: classification.value,
+      classifier: classifier.id
+    }
+    await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+    const summaries = await models.ClassifierJobSummary.findAll()
+    expect(summaries.length).toBe(1)
+    expect(summaries[0].total).toBe(1)
+    expect(summaries[0].confirmed).toBe(0)
+    expect(summaries[0].rejected).toBe(0)
+    expect(summaries[0].uncertain).toBe(0)
+    const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+    expect(detectionUpdated.reviewStatus).toBeNull()
+  })
+  test('updates 1 rejected to unreviewed', async () => {
+    const { stream, classification, classifier, job } = await commonSetup()
+
+    const start = '2022-01-01T00:00:00.000Z'
+    const detection = await models.Detection.create({
+      streamId: stream.id,
+      classificationId: classification.id,
+      classifierId: classifier.id,
+      start,
+      end: '2022-01-01T00:00:01.000Z',
+      confidence: 0.99,
+      classifierJobId: job.id,
+      reviewStatus: -1
+    })
+    await models.ClassifierJobSummary.create({ classifierJobId: job.id, classificationId: classification.id, total: 1, confirmed: 0, rejected: 1, uncertain: 0 })
+    const body = {
+      status: 'unreviewed',
+      classification: classification.value,
+      classifier: classifier.id
+    }
+    await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+    const summaries = await models.ClassifierJobSummary.findAll()
+    expect(summaries.length).toBe(1)
+    expect(summaries[0].total).toBe(1)
+    expect(summaries[0].confirmed).toBe(0)
+    expect(summaries[0].rejected).toBe(0)
+    expect(summaries[0].uncertain).toBe(0)
+    const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+    expect(detectionUpdated.reviewStatus).toBeNull()
+  })
+  test('updates 1 confirmed to unreviewed', async () => {
+    const { stream, classification, classifier, job } = await commonSetup()
+
+    const start = '2022-01-01T00:00:00.000Z'
+    const detection = await models.Detection.create({
+      streamId: stream.id,
+      classificationId: classification.id,
+      classifierId: classifier.id,
+      start,
+      end: '2022-01-01T00:00:01.000Z',
+      confidence: 0.99,
+      classifierJobId: job.id,
+      reviewStatus: 1
+    })
+    await models.ClassifierJobSummary.create({ classifierJobId: job.id, classificationId: classification.id, total: 1, confirmed: 1, rejected: 0, uncertain: 0 })
+    const body = {
+      status: 'unreviewed',
+      classification: classification.value,
+      classifier: classifier.id
+    }
+    await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+
+    const summaries = await models.ClassifierJobSummary.findAll()
+    expect(summaries.length).toBe(1)
+    expect(summaries[0].total).toBe(1)
+    expect(summaries[0].confirmed).toBe(0)
+    expect(summaries[0].rejected).toBe(0)
+    expect(summaries[0].uncertain).toBe(0)
+    const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
+    expect(detectionUpdated.reviewStatus).toBeNull()
   })
   test('does not update job summary if detections is not from the job', async () => {
     const { stream, classification, classifier, job } = await commonSetup()

@@ -1,3 +1,15 @@
+## 1.3.8 (2024-03-xx)
+### Common
+* **core**: Use Google Map API for getting timezone and country from latitude and longitude
+* **core**: Endpoint `GET /classifier-job/:id/summary` receive params `limit, offset, sort, order, keyword`
+* **core**: New endpoint `GET /classifier-job/:id/validation` for getting validation status
+* **core**: Introduce new job status AWAITING_CANCELLATION 60
+* **core**: Endpoint `POST /streams/:streamId/detections/:start/review` can change review to `unreviewed`
+
+### Features
+* **core**: GET `classifier-jobs/:id` now includes totalDistinctClassifications field with the number of linked classifications
+* **core**: GET `/classifiers` now respects `sort` query parameter for sorting and `fields` parameter to chose a set of returned fields
+
 ## 1.3.7 (2024-02-xx)
 ### Common
 * **core**: Add `hidden` column to `streams`
