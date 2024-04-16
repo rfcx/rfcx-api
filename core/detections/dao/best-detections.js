@@ -10,7 +10,7 @@ module.exports.dropBestDetections = async function dropBestDetections (classifie
 
 module.exports.saveBestDetections = async function cacheBestDetections (classifierJob) {
   const replacements = {
-    classifierJobId: classifierJob.id === null ? -1 : classifierJob.id,
+    classifierJobId: classifierJob.id,
     perDayLimit: BEST_ITEMS_PER_DAY_STREAM_LIMIT,
     perStreamLimit: BEST_ITEMS_PER_STREAM_LIMIT,
     jobStart: classifierJob.queryStart,
@@ -33,7 +33,7 @@ module.exports.saveBestDetections = async function cacheBestDetections (classifi
           ORDER BY confidence DESC
         ) as stream_ranking
         FROM public.detections
-        WHERE (start BETWEEN :jobStart AND :jobEnd) AND COALESCE(classifier_job_id, -1) = :classifierJobId
+        WHERE (start BETWEEN :jobStart AND :jobEnd) AND classifier_job_id = :classifierJobId
       ) as detection
     WHERE daily_ranking < :perDayLimit OR stream_ranking < :perStreamLimit;
   `, {
