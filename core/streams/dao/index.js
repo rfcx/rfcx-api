@@ -258,7 +258,7 @@ async function update (id, data, options = {}) {
     if (data.longitude === undefined) {
       data.longitude = stream.longitude
     }
-    additions = (data.latitude === undefined && data.longitude === undefined) ? {} : await computedAdditions(data, stream)
+    additions = await computedAdditions(data, stream)
   }
   const fullStream = { ...data, ...additions }
   if (fullStream.name) {
