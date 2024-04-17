@@ -38,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
     Detection.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classification_id' })
     Detection.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
     Detection.belongsTo(models.ClassifierJob, { as: 'classifier_job', foreignKey: 'classifier_job_id' })
+    Detection.hasOne(models.BestDetection, { as: 'bestDetection', foreignKey: 'detection_id' })
   }
   Detection.attributes = {
     lite: ['stream_id', 'start', 'end', 'confidence'],

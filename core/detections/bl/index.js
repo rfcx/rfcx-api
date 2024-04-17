@@ -1,5 +1,6 @@
 const classifierDao = require('../../classifiers/dao')
 const detectionDao = require('../dao/create')
+const bestDetectionDao = require('../dao/best-detections')
 const { Op } = require('sequelize')
 
 async function addClassifiers (rawDetections, options = {}) {
@@ -80,4 +81,9 @@ async function create (rawDetections, options = {}) {
   }
 }
 
-module.exports = { create }
+async function updateBestDetections (classifierJob) {
+  await bestDetectionDao.dropBestDetections(classifierJob)
+  await bestDetectionDao.saveBestDetections(classifierJob)
+}
+
+module.exports = { create, updateBestDetections }
