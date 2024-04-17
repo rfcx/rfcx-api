@@ -274,7 +274,6 @@ async function update (id, data, options = {}) {
       }
     }
   }
-  console.log(id, 'here', fullStream)
   return Stream.update(fullStream, {
     where: { id },
     individualHooks: true, // force use afterUpdate hook

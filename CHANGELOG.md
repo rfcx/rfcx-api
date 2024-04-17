@@ -1,6 +1,7 @@
 ## 1.3.9 (2024-04-xx)
 ### Common
 * **core**: `GET /detections` return `Total-items` in response headers
+* **core**: Include `timezone` and `ountry_code` when create site on Arbimon
 
 ### Bug Fixes
 * **core**: Fix update only stream name also set default to timezone and country code
