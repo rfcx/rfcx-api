@@ -96,7 +96,8 @@ router.get('/:jobId/best-detections', (req, res) => {
         offset
       }
       const result = await dao.queryBestDetections(filters, options)
-      return res.json(result)
+
+      return res.header('Total-Items', result.total).json(result.results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 })

@@ -190,7 +190,7 @@ async function queryBestDetections (filters, opts) {
     ]
   }
 
-  const results = await Detection.findAll({
+  return await pagedQuery(Detection, {
     where,
     attributes,
     include,
@@ -198,8 +198,6 @@ async function queryBestDetections (filters, opts) {
     limit,
     offset
   })
-
-  return results.map(r => r.toJSON())
 }
 
 /**

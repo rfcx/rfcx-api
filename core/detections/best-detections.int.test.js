@@ -255,13 +255,14 @@ test('should respect pagination parameters for dayly request', async () => {
     limit: 6
   }
 
-  const { body: page1 } = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query(query) // should be stream1 only
+  const { body: page1, headers } = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query(query) // should be stream1 only
   const { body: page2 } = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query({
     ...query,
     offset: 6,
     limit: 6
   }) // should be stream 2 only
 
+  expect(headers['total-items']).toEqual('72') // 2 streams, 6 per day, 6 days,
   expect(page1).toHaveLength(6)
   expect(page1.every(d => d.stream_id === streams[0].id)).toBeTruthy()
 
