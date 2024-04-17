@@ -12,7 +12,7 @@ async function updateSummary (job, options = {}) {
 }
 
 async function calcSummary (job, options = {}) {
-  const detections = await detectionsDao.query({
+  const detections = (await detectionsDao.query({
     streams: (job.streams || []).map(s => s.id),
     start: `${job.queryStart}T00:00:00.000Z`,
     end: `${job.queryEnd}T23:59:59.999Z`,
@@ -22,7 +22,7 @@ async function calcSummary (job, options = {}) {
     user: options.user,
     fields: ['review_status', 'updated_at'],
     transaction: options.transaction
-  })
+  })).results
 
   const classifierOuputs = (await classifierOutputsDao.query({
     classifiers: [job.classifierId]

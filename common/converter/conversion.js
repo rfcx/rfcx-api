@@ -10,21 +10,25 @@ module.exports = class Conversion {
     this.target = target
     this.property = property
 
-    this.value = null
+    this.value = undefined
     this.conversions = []
     this.required = true
-    this.defaultValue = null
+    this.defaultValue = undefined
   }
 
   execute () {
-    if (this.required && this.src[this.property] == null) {
+    if (this.required && this.src[this.property] === undefined) {
       this.throwError('the parameter is required but was not provided')
     }
 
     this.value = this.src[this.property] !== undefined ? this.src[this.property] : this.defaultValue
 
+    if (!this.required && this.value === undefined) {
+      return
+    }
     if (!this.required && this.value === null) {
-      return this.value
+      this.target[this.property] = this.value
+      return
     }
 
     for (const executeValidation of this.conversions) {

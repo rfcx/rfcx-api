@@ -323,17 +323,36 @@ describe('PATCH /streams/:id', () => {
     expect(streamUpdated.countryCode).toBe('PL')
   })
 
-  test('country code is changed to null and timezone is UTC for undefined lat', async () => {
-    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Britain', countryCode: 'GB', createdById: seedValues.primaryUserId }
+  test('country code is not changed to null and timezone is UTC for undefined lat', async () => {
+    const stream = { id: 'qwertyuiop40', name: 'my stream 4', latitude: 54.2, longitude: -4.5, timezone: 'Europe/Isle_of_Man', countryCode: 'GB', createdById: seedValues.primaryUserId }
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ stream_id: stream.id, user_id: stream.createdById, role_id: seedValues.roleOwner })
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: [{
+          address_components: [{
+            short_name: 'GB'
+          }]
+        }]
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {
+        timeZoneId: 'Europe/Isle_of_Man'
+      }
+    })
 
     const requestBody = { latitude: undefined, longitude: -4.5 }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
+
     expect(response.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(stream.id)
-    expect(streamUpdated.timezone).toBe('UTC')
-    expect(streamUpdated.countryCode).toBeNull()
+    expect(streamUpdated.latitude).toBe(stream.latitude)
+    expect(streamUpdated.longitude).toBe(requestBody.longitude)
+    expect(streamUpdated.timezone).toBe(stream.timezone)
+    expect(streamUpdated.countryCode).toBe(stream.countryCode)
   })
 
   test('country code is changed to null and timezone is UTC for null lat', async () => {
@@ -345,6 +364,8 @@ describe('PATCH /streams/:id', () => {
     const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBeNull()
+    expect(streamUpdated.longitude).toBe(requestBody.longitude)
     expect(streamUpdated.timezone).toBe('UTC')
     expect(streamUpdated.countryCode).toBeNull()
   })
@@ -358,6 +379,8 @@ describe('PATCH /streams/:id', () => {
     const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBeNull()
+    expect(streamUpdated.longitude).toBeNull()
     expect(streamUpdated.timezone).toBe('UTC')
     expect(streamUpdated.countryCode).toBeNull()
   })
@@ -371,6 +394,8 @@ describe('PATCH /streams/:id', () => {
     const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBeNull()
+    expect(streamUpdated.longitude).toBeNull()
     expect(streamUpdated.timezone).toBe('UTC')
     expect(streamUpdated.countryCode).toBeNull()
   })
@@ -384,6 +409,8 @@ describe('PATCH /streams/:id', () => {
     const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBeNull()
+    expect(streamUpdated.longitude).toBe(requestBody.longitude)
     expect(streamUpdated.timezone).toBe('UTC')
     expect(streamUpdated.countryCode).toBeNull()
   })
@@ -407,6 +434,8 @@ describe('PATCH /streams/:id', () => {
     const response2 = await request(app).patch(`/${stream.id}`).send(requestBody)
     expect(response2.statusCode).toBe(204)
     const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBe(requestBody.latitude)
+    expect(streamUpdated.longitude).toBe(requestBody.longitude)
     expect(streamUpdated.countryCode).toBe(null)
   })
 
@@ -418,11 +447,24 @@ describe('PATCH /streams/:id', () => {
     const stream2 = { id: 'jagu2', createdById: seedValues.primaryUserId, name: 'Jaguar Station 2', latitude: 66.2, longitude: -10.5, projectId: project.id }
     await models.Stream.create(stream)
     await models.Stream.create(stream2)
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
 
     const requestBody = { latitude: 40.2 }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBe(requestBody.latitude)
+    expect(streamUpdated.longitude).toBe(stream.longitude)
     const projectAfterUpdated = await models.Project.findByPk(project.id)
     expect(projectAfterUpdated.minLatitude).toBe(requestBody.latitude)
     expect(projectAfterUpdated.maxLatitude).toBe(stream2.latitude)
@@ -438,11 +480,25 @@ describe('PATCH /streams/:id', () => {
     const stream2 = { id: 'jagu2', createdById: seedValues.primaryUserId, name: 'Jaguar Station 2', latitude: 66.2, longitude: -10.5, projectId: project.id }
     await models.Stream.create(stream)
     await models.Stream.create(stream2)
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
 
     const requestBody = { latitude: 40.2, hidden: true }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBe(requestBody.latitude)
+    expect(streamUpdated.longitude).toBe(stream.longitude)
+    expect(streamUpdated.hidden).toBe(requestBody.hidden)
     const projectAfterUpdated = await models.Project.findByPk(project.id)
     expect(projectAfterUpdated.minLatitude).toBe(stream2.latitude)
     expect(projectAfterUpdated.maxLatitude).toBe(stream2.latitude)
@@ -456,11 +512,25 @@ describe('PATCH /streams/:id', () => {
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
     const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 54.2, longitude: -4.5, projectId: project.id }
     await models.Stream.create(stream)
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
 
     const requestBody = { latitude: 40.2, hidden: true }
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBe(requestBody.latitude)
+    expect(streamUpdated.longitude).toBe(stream.longitude)
+    expect(streamUpdated.hidden).toBe(requestBody.hidden)
     const projectAfterUpdated = await models.Project.findByPk(project.id)
     expect(projectAfterUpdated.minLatitude).toBeNull()
     expect(projectAfterUpdated.maxLatitude).toBeNull()
@@ -481,6 +551,9 @@ describe('PATCH /streams/:id', () => {
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBeNull()
+    expect(streamUpdated.longitude).toBe(stream.longitude)
     const projectAfterUpdated = await models.Project.findByPk(project.id)
     expect(projectAfterUpdated.minLatitude).toBe(stream2.latitude)
     expect(projectAfterUpdated.maxLatitude).toBe(stream2.latitude)
@@ -501,6 +574,9 @@ describe('PATCH /streams/:id', () => {
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream.id)
+    expect(streamUpdated.latitude).toBeNull()
+    expect(streamUpdated.longitude).toBeNull()
     const projectAfterUpdated = await models.Project.findByPk(project.id)
     expect(projectAfterUpdated.minLatitude).toBe(stream2.latitude)
     expect(projectAfterUpdated.maxLatitude).toBe(stream2.latitude)
@@ -514,11 +590,15 @@ describe('PATCH /streams/:id', () => {
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
     const stream1 = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar-Station', latitude: null, longitude: -4.5, projectId: project.id }
     await models.Stream.create(stream1)
-    const requestBody = { name: 'Jaguar_Station' }
 
+    const requestBody = { name: 'Jaguar_Station' }
     const response = await request(app).patch(`/${stream1.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream1.id)
+    expect(streamUpdated.name).toBe(requestBody.name)
+    expect(streamUpdated.latitude).toBe(stream1.latitude)
+    expect(streamUpdated.longitude).toBe(stream1.longitude)
     const stream = await models.Stream.findByPk(stream1.id)
     expect(stream.name).toBe(requestBody.name)
   })
@@ -529,11 +609,15 @@ describe('PATCH /streams/:id', () => {
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
     const stream1 = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar-Station-1', latitude: null, longitude: -4.5, projectId: project.id }
     await models.Stream.create(stream1)
-    const requestBody = { name: 'Jaguar_Station-1' }
 
+    const requestBody = { name: 'Jaguar_Station-1' }
     const response = await request(app).patch(`/${stream1.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(204)
+    const streamUpdated = await models.Stream.findByPk(stream1.id)
+    expect(streamUpdated.name).toBe(requestBody.name)
+    expect(streamUpdated.latitude).toBe(stream1.latitude)
+    expect(streamUpdated.longitude).toBe(stream1.longitude)
     const stream = await models.Stream.findByPk(stream1.id)
     expect(stream.name).toBe(requestBody.name)
   })

@@ -1,6 +1,7 @@
 const { Sequelize, Stream, Classification, Classifier, DetectionReview, User, Detection, ClassifierJob, BestDetection, sequelize } = require('../../_models')
 const { propertyToFloat } = require('../../_utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../_utils/db/time-aggregated-query')
+const pagedQuery = require('../../_utils/db/paged-query')
 const streamDao = require('../../streams/dao')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
 const { getAccessibleObjectsIDs, STREAM, PROJECT } = require('../../roles/dao')
@@ -221,8 +222,7 @@ async function queryBestDetections (filters, opts) {
  */
 async function query (filters, options) {
   const opts = await defaultQueryOptions(filters, options)
-  const detections = await Detection.findAll(opts)
-  return detections.map(d => d.toJSON())
+  return await pagedQuery(Detection, opts)
 }
 
 /**
