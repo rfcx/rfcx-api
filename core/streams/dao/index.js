@@ -76,7 +76,12 @@ async function get (idOrWhere, options = {}) {
  * @param {*} options
  */
 async function create (stream, options = {}) {
-  const fullStream = { ...stream, ...(await computedAdditions(stream)) }
+  let additionals = {}
+  // If timezone and countryCode already existing in stream blob then no need to get them again
+  if (!stream.timezone && !stream.countryCode) {
+    additionals = await computedAdditions(stream)
+  }
+  const fullStream = { ...stream, ...additionals }
   if (fullStream.projectId && options.creatableBy && !(await hasPermission(UPDATE, options.creatableBy, fullStream.projectId, PROJECT))) {
     throw new ForbiddenError()
   }
