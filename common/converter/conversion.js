@@ -17,7 +17,7 @@ module.exports = class Conversion {
   }
 
   execute () {
-    if (this.required && this.src[this.property] == null) {
+    if (this.required && this.src[this.property] === undefined) {
       this.throwError('the parameter is required but was not provided')
     }
 
