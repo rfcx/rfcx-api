@@ -2,7 +2,6 @@ const arbimonService = require('../../_services/arbimon')
 const { randomId } = require('../../../common/crypto/random')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const dao = require('../dao')
-const { sequelize } = require('../../_models')
 
 /**
  * Create Stream
@@ -47,21 +46,17 @@ async function create (params, options = {}) {
   }
   // Get timezone and countryCode for Arbimon
   const fullStream = { ...stream, ...(await dao.computedAdditions(stream)) }
-  return sequelize.transaction(async (transaction) => {
-    options.transaction = transaction
-
-    if (arbimonService.isEnabled && options.requestSource !== 'arbimon') {
-      try {
-        const arbimonSite = { ...fullStream, country_code: fullStream.countryCode }
-        const externalSite = await arbimonService.createSite(arbimonSite, options.idToken)
-        fullStream.externalId = externalSite.site_id
-      } catch (error) {
-        console.error(`Error creating site in Arbimon (stream: ${fullStream.id})`)
-        throw new Error()
-      }
+  if (arbimonService.isEnabled && options.requestSource !== 'arbimon') {
+    try {
+      const arbimonSite = { ...fullStream, country_code: fullStream.countryCode }
+      const externalSite = await arbimonService.createSite(arbimonSite, options.idToken)
+      fullStream.externalId = externalSite.site_id
+    } catch (error) {
+      console.error(`Error creating site in Arbimon (stream: ${fullStream.id})`)
+      throw new Error()
     }
-    return await dao.create(fullStream, options)
-  })
+  }
+  return await dao.create(fullStream, options)
 }
 
 module.exports = {
