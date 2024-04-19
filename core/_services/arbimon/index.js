@@ -45,7 +45,7 @@ function updateProject (opts, idToken) {
 
 function createSite (stream, idToken) {
   const body = {};
-  ['name', 'latitude', 'longitude', 'altitude', 'hidden'].forEach((attr) => { body[attr] = stream[attr] })
+  ['name', 'latitude', 'longitude', 'altitude', 'hidden', 'timezone', 'country_code'].forEach((attr) => { body[attr] = stream[attr] })
   body.external_id = stream.id
   if (!body.altitude) {
     body.altitude = 0

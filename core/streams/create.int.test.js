@@ -48,6 +48,17 @@ describe('POST /streams', () => {
       latitude: 10.123,
       longitude: 101.456
     }
+    const mockCountry = jest.spyOn(googleMap, 'getCountry')
+    mockCountry.mockReturnValueOnce({
+      data: {
+        results: []
+      }
+    })
+    const mockTimezone = jest.spyOn(googleMap, 'getTimezone')
+    mockTimezone.mockReturnValueOnce({
+      data: {}
+    })
+
     const response = await request(app).post('/').send(requestBody)
 
     expect(response.statusCode).toBe(500)

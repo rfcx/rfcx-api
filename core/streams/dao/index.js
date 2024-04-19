@@ -76,7 +76,12 @@ async function get (idOrWhere, options = {}) {
  * @param {*} options
  */
 async function create (stream, options = {}) {
-  const fullStream = { ...stream, ...(await computedAdditions(stream)) }
+  let additionals = {}
+  // If timezone and countryCode already existing in stream blob then no need to get them again
+  if (!stream.timezone && !stream.countryCode) {
+    additionals = await computedAdditions(stream)
+  }
+  const fullStream = { ...stream, ...additionals }
   if (fullStream.projectId && options.creatableBy && !(await hasPermission(UPDATE, options.creatableBy, fullStream.projectId, PROJECT))) {
     throw new ForbiddenError()
   }
@@ -246,7 +251,21 @@ async function update (id, data, options = {}) {
   if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, STREAM))) {
     throw new ForbiddenError()
   }
-  const fullStream = { ...data, ...(await computedAdditions(data, stream)) }
+  // data.latitude or data.longitude is undefined mean it is not in the updated blob unlike null
+  // So need to assign the current stream latitude or longitude value
+  // If both are undefined mean there is no intention to update coordinate so no need to get additional data for timezone and country code
+  // Avoid change timezone and countryCode to default value
+  let additions = {}
+  if (data.latitude !== undefined || data.longitude !== undefined) {
+    if (data.latitude === undefined) {
+      data.latitude = stream.latitude
+    }
+    if (data.longitude === undefined) {
+      data.longitude = stream.longitude
+    }
+    additions = await computedAdditions(data, stream)
+  }
+  const fullStream = { ...data, ...additions }
   if (fullStream.name) {
     if (stream && stream.project_id && stream.name !== fullStream.name) {
       const duplicateStreamInProject = await query({ names: [fullStream.name], projects: [fullStream.project_id || stream.project_id] }, { fields: 'id', transaction })

@@ -23,7 +23,7 @@ async function createOrUpdate (options) {
   if (classifierJob) {
     where.classifierJobs = [classifierJob]
   }
-  const detections = await query(where, { fields: ['id', 'classification_id', 'classifier_job_id', 'review_status'] })
+  const detections = (await query(where, { fields: ['id', 'classification_id', 'classifier_job_id', 'review_status'] })).results
   if (!detections.length) {
     throw new EmptyResultError('Detection with given parameters not found')
   }
