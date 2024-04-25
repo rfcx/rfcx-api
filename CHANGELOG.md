@@ -1,3 +1,7 @@
+## 1.4.0 (2024-04-xx)
+### Common
+* **core**: Create `GET /detections/summary` and `GET /classifier-id/{jobId}/best-detections/summary` to get detection counts based on each validation status.
+
 ## 1.3.9 (2024-04-xx)
 ### Common
 * **core**: `GET /detections` return `Total-items` in response headers
