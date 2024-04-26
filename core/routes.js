@@ -13,7 +13,8 @@ module.exports = {
     require('./detections/best-detections')
   ],
   detections: [
-    require('./detections')
+    require('./detections'),
+    require('./detections/list-summary')
   ],
   'event-strategies': [
     require('./events/strategies')
