@@ -277,6 +277,9 @@ async function timeAggregatedQuery (start, end, streams, streamsOnlyPublic, clas
 async function queryDetectionsSummary (filters, options) {
   const opts = await defaultQueryOptions(filters, options)
 
+  /**
+   * @type Array<{ review_status: 'null' | -1 | 0 | 1, count: number }>
+   */
   const counts = await Detection.findAll({
     attributes: [
       'review_status',
@@ -292,18 +295,21 @@ async function queryDetectionsSummary (filters, options) {
     }
   })
 
-  const result = {
-    unreviewed: 0,
-    rejected: 0,
-    uncertain: 0,
-    confirmed: 0
-  }
+  /**
+   * @type Record<'null' | -1 | 0 | 1, number | undefined>
+   */
+  const result = {}
 
   counts.forEach(count => {
-    result[_.findKey(REVIEW_STATUS_MAPPING, status => status === count.review_status)] = count.count
+    result[count.review_status] = count.count
   })
 
-  return result
+  return {
+    unreviewed: result[REVIEW_STATUS_MAPPING.unreviewed] || 0,
+    rejected: result[REVIEW_STATUS_MAPPING.rejected] || 0,
+    uncertain: result[REVIEW_STATUS_MAPPING.uncertain] || 0,
+    confirmed: result[REVIEW_STATUS_MAPPING.confirmed] || 0
+  }
 }
 
 const DEFAULT_IGNORE_THRESHOLD = 0.5
