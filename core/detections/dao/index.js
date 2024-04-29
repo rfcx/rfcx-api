@@ -7,7 +7,6 @@ const { toCamelObject } = require('../../_utils/formatters/string-cases')
 const { getAccessibleObjectsIDs, STREAM, PROJECT } = require('../../roles/dao')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const { REVIEW_STATUS_MAPPING } = require('./review')
-const _ = require('lodash')
 
 const availableIncludes = [
   Stream.include(),

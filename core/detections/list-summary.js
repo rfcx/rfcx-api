@@ -105,7 +105,7 @@ router.get('/summary', (req, res) => {
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()
   converter.convert('streams').optional().toArray()
-  converter.convert('projets').optional().toArray()
+  converter.convert('projects').optional().toArray()
   converter.convert('classifications').optional().toArray()
   converter.convert('classifiers').optional().toArray()
   converter.convert('classifier_jobs').optional().toArray()
