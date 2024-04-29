@@ -7,6 +7,7 @@ const { toCamelObject } = require('../../_utils/formatters/string-cases')
 const { getAccessibleObjectsIDs, STREAM, PROJECT } = require('../../roles/dao')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const { REVIEW_STATUS_MAPPING } = require('./review')
+const _ = require('lodash')
 
 const availableIncludes = [
   Stream.include(),
@@ -284,14 +285,25 @@ async function queryDetectionsSummary (filters, options) {
     where: opts.where,
     group: ['"Detection"."review_status"'],
     raw: true
+  }).map(count => {
+    return {
+      review_status: count.review_status === null ? 'null' : count.review_status,
+      count: count.count
+    }
   })
 
-  return {
-    unreviewed: counts.find(c => c.review_status === null)?.count ?? 0,
-    rejected: counts.find(c => c.review_status === -1)?.count ?? 0,
-    uncertain: counts.find(c => c.review_status === 0)?.count ?? 0,
-    confirmed: counts.find(c => c.review_status === 1)?.count ?? 0
+  const result = {
+    unreviewed: 0,
+    rejected: 0,
+    uncertain: 0,
+    confirmed: 0
   }
+
+  counts.forEach(count => {
+    result[_.findKey(REVIEW_STATUS_MAPPING, status => status === count.review_status)] = count.count
+  })
+
+  return result
 }
 
 const DEFAULT_IGNORE_THRESHOLD = 0.5
