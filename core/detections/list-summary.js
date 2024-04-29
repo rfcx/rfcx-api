@@ -39,6 +39,14 @@ const dao = require('./dao')
  *           items:
  *             type: string
  *         example: ['km4ifoutpx9W']
+ *       - name: projects
+ *         description: Limit result to a given project id
+ *         in: query
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         required: false
  *       - name: classifications
  *         description: List of classification values to limit results
  *         in: query
