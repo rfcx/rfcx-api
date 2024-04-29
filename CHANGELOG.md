@@ -1,6 +1,7 @@
 ## 1.3.10 (2024-04-xx)
 ### Common
 * **core**: Create `GET /classifier-jobs/{jobId}/summary/{value}` endpoint
+* **core**: Create `GET /detections/summary` and `GET /classifier-id/{jobId}/best-detections/summary` to get detection counts based on each validation status.
 
 ## 1.3.9 (2024-04-xx)
 ### Common

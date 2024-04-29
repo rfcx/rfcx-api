@@ -1248,5 +1248,32 @@
         "$ref": "#/components/schemas/ClassifierJobReviewStatus"
       }
     }
+  },
+  "DetectionsResultSummary": {
+    "type": "object",
+    "properties": {
+      "unreviewed": {
+        "type": "integer",
+        "example": 183
+      },
+      "confirmed": {
+        "type": "integer",
+        "example": 18
+      },
+      "uncertain": {
+        "type": "integer",
+        "example": 12
+      },
+      "rejected": {
+        "type": "integer",
+        "example": 0
+      }
+    },
+    "required": [
+      "unreviewed",
+      "confirmed",
+      "uncertain",
+      "rejected"
+    ]
   }
 }

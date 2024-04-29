@@ -6,7 +6,7 @@ const Converter = require('../../common/converter')
 /**
  * @swagger
  *
- * /{jobId}/best-detections:
+ * /classifier-jobs/{jobId}/best-detections:
  *   get:
  *     summary: Get list of detections
  *     description:

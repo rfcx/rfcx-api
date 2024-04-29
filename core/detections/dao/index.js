@@ -255,6 +255,62 @@ async function timeAggregatedQuery (start, end, streams, streamsOnlyPublic, clas
     .then(detections => detections.map(propertyToFloat(aggregatedValueAttribute)))
 }
 
+/**
+ * Get a count of detections based on given where options.
+ * @param {*} filters Additional query options
+ * @param {string[]} filters.streams Filter by one or more stream identifiers
+ * @param {string[]} filters.projects Filter by one or more project identifiers
+ * @param {string[]} filters.classifiers Filter by one or more classifier identifiers
+ * @param {string[]} filters.classifications Filter by one or more classification values
+ * @param {string[]} filters.minConfidence Filter by minimum confidence
+ * @param {string[]} filters.isReviewed Filter by reviewed/unreviewed detections
+ * @param {string[]} filters.isPositive Filter by approved/rejected detections
+ * @param {*} options Additional get options
+ * @param {number} options.readableBy Include only if the detection is accessible to the given user id
+ * @param {string[]} options.fields Attributes and relations to include in results (defaults to lite attributes)
+ * @param {boolean} options.descending Order the results in descending date order
+ * @param {number} options.limit
+ * @param {number} options.offset
+ * @returns {Record<'unreviewed' | 'rejected' | 'uncertain' | 'confirmed', number>} Detection counts
+ */
+async function queryDetectionsSummary (filters, options) {
+  const opts = await defaultQueryOptions(filters, options)
+
+  /**
+   * @type Array<{ review_status: 'null' | -1 | 0 | 1, count: number }>
+   */
+  const counts = await Detection.findAll({
+    attributes: [
+      'review_status',
+      [sequelize.literal('COUNT(1)::integer'), 'count']
+    ],
+    where: opts.where,
+    group: ['"Detection"."review_status"'],
+    raw: true
+  }).map(count => {
+    return {
+      review_status: count.review_status === null ? 'null' : count.review_status,
+      count: count.count
+    }
+  })
+
+  /**
+   * @type Record<'null' | -1 | 0 | 1, number | undefined>
+   */
+  const result = {}
+
+  counts.forEach(count => {
+    result[count.review_status] = count.count
+  })
+
+  return {
+    unreviewed: result[REVIEW_STATUS_MAPPING.unreviewed] || 0,
+    rejected: result[REVIEW_STATUS_MAPPING.rejected] || 0,
+    uncertain: result[REVIEW_STATUS_MAPPING.uncertain] || 0,
+    confirmed: result[REVIEW_STATUS_MAPPING.confirmed] || 0
+  }
+}
+
 const DEFAULT_IGNORE_THRESHOLD = 0.5
 
 module.exports = {
@@ -262,5 +318,6 @@ module.exports = {
   query,
   queryBestDetections,
   timeAggregatedQuery,
+  queryDetectionsSummary,
   DEFAULT_IGNORE_THRESHOLD
 }
