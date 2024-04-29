@@ -25,6 +25,9 @@ async function getJobSummaries (classifierJobId, filters, options = {}) {
       [sequelize.Sequelize.Op.iLike]: `%${filters.keyword}%`
     }
   }
+  if (filters.classificationValue) {
+    where['$classification.value$'] = filters.classificationValue
+  }
 
   let order
   if (options.sort) {
