@@ -1,3 +1,7 @@
+## 1.3.10 (2024-04-xx)
+### Common
+* **core**: Create `GET /classifier-jobs/{jobId}/summary/{value}` endpoint
+
 ## 1.3.9 (2024-04-xx)
 ### Common
 * **core**: `GET /detections` return `Total-items` in response headers
