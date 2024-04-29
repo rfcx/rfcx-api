@@ -115,7 +115,7 @@ describe('GET /classifier-jobs/{id}/summary/{value}', () => {
     const response = await request(app).get(`/1928943/summary/${CLASSIFICATION_2.id}`)
 
     expect(response.statusCode).toEqual(404)
-    expect(response.body.message).toEqual('Classifier job or classification value in the job cannot be found.')
+    expect(response.body.message).toEqual('Not Found')
   })
 
   test('returns 404 on classification value outside the classifier', async () => {
