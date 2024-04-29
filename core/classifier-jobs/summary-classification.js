@@ -36,6 +36,8 @@ const { getSummary } = require('./bl/summary')
  *         description: Insufficient priviledges
  *       404:
  *         description: Classifier job not found or classification value not found.
+ *       5XX:
+ *         description: Other unrecoverable errors.
  *
  */
 module.exports = async (req, res) => {
@@ -45,7 +47,7 @@ module.exports = async (req, res) => {
   try {
     const result = await getSummary(req.params.id, { classificationValue: req.params.value }, { readableBy })
     if (result.total === 0 || result.results.classificationsSummary.length === 0) {
-      throw EmptyResultError('Classifier job summary with given `value` not found.')
+      throw new EmptyResultError('Classifier job or classification value in the job cannot be found.')
     }
     return res.json(result.results.classificationsSummary[0])
   } catch (e) {

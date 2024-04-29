@@ -103,9 +103,33 @@ describe('GET /classifier-jobs/{id}/summary/{value}', () => {
     expect(response.body.unreviewed).toEqual(0)
   })
 
-  test.todo('returns 404 on invalid classifier id')
+  test('returns 404 on invalid classifier id', async () => {
+    await models.ClassifierJobSummary.bulkCreate([
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 0 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_2.id, total: 1, confirmed: 0, rejected: 1, uncertain: 0 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_3.id, total: 1, confirmed: 0, rejected: 0, uncertain: 1 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
+      { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
+    ])
 
-  test.todo('returns 404 on classification value outside the classifier')
+    const response = await request(app).get(`/1928943/summary/${CLASSIFICATION_2.id}`)
 
-  test.todo('returns 404 on classification value that does not have any value')
+    expect(response.statusCode).toEqual(404)
+    expect(response.body.message).toEqual('Classifier job or classification value in the job cannot be found.')
+  })
+
+  test('returns 404 on classification value outside the classifier', async () => {
+    await models.ClassifierJobSummary.bulkCreate([
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 0 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_2.id, total: 1, confirmed: 0, rejected: 1, uncertain: 0 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_3.id, total: 1, confirmed: 0, rejected: 0, uncertain: 1 },
+      { classifierJobId: JOB_1.id, classificationId: CLASSIFICATION_4.id, total: 0, confirmed: 0, rejected: 0, uncertain: 0 },
+      { classifierJobId: JOB_2.id, classificationId: CLASSIFICATION_1.id, total: 1, confirmed: 1, rejected: 0, uncertain: 1 }
+    ])
+
+    const response = await request(app).get(`/${JOB_2.id}/summary/${CLASSIFICATION_4.id}`)
+
+    expect(response.statusCode).toEqual(404)
+    expect(response.body.message).toEqual('Classifier job or classification value in the job cannot be found.')
+  })
 })
