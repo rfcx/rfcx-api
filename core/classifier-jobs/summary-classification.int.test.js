@@ -1,4 +1,4 @@
-const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const { truncateNonBase, expressApp, seedValues } = require('../../common/testing/sequelize')
 const models = require('../_models')
 const { WAITING, DONE } = require('./classifier-job-status')
 const routes = require('./index')
