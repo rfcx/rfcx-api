@@ -275,6 +275,14 @@ async function timeAggregatedQuery (start, end, streams, streamsOnlyPublic, clas
  */
 async function queryDetectionsSummary (filters, options) {
   const opts = await defaultQueryOptions(filters, options)
+  const includesWithoutColumns = opts.include.map(i => {
+    return {
+      model: i.model,
+      as: i.as,
+      attributes: [],
+      required: i.required
+    }
+  })
 
   /**
    * @type Array<{ review_status: 'null' | -1 | 0 | 1, count: number }>
@@ -285,6 +293,7 @@ async function queryDetectionsSummary (filters, options) {
       [sequelize.literal('COUNT(1)::integer'), 'count']
     ],
     where: opts.where,
+    include: includesWithoutColumns,
     group: ['"Detection"."review_status"'],
     raw: true
   }).map(count => {

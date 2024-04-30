@@ -261,6 +261,124 @@ describe('GET /detections/summary', () => {
     })
   })
 
+  test('get using classification id', async () => {
+    const { stream, classifier, classification } = await commonSetup()
+
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2023-01-11T00:05:00.000Z',
+      end: '2023-01-11T00:05:05.000Z',
+      confidence: 0.95
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2023-01-11T00:15:00.000Z',
+      end: '2023-01-11T00:15:05.000Z',
+      confidence: 0.95,
+      reviewStatus: -1
+    })
+
+    const query = {
+      start: '2023-01-01T00:00:00.000Z',
+      end: '2023-01-31T23:59:59.999Z',
+      classifications: [classification.value]
+    }
+
+    const response = await request(app).get('/summary').query(query)
+
+    expect(response.statusCode).toEqual(200)
+    expect(response.body).toEqual({
+      unreviewed: 1,
+      rejected: 1,
+      uncertain: 0,
+      confirmed: 0
+    })
+  })
+
+  test('get using project id', async () => {
+    const { stream, classifier, classification } = await commonSetup()
+
+    await models.Detection.create({
+      streamId: stream.id,
+      projectId: stream.projectId,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2023-01-11T00:05:00.000Z',
+      end: '2023-01-11T00:05:05.000Z',
+      confidence: 0.95
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      projectId: stream.projectId,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2023-01-11T00:15:00.000Z',
+      end: '2023-01-11T00:15:05.000Z',
+      confidence: 0.95,
+      reviewStatus: -1
+    })
+
+    const query = {
+      start: '2023-01-01T00:00:00.000Z',
+      end: '2023-01-31T23:59:59.999Z',
+      projects: [stream.projectId]
+    }
+
+    const response = await request(app).get('/summary').query(query)
+
+    expect(response.statusCode).toEqual(200)
+    expect(response.body).toEqual({
+      unreviewed: 1,
+      rejected: 1,
+      uncertain: 0,
+      confirmed: 0
+    })
+  })
+
+  test('get using classifierId', async () => {
+    const { stream, classifier, classification } = await commonSetup()
+
+    await models.Detection.create({
+      streamId: stream.id,
+      projectId: stream.projectId,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2023-01-11T00:05:00.000Z',
+      end: '2023-01-11T00:05:05.000Z',
+      confidence: 0.95
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      projectId: stream.projectId,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2023-01-11T00:15:00.000Z',
+      end: '2023-01-11T00:15:05.000Z',
+      confidence: 0.95,
+      reviewStatus: -1
+    })
+
+    const query = {
+      start: '2023-01-01T00:00:00.000Z',
+      end: '2023-01-31T23:59:59.999Z',
+      classifiers: [classifier.id]
+    }
+
+    const response = await request(app).get('/summary').query(query)
+
+    expect(response.statusCode).toEqual(200)
+    expect(response.body).toEqual({
+      unreviewed: 1,
+      rejected: 1,
+      uncertain: 0,
+      confirmed: 0
+    })
+  })
+
   test('get using unreviewed and confirmed status', async () => {
     const { stream, classifier, classification } = await commonSetup()
 
