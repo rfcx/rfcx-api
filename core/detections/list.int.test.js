@@ -1,11 +1,13 @@
 const request = require('supertest')
 const routes = require('.')
+const detectionsSummaryRoute = require('./list-summary')
 const models = require('../_models')
 const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
+app.use('/', detectionsSummaryRoute)
 
 beforeEach(async () => {
   await truncateNonBase(models)
@@ -656,5 +658,69 @@ describe('GET /detections', () => {
 
     expect(response.statusCode).toBe(400)
     expect(response.body.message).toBe('Validation errors: Parameter \'review_statuses\' should be one of these values: unreviewed, rejected, uncertain, confirmed.')
+  })
+
+  test('calling GET /detections/summary before GET /detections does not lose any fields', async () => {
+    const { stream, classifier, classification } = await commonSetup()
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:00.000Z',
+      end: '2021-05-11T00:05:05.000Z',
+      confidence: 0.99
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:05.000Z',
+      end: '2021-05-11T00:05:10.000Z',
+      confidence: 0.98
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:10.000Z',
+      end: '2021-05-11T00:05:15.000Z',
+      confidence: 0.97
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:15.000Z',
+      end: '2021-05-11T00:05:20.000Z',
+      confidence: 0.96
+    })
+    await models.Detection.create({
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
+      start: '2021-05-11T00:05:20.000Z',
+      end: '2021-05-11T00:05:25.000Z',
+      confidence: 0.95
+    })
+
+    const query = {
+      start: '2021-05-11T00:00:00.000Z',
+      end: '2021-05-11T00:59:59.999Z',
+      fields: [
+        'id',
+        'start',
+        'classification'
+      ]
+    }
+
+    const summaryQuery = await request(app).get('/summary').query({ ...query, fields: undefined })
+    const response = await request(app).get('/').query(query)
+
+    expect(summaryQuery.statusCode).toEqual(200)
+    expect(summaryQuery.body.unreviewed).toEqual(5)
+    expect(response.statusCode).toEqual(200)
+    expect(response.body[0].classification.title).toEqual(classification.title)
+    expect(response.body[0].classification.value).toEqual(classification.value)
+    expect(response.body[0].classification.image).toEqual(null)
   })
 })
