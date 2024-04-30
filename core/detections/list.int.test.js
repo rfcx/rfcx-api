@@ -719,6 +719,8 @@ describe('GET /detections', () => {
     expect(summaryQuery.statusCode).toEqual(200)
     expect(summaryQuery.body.unreviewed).toEqual(5)
     expect(response.statusCode).toEqual(200)
+    expect(response.body[0].id).toBeTruthy()
+    expect(response.body[0].start).toBeTruthy()
     expect(response.body[0].classification.title).toEqual(classification.title)
     expect(response.body[0].classification.value).toEqual(classification.value)
     expect(response.body[0].classification.image).toEqual(null)
