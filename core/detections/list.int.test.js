@@ -1,11 +1,13 @@
 const request = require('supertest')
 const routes = require('.')
+const detectionsSummaryRoute = require('./list-summary')
 const models = require('../_models')
 const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
+app.use('/', detectionsSummaryRoute)
 
 beforeEach(async () => {
   await truncateNonBase(models)

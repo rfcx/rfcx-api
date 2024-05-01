@@ -5,6 +5,7 @@
 
 ### Bug Fixes
 * **core**: Fix `GET /detections/summary` does not receive proper includes.
+* **core**: Fix when calling `GET /detections/summary` before `GET /detections` results in not all attributes from other tables not being returned.
 
 ## 1.3.9 (2024-04-xx)
 ### Common
