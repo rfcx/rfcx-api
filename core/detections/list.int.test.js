@@ -659,6 +659,4 @@ describe('GET /detections', () => {
     expect(response.statusCode).toBe(400)
     expect(response.body.message).toBe('Validation errors: Parameter \'review_statuses\' should be one of these values: unreviewed, rejected, uncertain, confirmed.')
   })
-
-  test.todo('calling GET /detections/summary before GET /detections does not lose any fields')
 })

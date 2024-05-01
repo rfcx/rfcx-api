@@ -46,7 +46,6 @@ describe('PATCH /classifiers/:id', () => {
     const requestBody = { status: 20 }
 
     const response = await request(regularUserApp).patch('/x').send(requestBody)
-    console.info(response)
 
     expect(response.statusCode).toBe(403)
     expect(console.warn).toHaveBeenCalled()
