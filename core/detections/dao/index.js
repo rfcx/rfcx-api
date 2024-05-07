@@ -103,11 +103,11 @@ async function defaultQueryOptions (filters = {}, options = {}) {
  * @returns {Detection[]} Detections
  */
 async function queryBestDetections (filters, opts) {
-  const { user, limit, offset } = opts
+  const { user, limit, offset, fields } = opts
   const { streams, reviewStatuses } = filters
   const where = {}
   const bestDetectionsWhere = { classifierJobId: filters.classifierJobId }
-  const attributes = Detection.attributes.lite
+  const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.lite
 
   bestDetectionsWhere.start = {
     [Sequelize.Op.gte]: filters.start,

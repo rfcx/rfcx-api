@@ -244,6 +244,29 @@ test('should respect review statuses', async () => {
   expect(items[1].id).toBe(stream1Day3BestDetection.id)
 })
 
+test('fields support works as expected', async () => {
+  const query = {
+    by_date: true,
+    n_per_stream: 2,
+    fields: [
+      'id',
+      'confidence',
+      'start',
+      'review_status'
+    ]
+  }
+
+  const response = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query(query)
+  const items = response.body
+
+  expect(items[0].id).toBeDefined()
+  expect(items[0].confidence).toBeDefined()
+  expect(items[0].start).toBeDefined()
+  expect(items[0].review_status).toBeDefined()
+  expect(items[0].classification).toBeDefined()
+  expect(items[0].end).not.toBeDefined()
+})
+
 test('should respect pagination parameters for dayly request', async () => {
   const query = {
     by_date: true,

@@ -50,6 +50,11 @@ const Converter = require('../../common/converter')
  *         in: query
  *         type: int
  *         default: 100
+ *       - name: fields
+ *         description: Return additional fields from current or other models, Support fields from `Detection` and `Classification` models.
+ *         in: query
+ *         required: false
+ *         type: string[]
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -85,15 +90,17 @@ router.get('/:jobId/best-detections', (req, res) => {
   converter.convert('n_per_stream').default(1).toInt().maximum(10)
   converter.convert('limit').optional().toInt().maximum(1000)
   converter.convert('offset').optional().toInt()
+  converter.convert('fields').optional().toArray()
 
   return converter.validate()
     .then(async (filters) => {
-      const { limit, offset } = filters
+      const { limit, offset, fields } = filters
       filters.classifierJobId = jobId
       const options = {
         user,
         limit,
-        offset
+        offset,
+        fields
       }
       const result = await dao.queryBestDetections(filters, options)
 
