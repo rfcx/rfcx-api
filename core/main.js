@@ -7,6 +7,7 @@ require('../common/error-handling/process')
 // Check required env vars are set
 require('../common/config')
 
+const winston = require('winston')
 // Load application
 const app = require('./app')
 
@@ -18,3 +19,33 @@ const server = app.listen(port, () => {
 
 server.keepAliveTimeout = 61 * 1000
 server.headersTimeout = 70 * 1000 // This should be bigger than `keepAliveTimeout + your server's expected response time`
+
+const emergencyLogger = winston.createLogger({
+  transports: [
+    new winston.transports.Console()
+  ],
+  format: winston.format.combine(
+    winston.format.simple()
+  )
+})
+
+process.on('unhandledRejection', (reason, p) => {
+  emergencyLogger.error('Unhandled Rejection at:', p, 'reason:', reason)
+
+  process.exit(1)
+})
+
+process.on('uncaughtException', (error) => {
+  emergencyLogger.error(`Uncaught exception: ${error.stack}`)
+
+  process.exit(1)
+})
+
+function handle (signal) {
+  emergencyLogger.error(`Received ${signal}, exiting`)
+
+  process.exit(1)
+}
+
+process.on('SIGINT', handle)
+process.on('SIGTERM', handle)
