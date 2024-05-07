@@ -7,6 +7,9 @@
 * **core**: Fix `GET /detections/summary` does not receive proper includes.
 * **core**: Fix when calling `GET /detections/summary` before `GET /detections` results in not all attributes from other tables not being returned.
 
+### Features
+* **core**: Create `GET /classifier-jobs/:jobId/best-detections` now support `fields` query parameters for `Detection` model.
+
 ## 1.3.9 (2024-04-xx)
 ### Common
 * **core**: `GET /detections` return `Total-items` in response headers
