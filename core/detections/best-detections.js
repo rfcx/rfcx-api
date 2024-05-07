@@ -51,7 +51,7 @@ const Converter = require('../../common/converter')
  *         type: int
  *         default: 100
  *       - name: fields
- *         description: Return additional fields from current or other models, Support fields from `Detection` and `Classification` models.
+ *         description: Return additional fields from current or other models, Support fields from `Detection` model.
  *         in: query
  *         required: false
  *         type: string[]
