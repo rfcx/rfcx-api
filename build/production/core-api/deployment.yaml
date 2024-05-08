@@ -39,3 +39,4 @@ spec:
             cpu: "0.5"
         ports:
         - containerPort: 80
+      terminationGracePeriodSeconds: 30
