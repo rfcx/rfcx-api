@@ -47,7 +47,7 @@ function handle (signal) {
 
   server.close((error) => {
     if (error) {
-      emergencyLogger.error('Failed to gracefully shutdown server with error', error)
+      emergencyLogger.error(`Failed to gracefully shutdown server with error ${error.stack}`)
       process.exit(1)
     }
 
