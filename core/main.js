@@ -1,5 +1,6 @@
 console.info('info: Core: Starting...')
 const startTime = new Date()
+const { sequelize } = require('./_models')
 
 // Handle unhandled promises
 require('../common/error-handling/process')
@@ -44,7 +45,16 @@ process.on('uncaughtException', (error) => {
 function handle (signal) {
   emergencyLogger.error(`Received ${signal}, exiting`)
 
-  process.exit(1)
+  server.close((error) => {
+    if (error) {
+      emergencyLogger.error(`Failed to gracefully shutdown server with error ${error.stack}`)
+      process.exit(1)
+    }
+
+    sequelize.close()
+
+    process.exit()
+  })
 }
 
 process.on('SIGINT', handle)
