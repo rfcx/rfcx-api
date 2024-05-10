@@ -17,6 +17,8 @@ module.exports.saveBestDetections = async function cacheBestDetections (classifi
     jobEnd: classifierJob.queryEnd
   }
 
+  console.info(`creating best detections with replacements ${JSON.stringify(replacements)}`)
+
   await sequelize.query(`
     INSERT INTO public.best_detections
     SELECT
@@ -40,4 +42,6 @@ module.exports.saveBestDetections = async function cacheBestDetections (classifi
     replacements,
     type: sequelize.QueryTypes.RAW
   })
+
+  console.info(`creating best detections with replacements for job ${classifierJob.id} finished successfully`)
 }

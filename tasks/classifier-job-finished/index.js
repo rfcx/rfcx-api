@@ -11,10 +11,13 @@ const { updateBestDetections } = require('../../core/detections/bl/index')
  */
 async function performTask (payload) {
   const { jobId } = payload
+  console.info(`starting classifier-job-finished task for job ${jobId}`)
 
   const job = await getJob(jobId, { fields: ['id', 'query_start', 'query_end', 'classifier_id', 'streams'] })
   await updateSummary(job)
+  console.info(`updateSummary have finished for job ${jobId}`)
   await updateBestDetections(job)
+  console.info(`updateBestDetections have finished for job ${jobId}`)
 
   return true
 }
