@@ -3,6 +3,80 @@ const { httpErrorHandler } = require('../../common/error-handling/http')
 const router = require('express').Router()
 const dao = require('./dao')
 
+/**
+ * @swagger
+ *
+ * /classifier-jobs/{jobId}/best-detections/summary:
+ *   get:
+ *     summary: Get a summary of each detections based on given filters
+ *     description:
+ *     tags:
+ *       - detections
+ *     parameters:
+ *       - name: jobId
+ *         description: Classifier job id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: 100
+ *       - name: by_date
+ *         description: Find best detections per each date (instead of whole period)
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *         default: false
+ *         example: true
+ *       - name: start
+ *         description: Limit a start date on or after (iso8601 or epoch). Can only be passed in when `by_date` is set to `true`.
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         example: 2024-01-01T00:00:00.000Z
+ *       - name: end
+ *         description: Limit an end date before (iso8601 or epoch). Can only be passed in when `by_date` is set to `true`.
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         example: 2024-01-01T05:00:00.000Z
+ *       - name: review_statuses
+ *         description: Return only parts of calculations for given validation status, Other parts of the calculation will be 0. Possible values are `'rejected' | 'uncertain' | 'confirmed' | 'unreviewed'`
+ *         in: query
+ *         required: false
+ *         explode: true
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         example: [unreviewed, rejected]
+ *       - name: n_per_stream
+ *         description: Maximum number of results per stream (and per day if `by_date` is set to `true`)
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *           minimum: 1
+ *           maximum: 10
+ *         default: 1
+ *
+ *     responses:
+ *       200:
+ *         description: Object with parameters of each review status with their counts by given filters.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DetectionsResultSummary'
+ *       400:
+ *         deescription: Cannot retrieve summary for `best per streams` with date ranges (`start` or `end` is given when `by_date` is false). Or other invalid query parameter errors.
+ *       5XX:
+ *         description: Other unrecoverable errors.
+ */
 router.get('/:jobId/best-detections/summary', (req, res) => {
   const user = req.rfcx.auth_token_info
 

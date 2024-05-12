@@ -35,7 +35,7 @@ const Converter = require('../../common/converter')
  *         type: string
  *         example: 2020-01-01T00:00:00.000Z
  *       - name: end
- *         description: Limit a start date before (iso8601 or epoch)
+ *         description: Limit an end date before (iso8601 or epoch)
  *         in: query
  *         required: false
  *         type: string
