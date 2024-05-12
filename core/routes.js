@@ -10,7 +10,8 @@ module.exports = {
   ],
   'classifier-jobs': [
     require('./classifier-jobs'),
-    require('./detections/best-detections')
+    require('./detections/best-detections'),
+    require('./detections/best-detections-summary')
   ],
   detections: [
     require('./detections'),

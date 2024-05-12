@@ -88,21 +88,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
   return { where, include, attributes, offset, limit, order }
 }
 
-/**
- * Get a list of best detections matching the filters
- * @param {*} filters Query options
- * @param {number} filters.classifierJobId Job Id for which we want to find the best detections
- * @param {string[]} filters.streams Filter by one or more stream identifiers
- * @param {boolean} filters.byDate find best results for each date
- * @param {Date} filters.start Find detections with start >= filters.start
- * @param {Date} filters.end Find detections with start < filters.end
- * @param {string[]} filters.reviewStatuses Filter by review status = passed status
- * @param {number} filters.nPerStream Maximum number of results per stream (and per day if by_date is set)
- * @param {*} options Additional get options
- * @param {User} options.user User that is requesting detections
- * @returns {Detection[]} Detections
- */
-async function queryBestDetections (filters, opts) {
+async function defaultBestDetectionsQueryOptions (filters, opts) {
   const { user, limit, offset, fields } = opts
   const { streams, reviewStatuses } = filters
   const where = {}
@@ -190,16 +176,76 @@ async function queryBestDetections (filters, opts) {
     ]
   }
 
-  return await pagedQuery(Detection, {
-    where,
-    attributes,
-    include,
-    order,
-    limit,
-    offset
-  })
+  return { where, attributes, include, order, limit, offset }
 }
 
+/**
+ * Get a list of best detections matching the filters
+ * @param {*} filters Query options
+ * @param {number} filters.classifierJobId Job Id for which we want to find the best detections
+ * @param {string[]} filters.streams Filter by one or more stream identifiers
+ * @param {boolean} filters.byDate find best results for each date
+ * @param {Date} filters.start Find detections with start >= filters.start
+ * @param {Date} filters.end Find detections with start < filters.end
+ * @param {string[]} filters.reviewStatuses Filter by review status = passed status
+ * @param {number} filters.nPerStream Maximum number of results per stream (and per day if by_date is set)
+ * @param {*} options Additional get options
+ * @param {User} options.user User that is requesting detections
+ * @returns {Detection[]} Detections
+ */
+async function queryBestDetections (filters, options) {
+  const opts = await defaultBestDetectionsQueryOptions(filters, options)
+  return await pagedQuery(Detection, opts)
+}
+
+/**
+ * Get a summary of best detections matching the filters
+ * @param {*} filters Query options
+ * @param {number} filters.classifierJobId Job Id for which we want to find the best detections
+ * @param {string[]} filters.streams Filter by one or more stream identifiers
+ * @param {boolean} filters.byDate find best results for each date
+ * @param {Date} filters.start Find detections with start >= filters.start
+ * @param {Date} filters.end Find detections with start < filters.end
+ * @param {string[]} filters.reviewStatuses Filter by review status = passed status
+ * @param {number} filters.nPerStream Maximum number of results per stream (and per day if by_date is set)
+ * @param {*} options Additional get options
+ * @param {User} options.user User that is requesting detections
+ * @returns {Record<'unreviewed' | 'rejected' | 'uncertain' | 'confirmed', number>} Detections
+ */
+async function queryBestDetectionsSummary (filters, options) {
+  const opts = await defaultBestDetectionsQueryOptions(filters, options)
+  const includesWithoutAdditionColumns = opts.include.map(i => ({
+    ...i,
+    attributes: []
+  }))
+
+  const counts = await Detection.findAll({
+    attributes: [
+      'review_status',
+      [sequelize.literal('COUNT(1)::integer'), 'count']
+    ],
+    where: opts.where,
+    include: includesWithoutAdditionColumns,
+    group: ['"Detection"."review_status"'],
+    raw: true
+  })
+
+  /**
+   * @type Record<'null' | -1 | 0 | 1, number | undefined>
+   */
+  const result = {}
+
+  counts.forEach(count => {
+    result[count.review_status] = count.count
+  })
+
+  return {
+    unreviewed: result[REVIEW_STATUS_MAPPING.unreviewed] || 0,
+    rejected: result[REVIEW_STATUS_MAPPING.rejected] || 0,
+    uncertain: result[REVIEW_STATUS_MAPPING.uncertain] || 0,
+    confirmed: result[REVIEW_STATUS_MAPPING.confirmed] || 0
+  }
+}
 /**
  * Get a list of detections matching the filters
  * @param {*} filters Additional query options
@@ -319,6 +365,7 @@ module.exports = {
   availableIncludes,
   query,
   queryBestDetections,
+  queryBestDetectionsSummary,
   timeAggregatedQuery,
   queryDetectionsSummary,
   DEFAULT_IGNORE_THRESHOLD
