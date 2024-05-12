@@ -1,7 +1,8 @@
 ## 1.3.10 (2024-04-xx)
 ### Common
 * **core**: Create `GET /classifier-jobs/{jobId}/summary/{value}` endpoint
-* **core**: Create `GET /detections/summary` and `GET /classifier-id/{jobId}/best-detections/summary` to get detection counts based on each validation status.
+* **core**: Create `GET /detections/summary` to get detection counts based on each validation status.
+* **core**: Create `GET /classifier-id/{jobId}/best-detections/summary` to get detection counts when calling best detections endpoint.
 
 ### Bug Fixes
 * **core**: Fix `GET /detections/summary` does not receive proper includes.
