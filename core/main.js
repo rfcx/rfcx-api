@@ -1,12 +1,14 @@
 console.info('info: Core: Starting...')
 const startTime = new Date()
-const { sequelize } = require('./_models')
 
 // Handle unhandled promises
 require('../common/error-handling/process')
 
 // Check required env vars are set
 require('../common/config')
+
+// must initialize config before requiring sequelize
+const { sequelize } = require('./_models')
 
 const winston = require('winston')
 // Load application
