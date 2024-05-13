@@ -64,6 +64,15 @@ const dao = require('./dao')
  *           minimum: 1
  *           maximum: 10
  *         default: 1
+ *       - name: streams
+ *         description: Limit response results to a given stream ids
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         example: ['x9ekbilso331']
  *
  *     responses:
  *       200:
