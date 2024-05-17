@@ -31,7 +31,7 @@ function getOptions (type) {
 
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'staging') {
     options.logging = function (str, timings) {
-      console.info(`\n${type} query--------------------\n${str} \nTimings: ${timings?.bind != null ? JSON.stringify(timings.bind) : '[]'}\n----------------------------------`)
+      console.info(`\n${type} query--------------------\n${str} \nBind parameters: ${timings?.bind != null ? JSON.stringify(timings.bind) : '[]'}\n----------------------------------`)
     }
   }
   return options
