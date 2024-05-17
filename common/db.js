@@ -30,8 +30,8 @@ function getOptions (type) {
   }
 
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'staging') {
-    options.logging = function (str) {
-      console.info(`\n${type} query--------------------\n${str}\n----------------------------------`)
+    options.logging = function (str, timings) {
+      console.info(`\n${type} query--------------------\n${str} ${timings?.bind != null ? Object.values(timings.bind) : '[]'}\n----------------------------------`)
     }
   }
   return options
