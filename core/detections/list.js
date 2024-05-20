@@ -74,11 +74,6 @@ const Converter = require('../../common/converter')
  *     responses:
  *       200:
  *         description: List of detection (lite) objects
- *         headers:
- *           Total-Items:
- *             schema:
- *               type: integer
- *             description: Total number of items without limit and offset.
  *         content:
  *           application/json:
  *             schema:
@@ -116,7 +111,7 @@ router.get('/', (req, res) => {
         user
       }
       const result = await dao.query(filters, options)
-      return res.header('Total-Items', result.total).json(result.results)
+      return res.json(result.results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 })
