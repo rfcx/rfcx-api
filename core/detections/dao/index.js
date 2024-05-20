@@ -266,7 +266,11 @@ async function queryBestDetectionsSummary (filters, options) {
  */
 async function query (filters, options) {
   const opts = await defaultQueryOptions(filters, options)
-  return await pagedQuery(Detection, opts)
+  const data = await Detection.findAll(opts)
+
+  return {
+    results: data.map((r) => r.toJSON())
+  }
 }
 
 /**

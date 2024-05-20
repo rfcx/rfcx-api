@@ -1,3 +1,7 @@
+## 1.3.11 (2024-05-xx)
+### Features
+* **core**: Remove 'total-items' header from `GET /detections` endpoint to reduce latency
+
 ## 1.3.10 (2024-04-xx)
 ### Common
 * **core**: Create `GET /classifier-jobs/{jobId}/summary/{value}` endpoint

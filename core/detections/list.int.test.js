@@ -51,7 +51,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
   })
   test('get 1 by classifier_jobs', async () => {
@@ -91,7 +90,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection3.start.toISOString())
   })
@@ -132,7 +130,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('2')
     expect(response.body.length).toBe(2)
     expect(response.body[0].start).toBe(detection2.start.toISOString())
     expect(response.body[1].start).toBe(detection3.start.toISOString())
@@ -187,7 +184,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('3')
     expect(response.body.length).toBe(3)
     expect(response.body[0].start).toBe(detection2.start.toISOString())
     expect(response.body[1].start).toBe(detection3.start.toISOString())
@@ -242,7 +238,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection2.start.toISOString())
   })
@@ -295,7 +290,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection3.start.toISOString())
   })
@@ -348,7 +342,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection4.start.toISOString())
   })
@@ -401,7 +394,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('1')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection.start.toISOString())
   })
@@ -454,7 +446,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('2')
     expect(response.body.length).toBe(2)
     expect(response.body[0].start).toBe(detection.start.toISOString())
     expect(response.body[1].start).toBe(detection3.start.toISOString())
@@ -512,7 +503,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('5')
     expect(response.body.length).toBe(2)
     expect(response.body[0].start).toBe(detection1.start.toISOString())
     expect(response.body[1].start).toBe(detection2.start.toISOString())
@@ -569,7 +559,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('5')
     expect(response.body.length).toBe(3)
     expect(response.body[0].start).toBe(detection3.start.toISOString())
     expect(response.body[1].start).toBe(detection4.start.toISOString())
@@ -629,7 +618,6 @@ describe('GET /detections', () => {
     const response = await request(app).get('/').query(query)
 
     expect(response.statusCode).toBe(200)
-    expect(response.headers['total-items']).toBe('5')
     expect(response.body.length).toBe(1)
     expect(response.body[0].start).toBe(detection4.start.toISOString())
   })
