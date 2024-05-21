@@ -45,15 +45,18 @@ process.on('uncaughtException', (error) => {
 })
 
 function handle (signal) {
-  emergencyLogger.error(`Received ${signal}, exiting`)
+  emergencyLogger.error(`Received SIGNAL ${signal}, exiting`)
 
-  server.close((error) => {
+  server.close(async (error) => {
     if (error) {
       emergencyLogger.error(`Failed to gracefully shutdown server with error ${error.stack}`)
       process.exit(1)
     }
+    emergencyLogger.info('Succesfully closed the server')
 
-    sequelize.close()
+    await sequelize.close()
+
+    emergencyLogger.info('Succesfully closed the sequelize')
 
     process.exit()
   })
