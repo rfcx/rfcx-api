@@ -60,7 +60,7 @@ router.post('/:streamId/detections/:start/review', (req, res) => {
       const { status, classification, classifier, classifierJob } = params
       return await createOrUpdate({ userId, streamId, start, status, classification, classifier, classifierJob })
     })
-    .then(() => res.send(200))
+    .then(() => res.sendStatus(200))
     .catch(httpErrorHandler(req, res, 'Failed reviewing the detection'))
 })
 
