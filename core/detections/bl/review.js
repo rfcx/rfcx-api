@@ -45,17 +45,12 @@ async function createOrUpdate (options) {
       }
 
       /**
-       * @type {{ start: string, streamId: string, classifierId: number, classificationId: number, classifierJobId?: number }}
+       * @type {{ start: string, streamId: string, id: string }}
        */
       const whereOptionsToUpdate = {
         start,
         streamId,
-        classifierId: classifier,
-        classificationId: detection.classification_id
-      }
-
-      if (classifierJob) {
-        whereOptionsToUpdate.classifierJobId = classifierJob
+        id: detection.id
       }
 
       const updatedStatus = await refreshDetectionReviewStatus(detection.id, whereOptionsToUpdate, transaction)

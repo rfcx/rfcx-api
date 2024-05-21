@@ -2,7 +2,7 @@ const { Detection } = require('../../_models')
 
 /**
  * Update detection
- * @param {{ start: string, streamId: string, classificationId: number, classifierId: number, classifierJobId?: number }} where where options
+ * @param {{ id: string, start: string, streamId: string, classificationId?: number, classifierId?: number, classifierJobId?: number }} where where options
  * @param {Detection} detection
  * @param {string} detection.reviewStatus
  * @param {*} options
