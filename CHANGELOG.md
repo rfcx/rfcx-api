@@ -1,6 +1,7 @@
 ## 1.3.11 (2024-05-xx)
 ### Features
 * **core**: Remove 'total-items' header from `GET /detections` endpoint to reduce latency
+* **core**: Fix endpoint `POST /streams/{id}/detections/{start}/review` to use `classifierId`, `classifierJobId`, and `classificationId` to update the detection status in `detections` table.
 
 ## 1.3.10 (2024-04-xx)
 ### Common
