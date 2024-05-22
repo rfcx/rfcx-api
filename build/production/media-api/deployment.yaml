@@ -15,7 +15,8 @@ spec:
       containers:
       - name: media-api
         image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-api:latest
-        args: ["yarn", "start:core"]
+        command: ["yarn"]
+        args: ["start:core"]
         readinessProbe:
           httpGet:
             path: /health-check
