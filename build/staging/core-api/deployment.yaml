@@ -15,8 +15,8 @@ spec:
       containers:
       - name: core-api
         image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-api:latest
-        command: ["yarn"]
-        args: ["start:core"]
+        command: ["node"]
+        args: ["core/main.js"]
         readinessProbe:
           httpGet:
             path: /health-check

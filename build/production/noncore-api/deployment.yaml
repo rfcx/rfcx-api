@@ -15,8 +15,8 @@ spec:
       containers:
       - name: noncore-api
         image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/noncore-api:latest
-        command: ["yarn"]
-        args: ["start:noncore"]
+        command: ["node"]
+        args: ["noncore/main.js"]
         readinessProbe:
           httpGet:
             path: /v1/health-check
