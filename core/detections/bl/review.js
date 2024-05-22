@@ -86,7 +86,7 @@ async function createOrUpdate (options) {
 async function refreshDetectionReviewStatus (detectionId, where, transaction) {
   const { n, u, p } = await countReviewsForDetection(detectionId, transaction)
   const reviewStatus = calculateReviewStatus(n, u, p)
-  await update(where, { reviewStatus }, { transaction })
+  await update(where.streamId, where.id, where.start, { reviewStatus }, { transaction })
   return reviewStatus
 }
 
