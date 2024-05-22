@@ -15,7 +15,8 @@ spec:
       containers:
         - name: noncore-mqtt
           image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/noncore-mqtt:latest
-          args: ["yarn", "start:mqtt"]
+          command: ["node"]
+          args: ["mqtt/main.js"]
           envFrom:
             - secretRef:
                 name: noncore-secrets
