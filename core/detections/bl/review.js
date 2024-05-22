@@ -104,7 +104,7 @@ async function countReviewsForDetection (detectionId, transaction) {
  * Calculates the review status of the detection from multiple reviewers.
  * @param {number} n count of reviews by users marked as `rejected`
  * @param {number} u count of reviews by users marked as `uncertain`
- * @param {number} p count of reviews by users marked as `present`
+ * @param {number} p count of reviews by users marked as `confirmed`
  *
  * @returns {-1 | 1 | null | 0} the validation status calculated from given counts of each review status on one detection.
  */
