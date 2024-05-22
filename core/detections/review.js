@@ -9,7 +9,7 @@ const Converter = require('../../common/converter')
  * /streams/{streamId}/detections/{start}/review:
  *   post:
  *     summary: Review a detection
- *     description: Creates or updates reviews for any detections matching stream and start
+ *     description: Creates or updates a review for a detection matching stream, start, classification value, classifier, and classifier job.
  *     tags:
  *       - detections
  *     parameters:
@@ -18,34 +18,36 @@ const Converter = require('../../common/converter')
  *         in: path
  *         required: true
  *         type: string
+ *         example: mmx2039d8fl1
  *       - name: start
  *         description: Segment start timestamp (compact iso8601 or epoch)
  *         in: path
  *         required: true
- *         type: string
- *       - name: status
- *         description: Review status ('rejected', 'uncertain', 'confirmed', 'unreviewed')
- *         in: query
- *         type: string
- *       - name: classification
- *         description: Classification value
- *         in: query
- *         required: true
- *         type: string
- *       - name: classifier
- *         description: Classifier id
- *         in: query
- *         required: true
- *         type: number
- *       - name: classifier_job
- *         description: Classifier job id
- *         in: query
- *         type: number
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         example: 2023-08-12T12:28:25.000Z
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: '#/components/requestBodies/DetectionReviewBody'
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/requestBodies/DetectionReviewBody'
  *     responses:
  *       200:
  *         description: Success
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: 'OK'
  *       400:
  *         description: Invalid query parameters
+ *       5XX:
+ *         description: Other irrecoverable errors
  */
 router.post('/:streamId/detections/:start/review', (req, res) => {
   const userId = req.rfcx.auth_token_info.id
