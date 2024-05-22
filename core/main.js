@@ -52,11 +52,11 @@ function handle (signal) {
       emergencyLogger.error(`Failed to gracefully shutdown server with error ${error.stack}`)
       process.exit(1)
     }
-    emergencyLogger.info('Succesfully closed the server')
+    emergencyLogger.info(`On SIGNAL ${signal} succesfully closed the server`)
 
     await sequelize.close()
 
-    emergencyLogger.info('Succesfully closed the sequelize')
+    emergencyLogger.info(`On SIGNAL ${signal} Succesfully closed the sequelize`)
 
     process.exit()
   })
