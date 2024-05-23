@@ -2769,6 +2769,57 @@ describe('POST /:streamId/detections/:start/review', () => {
         expect(detectionUpdated.reviewStatus).toBe(0)
       })
     })
+
+    test('detection with same date, different model outputs under one project can be validated correctly', async () => {
+      const { stream, classification, classification2, classification3, classifier, job } = await commonSetup()
+
+      const start = '2022-04-01T12:00:00.000Z'
+      const end = '2022-04-01T12:00:05.000Z'
+      const detection = await models.Detection.create({
+        streamId: stream.id,
+        classificationId: classification.id,
+        classifierId: classifier.id,
+        start,
+        end,
+        confidence: 0.81,
+        classifierJobId: job.id
+      })
+      const detection2 = await models.Detection.create({
+        streamId: stream.id,
+        classificationId: classification2.id,
+        classifierId: classifier.id,
+        start,
+        end,
+        confidence: 0.81,
+        classifierJobId: job.id
+      })
+      const detection3 = await models.Detection.create({
+        streamId: stream.id,
+        classificationId: classification3.id,
+        classifierId: classifier.id,
+        start,
+        end,
+        confidence: 0.81,
+        classifierJobId: job.id
+      })
+      const body = {
+        status: 'confirmed',
+        classification: classification2.value,
+        classifier: classifier.id,
+        classifier_job: job.id
+      }
+
+      await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
+      const updatedDetection = await models.Detection.findOne({ where: { id: detection2.toJSON().id } })
+
+      // The desired detection gets updated correctly
+      expect(detection2.reviewStatus).toEqual(null)
+      expect(updatedDetection.reviewStatus).toEqual(1)
+
+      // Surrounded detections with same date did not get updated
+      expect(detection.reviewStatus).toEqual(null)
+      expect(detection3.reviewStatus).toEqual(null)
+    })
   })
   describe('classifier job summary refresh', () => {
     test('updates confirmed to 1', async () => {

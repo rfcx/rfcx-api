@@ -3,15 +3,17 @@ const { Detection } = require('../../_models')
 
 /**
  * Update detection
- * @param {string} streamId
- * @param {string} start
+ * @param {string} streamId stream id
+ * @param {string} detectionId detection id
+ * @param {string} start segment start time of a detection
  * @param {Detection} detection
  * @param {string} detection.reviewStatus
  * @param {*} options
- * @param {Transaction} options.transaction Transaction for sql chain
+ * @param {options.transaction} options.transaction Transaction for sql chain
+ * @returns {Promise<void>} nothing to return
  * @throws EmptyResultError when detection not found
  */
-async function update (streamId, start, detection, options = {}) {
+async function update (streamId, detectionId, start, detection, options = {}) {
   const allowedDetection = {}
   const allowedUpdates = ['reviewStatus']
   allowedUpdates.forEach(k => {
@@ -19,9 +21,11 @@ async function update (streamId, start, detection, options = {}) {
       allowedDetection[k] = detection[k]
     }
   })
+
   const transaction = options.transaction || null
   return await Detection.update(allowedDetection, {
     where: {
+      id: detectionId,
       streamId,
       start: moment.utc(start).valueOf()
     },

@@ -254,6 +254,45 @@
       }
     }
   },
+  "DetectionReviewBody": {
+    "type": "object",
+    "description": "The body of the detection review endpoint.",
+    "properties": {
+      "status": {
+        "description": "The status you wanted to review the detection to",
+        "type": "string",
+        "enum": [
+          "unreviewed",
+          "rejected",
+          "uncertain",
+          "confirmed"
+        ],
+        "example": "unreviewed"
+      },
+      "classification": {
+        "description": "The classification value of the detection you wanted to review",
+        "type": "string",
+        "example": "scirlus_vulgaris_simple_call_1"
+      },
+      "classifier": {
+        "description": "Classifier id",
+        "type": "integer",
+        "format": "int32",
+        "example": "32"
+      },
+      "classifier_job": {
+        "description": "Optional classifier job id",
+        "type": "integer",
+        "format": "int32",
+        "example": "116"
+      }
+    },
+    "required": [
+      "status",
+      "classification",
+      "classifier"
+    ]
+  },
   "Detection": {
     "type": "object",
     "properties": {

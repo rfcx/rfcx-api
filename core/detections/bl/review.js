@@ -43,7 +43,17 @@ async function createOrUpdate (options) {
           review = await reviewsDao.create({ detectionId: detection.id, userId, status }, { transaction })
         }
       }
-      const updatedStatus = await refreshDetectionReviewStatus(detection.id, streamId, start, transaction)
+
+      /**
+       * @type {{ start: string, streamId: string, id: string }}
+       */
+      const whereOptionsToUpdate = {
+        start,
+        streamId,
+        id: detection.id
+      }
+
+      const updatedStatus = await refreshDetectionReviewStatus(detection.id, whereOptionsToUpdate, transaction)
       // Update summary if reviewStatus changed
       if (updatedStatus !== detection.review_status) {
         const updatedStatusLabel = DetectionReview.statusMapping[`${updatedStatus}`] // used for increment
@@ -64,10 +74,19 @@ async function createOrUpdate (options) {
   })
 }
 
-async function refreshDetectionReviewStatus (detectionId, streamId, start, transaction) {
+/**
+ * Refresh the review status of the detection inside `detections` table reflected from
+ * reviews from multiple persons inside `detection_reviews` table.
+ * @param {string} detectionId the detection id
+ * @param {object} where where options the same as the where clause used to find the detection to update
+ * @param {object} transaction Sequelize's transaction object
+ *
+ * @returns {Promise<-1 | 1 | null | 0>} final review status
+ */
+async function refreshDetectionReviewStatus (detectionId, where, transaction) {
   const { n, u, p } = await countReviewsForDetection(detectionId, transaction)
   const reviewStatus = calculateReviewStatus(n, u, p)
-  await update(streamId, start, { reviewStatus }, { transaction })
+  await update(where.streamId, where.id, where.start, { reviewStatus }, { transaction })
   return reviewStatus
 }
 
@@ -81,6 +100,14 @@ async function countReviewsForDetection (detectionId, transaction) {
   return { n, u, p }
 }
 
+/**
+ * Calculates the review status of the detection from multiple reviewers.
+ * @param {number} n count of reviews by users marked as `rejected`
+ * @param {number} u count of reviews by users marked as `uncertain`
+ * @param {number} p count of reviews by users marked as `confirmed`
+ *
+ * @returns {-1 | 1 | null | 0} the validation status calculated from given counts of each review status on one detection.
+ */
 function calculateReviewStatus (n, u, p) {
   if (n > u && n > p) {
     return -1
