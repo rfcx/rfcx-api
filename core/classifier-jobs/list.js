@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const { query } = require('./dao')
+const { list } = require('./bl')
 const Converter = require('../../common/converter')
 
 /**
@@ -68,19 +68,21 @@ module.exports = (req, res) => {
   converter.convert('offset').default(0).toInt()
   converter.convert('sort').optional().toString()
   converter.convert('fields').optional().toArray()
+  converter.convert('query_streams').optional().toString()
+  converter.convert('query_start').optional().toMomentUtc()
+  converter.convert('query_end').optional().toMomentUtc()
+  converter.convert('query_hours').optional().toString()
 
   return converter.validate()
     .then(async params => {
-      const { status, projects, limit, offset, sort, fields } = params
-
+      const { status, projects, limit, offset, sort, fields, queryStreams, queryStart, queryEnd, queryHours } = params
       const user = req.rfcx.auth_token_info
       const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
       const createdBy = params.createdBy === 'me' ? readableBy : undefined
 
-      const filters = { projects, status, createdBy }
+      const filters = { projects, status, createdBy, queryStreams, queryStart, queryEnd, queryHours }
       const options = { readableBy, limit, offset, sort, fields }
-      const { total, results } = await query(filters, options)
-
+      const { total, results } = await list(filters, options)
       return res.header('Access-Control-Expose-Headers', 'Total-Items').header('Total-Items', total).json(results)
     })
     .catch(httpErrorHandler(req, res))

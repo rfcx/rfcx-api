@@ -33,13 +33,64 @@ async function query (filters = {}, options = {}) {
   // Early return if projectIds set, but empty (no accessible projects)
   if (projectIds && projectIds.length === 0) { return { total: 0, results: [] } }
 
+  let queryStreamsFilter = {}
+  if (filters.queryStreams) {
+    const filterCause = filters.queryStreams.split(',').map((stream) => {
+      return {
+        queryStreams: {
+          [Sequelize.Op.iLike]: `%${stream}%`
+        }
+      }
+    })
+    queryStreamsFilter = {
+      [Sequelize.Op.or]: [...filterCause]
+    }
+  }
+
+  let queryTimeFilter = {}
+  if (filters.queryStart) {
+    queryTimeFilter = {
+      queryStart: {
+        [Sequelize.Op.gte]: filters.queryStart.valueOf()
+      }
+    }
+  }
+  if (filters.queryEnd) {
+    queryTimeFilter = {
+      queryEnd: {
+        [Sequelize.Op.lte]: filters.queryEnd.valueOf()
+      }
+    }
+  }
+  if (filters.queryStart && filters.queryEnd) {
+    queryTimeFilter = {
+      [Sequelize.Op.and]: [
+        {
+          queryStart: {
+            [Sequelize.Op.lte]: filters.queryStart.valueOf()
+          }
+        },
+        {
+          queryEnd: {
+            [Sequelize.Op.gte]: filters.queryEnd.valueOf()
+          }
+        }
+      ]
+    }
+  }
+
   const where = {
     ...projectIds && { projectId: { [Sequelize.Op.in]: projectIds } },
     ...filters.status !== undefined && { status: filters.status },
-    ...filters.createdBy !== undefined && { createdById: filters.createdBy }
+    ...filters.createdBy !== undefined && { createdById: filters.createdBy },
+    ...queryStreamsFilter,
+    ...queryTimeFilter
   }
 
   const attributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
+  if (filters.queryHours) {
+    attributes.push('query_hours') // need for post-process
+  }
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
   const order = getSortFields(options.sort || '-created_at')
 
