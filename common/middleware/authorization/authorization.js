@@ -3,7 +3,6 @@ const auth0Service = require('../../auth0')
 const passport = require('passport')
 passport.use(require('../passport-token').TokenStrategy)
 passport.use('jwt', require('../passport-jwt').JwtStrategy)
-passport.use('jwt-custom', require('../passport-jwt').JwtStrategyCustom)
 passport.use('stream-token', require('../passport-stream-token'))
 
 // Factory method to create a token type authorization middleware
@@ -23,7 +22,7 @@ function requireTokenType (type) {
  * Creates a middleware for checking if user has one or more of the roles
  * How to use:
  * var hasRole = require('..../common/middleware/authorization/authorization').hasRole;
- * router.route("/").get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) { ... })
+ * router.route("/").get(passport.authenticate(['token', 'jwt'], { session:false }), hasRole(['rfcxUser']), function(req, res) { ... })
  * @param {Array<String>} expectedRoles
  */
 function hasRole (expectedRoles) {
@@ -46,13 +45,13 @@ function hasRole (expectedRoles) {
  * @param  {...String} roles
  */
 function authenticatedWithRoles (...roles) {
-  return [passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(roles)]
+  return [passport.authenticate(['jwt'], { session: false }), hasRole(roles)]
 }
 
 /**
  * Creates a middleware that checks the user is authenticated (with JWT or stream-token)
  */
-function authenticate (strategies = ['jwt', 'jwt-custom', 'stream-token']) {
+function authenticate (strategies = ['jwt', 'stream-token']) {
   return passport.authenticate(strategies, { session: false })
 }
 

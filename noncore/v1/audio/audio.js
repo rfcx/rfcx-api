@@ -75,7 +75,7 @@ function filter (req) {
 }
 
 router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return audioService.queryData(req)
       .then((data) => {
         res.status(200).send(data)
@@ -111,7 +111,7 @@ router.route('/download/zip')
   })
 
 router.route('/:audio_id')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     models.GuardianAudio
       .findOne({
         where: { guid: req.params.audio_id },
@@ -135,7 +135,7 @@ router.route('/:audio_id')
   })
 
 router.route('/nextafter/:audio_id')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     models.GuardianAudio
       .findOne({
         where: { guid: req.params.audio_id },
@@ -179,7 +179,7 @@ router.route('/nextafter/:audio_id')
   })
 
 router.route('/prevbefore/:audio_id')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     models.GuardianAudio
       .findOne({
         where: { guid: req.params.audio_id },

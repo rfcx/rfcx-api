@@ -17,7 +17,7 @@ const { EmptyResultError, ForbiddenError } = require('../../../common/error-hand
 const views = require('../../views/v1')
 
 router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), function (req, res) {
     const user = req.rfcx.auth_token_info
     const converter = new Converter(req.query, {}, true)
     converter.convert('project').optional().toString()
@@ -42,7 +42,7 @@ router.route('/')
   })
 
 router.route('/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), function (req, res) {
     return guardiansService.getGuardianByGuid(req.params.guid)
       .then((guardian) => {
         res.send(guardiansService.formatGuardian(guardian))
@@ -53,7 +53,7 @@ router.route('/:guid')
   })
 
 router.route('/:guid')
-  .patch(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+  .patch(passport.authenticate(['token', 'jwt'], { session: false }), function (req, res) {
     const user = req.rfcx.auth_token_info
     const updatableBy = user.is_super || user.has_system_role ? undefined : user.id
     const converter = new Converter(req.body, {})
@@ -128,7 +128,7 @@ router.route('/:guid')
   })
 
 router.route('/register')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), async function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), async function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 

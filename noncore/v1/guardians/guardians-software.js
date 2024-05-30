@@ -10,7 +10,7 @@ const hasRole = require('../../../common/middleware/authorization/authorization'
 const guardiansService = require('../../../noncore/_services/guardians/guardians-service')
 
 router.route('/:guid/software')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const query = `
       SELECT soft.role as role, ver.version as version, metaver.software_id
       FROM "GuardianMetaSoftwareVersions" AS metaver
@@ -50,7 +50,7 @@ router.route('/:guid/software')
   })
 
 router.route('/:guid/software/preferences')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), (req, res) => {
     models.Guardian.findOne({ where: { guid: req.params.guid } })
       .then(function (dbGuardian) {
         if (!dbGuardian) {

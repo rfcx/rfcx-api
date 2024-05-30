@@ -9,7 +9,7 @@ const hasRole = require('../../../common/middleware/authorization/authorization'
 const Converter = require('../../../common/converter')
 
 router.route('/generate-with-pdfmake')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
