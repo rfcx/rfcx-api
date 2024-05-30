@@ -49,9 +49,9 @@ const Converter = require('../../common/converter')
  *                 properties:
  *                   id:
  *                     description: The id of the detection that gets reviewed
- *                     example: 1218122
+ *                     example: "1218122"
  *                     schema:
- *                       type: number
+ *                       type: string
  *                       format: int64
  *                   status:
  *                     description: The status of the detection that gets reviewed
@@ -63,7 +63,7 @@ const Converter = require('../../common/converter')
  *                         - "uncertain"
  *                         - "confirmed"
  *                     example: "unreviewed"
- *             example: [{"id":1218123,"value":"unreviewed"},{"id":1213994,"value":"confirmed"}]
+ *             example: [{"id":"1218123","value":"unreviewed"},{"id":"1213994","value":"confirmed"}]
  *
  *       400:
  *         description: Invalid query parameters
@@ -83,9 +83,7 @@ router.post('/:streamId/detections/:start/review', (req, res) => {
       const { status, classification, classifier, classifierJob } = params
       return await createOrUpdate({ userId, streamId, start, status, classification, classifier, classifierJob })
     })
-    .then((status) => {
-      res.send(status)
-    })
+    .then((status) => res.send(status))
     .catch(httpErrorHandler(req, res, 'Failed reviewing the detection'))
 })
 

@@ -28,7 +28,7 @@ async function createOrUpdate (options) {
     throw new EmptyResultError('Detection with given parameters not found')
   }
   const status = reviewsDao.REVIEW_STATUS_MAPPING[options.status]
-  const finalReviewStatus = sequelize.transaction(async (transaction) => {
+  const finalReviewStatuses = sequelize.transaction(async (transaction) => {
     /**
      * @type {Array<{ id: number, status: 'unreviewed' | 'rejected' | 'uncertain' | 'confirmed'}>}
      */
@@ -82,8 +82,10 @@ async function createOrUpdate (options) {
       }
     }
 
-    return finalReviewStatus
+    return finalReviewStatuses
   })
+
+  return finalReviewStatuses
 }
 
 /**
