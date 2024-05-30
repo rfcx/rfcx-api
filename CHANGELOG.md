@@ -1,4 +1,8 @@
-## 1.3.12 (2024-05-xx)
+## 1.3.13 (2024-05-xx)
+### Features
+* **core**: Add param `query_streams` `query_start` `query_end` `query_hours` to `GET /classifier-jobs` endpoint
+
+## 1.3.12 (2024-05-30)
 ### Common
 * **core**: Remove `jwt-custom` and merge custom into list
 
