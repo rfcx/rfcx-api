@@ -49,15 +49,15 @@ const Converter = require('../../common/converter')
  *       - name: query_start
  *         description: Start date with format YYYY-MM-DD of recordings that being used
  *         in: query
- *         type: array
+ *         type: date
  *       - name: query_end
  *         description: End date with format YYYY-MM-DD of recordings that being used
  *         in: query
- *         type: array
+ *         type: date
  *       - name: query_hours
  *         description: Hours ranges with format (1 or 0-23 or 2,3,4 or 2,4,5-10) of recordings that being used
  *         in: query
- *         type: array
+ *         type: string
  *     responses:
  *       200:
  *         description: List of classifier jobs objects
