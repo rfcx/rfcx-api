@@ -28,7 +28,12 @@ async function createOrUpdate (options) {
     throw new EmptyResultError('Detection with given parameters not found')
   }
   const status = reviewsDao.REVIEW_STATUS_MAPPING[options.status]
-  return sequelize.transaction(async (transaction) => {
+  const finalReviewStatus = sequelize.transaction(async (transaction) => {
+    /**
+     * @type {Array<{ id: number, status: 'unreviewed' | 'rejected' | 'uncertain' | 'confirmed'}>}
+     */
+    const finalReviewStatuses = []
+
     for (const detection of detections) {
       let review = (await reviewsDao.query({ detectionIds: [detection.id], userId }, { fields: ['id'], transaction }))[0]
       const exists = !!review
@@ -54,6 +59,11 @@ async function createOrUpdate (options) {
       }
 
       const updatedStatus = await refreshDetectionReviewStatus(detection.id, whereOptionsToUpdate, transaction)
+      finalReviewStatuses.push({
+        id: detection.id,
+        status: DetectionReview.statusMapping[`${updatedStatus}`] === 'null' ? 'unreviewed' : DetectionReview.statusMapping[`${updatedStatus}`]
+      })
+
       // Update summary if reviewStatus changed
       if (updatedStatus !== detection.review_status) {
         const updatedStatusLabel = DetectionReview.statusMapping[`${updatedStatus}`] // used for increment
@@ -71,6 +81,8 @@ async function createOrUpdate (options) {
         }
       }
     }
+
+    return finalReviewStatus
   })
 }
 
