@@ -1,3 +1,7 @@
+## 1.3.12 (2024-05-xx)
+### Common
+* **core**: Remove `jwt-custom` and merge custom into list
+
 ## 1.3.11 (2024-05-xx)
 ### Features
 * **core**: Remove 'total-items' header from `GET /detections` endpoint to reduce latency
