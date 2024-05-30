@@ -1,3 +1,7 @@
+## 1.3.12 (2024-06-xx)
+### Features
+* **core**: Endpoint `POST /streams/:streamId/detections/:start/review` now returns the review status and id of the detection that has been reviewed in the call.
+
 ## 1.3.11 (2024-05-xx)
 ### Features
 * **core**: Remove 'total-items' header from `GET /detections` endpoint to reduce latency
