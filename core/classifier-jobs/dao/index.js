@@ -48,31 +48,19 @@ async function query (filters = {}, options = {}) {
   }
 
   let queryTimeFilter = {}
-  if (filters.queryStart) {
-    queryTimeFilter = {
-      queryStart: {
-        [Sequelize.Op.gte]: filters.queryStart.valueOf()
-      }
-    }
-  }
-  if (filters.queryEnd) {
-    queryTimeFilter = {
-      queryEnd: {
-        [Sequelize.Op.lte]: filters.queryEnd.valueOf()
-      }
-    }
-  }
-  if (filters.queryStart && filters.queryEnd) {
+  if (filters.queryStart || filters.queryEnd) {
+    const start = filters.queryStart || filters.queryEnd
+    const end = filters.queryEnd || filters.queryStart
     queryTimeFilter = {
       [Sequelize.Op.and]: [
         {
           queryStart: {
-            [Sequelize.Op.lte]: filters.queryStart.valueOf()
+            [Sequelize.Op.lte]: start.valueOf()
           }
         },
         {
           queryEnd: {
-            [Sequelize.Op.gte]: filters.queryEnd.valueOf()
+            [Sequelize.Op.gte]: end.valueOf()
           }
         }
       ]

@@ -125,6 +125,7 @@ async function list (filters = {}, options = {}) {
       return isHoursOverlapped(jobQueryHours, hourRanges)
     })
     jobs.results = filteredJobs
+    jobs.total = filteredJobs.length
   }
   return jobs
 }
