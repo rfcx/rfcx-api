@@ -9,7 +9,7 @@ const Converter = require('../../../common/converter')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 
-router.get('/:guardian_id/meta/segments', passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), (req, res) => {
+router.get('/:guardian_id/meta/segments', passport.authenticate(['token', 'jwt'], { session: false }), (req, res) => {
   const guardianGuid = req.params.guardian_id
   const segmentType = req.query.segment_type || ''
   const startingAfter = req.rfcx.starting_after || ''
@@ -32,7 +32,7 @@ router.get('/:guardian_id/meta/segments', passport.authenticate(['token', 'jwt',
   })
 })
 
-router.get('/:guardian_id/meta/sensors', passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), (req, res) => {
+router.get('/:guardian_id/meta/sensors', passport.authenticate(['token', 'jwt'], { session: false }), (req, res) => {
   const guardianGuid = req.params.guardian_id
   const params = new Converter(req.query, {}, true)
   params.convert('sensor_components').optional().toArray().default([])
@@ -88,7 +88,7 @@ router.get('/:guardian_id/meta/sensors', passport.authenticate(['token', 'jwt', 
 })
 
 router.route('/:guardian_id/meta/:meta_type')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), (req, res) => {
     const metaType = req.params.meta_type
     const modelLookUp = {
       cpu: {

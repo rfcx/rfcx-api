@@ -11,7 +11,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 router.use(takeContentTypeFromFileExtMiddleware)
 
 router.route('/:guardian_id/audio')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), function (req, res) {
     models.Guardian
       .findOne({
         where: { guid: req.params.guardian_id }
@@ -58,7 +58,7 @@ router.route('/:guardian_id/audio')
   })
 
 router.route('/:guardian_id/audio')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), function (req, res) {
     models.Guardian
       .findOne({
         where: { guid: req.params.guardian_id }
@@ -93,7 +93,7 @@ router.route('/:guardian_id/audio')
   })
 
 router.route('/:guardian_id/audio/withmeta')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), function (req, res) {
     ['codec', 'mime', 'file_extension', 'sample_rate', 'bit_rate', 'is_vbr', 'channel_count'].forEach((meta) => {
       if (!req.body[meta]) {
         throw new Error(`"${meta}" attribute is required`)
