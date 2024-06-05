@@ -1,6 +1,7 @@
 ## 1.3.12 (2024-06-xx)
 ### Features
 * **core**: Endpoint `POST /streams/:streamId/detections/:start/review` now returns the review status and id of the detection that has been reviewed in the call.
+* **core**: Create unique constraint of `(detection_id, user_id)` inside `detection_reviews` table.
 
 ### Common
 * **core**: Remove `jwt-custom` and merge custom into list
