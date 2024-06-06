@@ -271,4 +271,220 @@ describe('GET /classifier-jobs', () => {
     expect(response.body[1].id).toBe(job2.id)
     expect(response.body[2].id).toBe(job1.id)
   })
+
+  test('respects query_streams 1', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    const job1 = await models.ClassifierJob.create({ queryStreams: 'stream1', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job3 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_streams: 'stream1' })
+    expect(response.body).toHaveLength(3)
+    expect(response.headers['total-items']).toBe('3')
+    expect(response.body[0].id).toBe(job3.id)
+    expect(response.body[1].id).toBe(job2.id)
+    expect(response.body[2].id).toBe(job1.id)
+  })
+
+  test('respects query_streams 2', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ queryStreams: 'stream1', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job3 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_streams: 'stream2' })
+    expect(response.body).toHaveLength(2)
+    expect(response.headers['total-items']).toBe('2')
+    expect(response.body[0].id).toBe(job3.id)
+    expect(response.body[1].id).toBe(job2.id)
+  })
+
+  test('respects query_streams 3', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ queryStreams: 'stream1', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job3 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_streams: 'stream3' })
+    expect(response.body).toHaveLength(1)
+    expect(response.headers['total-items']).toBe('1')
+    expect(response.body[0].id).toBe(job3.id)
+  })
+
+  test('respects query_streams 4', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ queryStreams: 'stream1', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job3 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_streams: 'stream2,stream3' })
+    expect(response.body).toHaveLength(2)
+    expect(response.headers['total-items']).toBe('2')
+    expect(response.body[0].id).toBe(job3.id)
+    expect(response.body[1].id).toBe(job2.id)
+  })
+
+  test('respects query_start 1', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    const job1 = await models.ClassifierJob.create({ queryStreams: 'stream1', queryStart: '2024-01-01', queryEnd: '2024-01-02', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', queryStart: '2024-01-02', queryEnd: '2024-01-03', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', queryStart: '2024-01-03', queryEnd: '2024-01-04', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_start: '2024-01-01' })
+    expect(response.body).toHaveLength(1)
+    expect(response.headers['total-items']).toBe('1')
+    expect(response.body[0].id).toBe(job1.id)
+  })
+
+  test('respects query_start 2', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    const job1 = await models.ClassifierJob.create({ queryStreams: 'stream1', queryStart: '2024-01-01', queryEnd: '2024-01-02', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', queryStart: '2024-01-02', queryEnd: '2024-01-03', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', queryStart: '2024-01-03', queryEnd: '2024-01-04', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_start: '2024-01-02' })
+    expect(response.body).toHaveLength(2)
+    expect(response.headers['total-items']).toBe('2')
+    expect(response.body[0].id).toBe(job2.id)
+    expect(response.body[1].id).toBe(job1.id)
+  })
+
+  test('respects query_start 3', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ queryStreams: 'stream1', queryStart: '2024-01-01', queryEnd: '2024-01-02', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', queryStart: '2024-01-02', queryEnd: '2024-01-03', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job3 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', queryStart: '2024-01-03', queryEnd: '2024-01-04', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_start: '2024-01-03' })
+    expect(response.body).toHaveLength(2)
+    expect(response.headers['total-items']).toBe('2')
+    expect(response.body[0].id).toBe(job3.id)
+    expect(response.body[1].id).toBe(job2.id)
+  })
+
+  test('respects query_end 1', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ queryStreams: 'stream1', queryStart: '2024-01-01', queryEnd: '2024-01-02', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', queryStart: '2024-01-02', queryEnd: '2024-01-03', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', queryStart: '2024-01-03', queryEnd: '2024-01-04', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_end: '2024-01-05' })
+    expect(response.body).toHaveLength(0)
+  })
+
+  test('respects query_end 2', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ queryStreams: 'stream1', queryStart: '2024-01-01', queryEnd: '2024-01-02', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', queryStart: '2024-01-02', queryEnd: '2024-01-03', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job3 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', queryStart: '2024-01-03', queryEnd: '2024-01-04', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_end: '2024-01-03' })
+    expect(response.body).toHaveLength(2)
+    expect(response.headers['total-items']).toBe('2')
+    expect(response.body[0].id).toBe(job3.id)
+    expect(response.body[1].id).toBe(job2.id)
+  })
+
+  test('respects query_end 3', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    const job1 = await models.ClassifierJob.create({ queryStreams: 'stream1', queryStart: '2024-01-01', queryEnd: '2024-01-02', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', queryStart: '2024-01-02', queryEnd: '2024-01-03', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', queryStart: '2024-01-03', queryEnd: '2024-01-04', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_end: '2024-01-02' })
+    expect(response.body).toHaveLength(2)
+    expect(response.headers['total-items']).toBe('2')
+    expect(response.body[0].id).toBe(job2.id)
+    expect(response.body[1].id).toBe(job1.id)
+  })
+
+  test('respects query_hours 1', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    const job1 = await models.ClassifierJob.create({ queryStreams: 'stream1', queryStart: '2024-01-01', queryEnd: '2024-01-02', queryHours: '1-3', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', queryStart: '2024-01-02', queryEnd: '2024-01-03', queryHours: '9-14', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', queryStart: '2024-01-03', queryEnd: '2024-01-04', queryHours: '20-22', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response1 = await request(app).get('/').query({ query_hours: '1' })
+
+    expect(response1.body).toHaveLength(4)
+    expect(response1.headers['total-items']).toBe('4')
+    expect(response1.body[0].id).toBe(job1.id)
+
+    const response2 = await request(app).get('/').query({ query_hours: '2-3' })
+
+    expect(response2.body).toHaveLength(4)
+    expect(response2.headers['total-items']).toBe('4')
+    expect(response2.body[0].id).toBe(job1.id)
+
+    const response3 = await request(app).get('/').query({ query_hours: '3' })
+
+    expect(response3.body).toHaveLength(1)
+    expect(response3.headers['total-items']).toBe('1')
+    expect(response3.body[0].id).toBe(job1.id)
+  })
+
+  test('respects query_hours 2', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ queryStreams: 'stream1', queryStart: '2024-01-01', queryEnd: '2024-01-02', queryHours: '1-3', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', queryStart: '2024-01-02', queryEnd: '2024-01-03', queryHours: '9-14', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', queryStart: '2024-01-03', queryEnd: '2024-01-04', queryHours: '20-22', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response1 = await request(app).get('/').query({ query_hours: '9' })
+
+    expect(response1.body).toHaveLength(1)
+    expect(response1.headers['total-items']).toBe('1')
+    expect(response1.body[0].id).toBe(job2.id)
+
+    const response2 = await request(app).get('/').query({ query_hours: '9-10' })
+
+    expect(response2.body).toHaveLength(1)
+    expect(response2.headers['total-items']).toBe('1')
+    expect(response2.body[0].id).toBe(job2.id)
+
+    const response3 = await request(app).get('/').query({ query_hours: '13-19' })
+
+    expect(response3.body).toHaveLength(2)
+    expect(response3.headers['total-items']).toBe('2')
+    expect(response3.body[0].id).toBe(job2.id)
+    expect(response3.body[1].id).toBe(JOB_2.id)
+  })
+
+  test('respects all queries params', async () => {
+    const classifierId = CLASSIFIER_1.id
+    const projectId = PROJECT_1.id
+    // Waiting cancel jobs (3)
+    await models.ClassifierJob.create({ queryStreams: 'stream1', queryStart: '2024-01-01', queryEnd: '2024-01-02', queryHours: '1-3', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    const job2 = await models.ClassifierJob.create({ queryStreams: 'stream1,stream2', queryStart: '2024-01-02', queryEnd: '2024-01-03', queryHours: '9-14', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ queryStreams: 'stream1,stream2,stream3', queryStart: '2024-01-03', queryEnd: '2024-01-04', queryHours: '20-22', status: AWAITING_CANCELLATION, classifierId, projectId, createdById: seedValues.otherUserId })
+
+    const response = await request(app).get('/').query({ query_streams: 'stream2', query_start: '2024-01-02', query_end: '2024-01-02', query_hours: '2-4,5-8,12-14,16,17' })
+
+    expect(response.body).toHaveLength(1)
+    expect(response.headers['total-items']).toBe('1')
+    expect(response.body[0].id).toBe(job2.id)
+  })
 })

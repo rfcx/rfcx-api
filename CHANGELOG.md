@@ -1,8 +1,10 @@
-## 1.3.12 (2024-06-xx)
+## 1.3.13 (2024-05-xx)
 ### Features
+* **core**: Add param `query_streams` `query_start` `query_end` `query_hours` to `GET /classifier-jobs` endpoint
 * **core**: Endpoint `POST /streams/:streamId/detections/:start/review` now returns the review status and id of the detection that has been reviewed in the call.
 * **core**: Create unique constraint of `(detection_id, user_id)` inside `detection_reviews` table.
 
+## 1.3.12 (2024-05-30)
 ### Common
 * **core**: Remove `jwt-custom` and merge custom into list
 
