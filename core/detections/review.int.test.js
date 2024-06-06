@@ -2844,12 +2844,12 @@ describe('POST /:streamId/detections/:start/review', () => {
         })
         await DetectionReview.create({
           detectionId: detection.toJSON().id,
-          userId: seedValues.otherUserId,
+          userId: seedValues.anotherUserId,
           status: -1
         })
         await DetectionReview.create({
           detectionId: detection.toJSON().id,
-          userId: seedValues.otherUserId,
+          userId: seedValues.differentUserId,
           status: -1
         })
 
@@ -2885,17 +2885,17 @@ describe('POST /:streamId/detections/:start/review', () => {
         })
         await DetectionReview.create({
           detectionId: detection.toJSON().id,
-          userId: seedValues.otherUserId,
+          userId: seedValues.anotherUserId,
           status: 1
         })
         await DetectionReview.create({
           detectionId: detection.toJSON().id,
-          userId: seedValues.primaryUserId,
+          userId: seedValues.differentUserId,
           status: -1
         })
         await DetectionReview.create({
           detectionId: detection.toJSON().id,
-          userId: seedValues.otherUserId,
+          userId: seedValues.primaryUserId,
           status: -1
         })
 
