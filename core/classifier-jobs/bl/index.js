@@ -148,14 +148,14 @@ function rangeToDaytimeHoursArray (range) {
     return [startRange]
   }
 
+  let currentHour = startRange
   const hours = [startRange]
-  let nextHour = startRange
-  while (hours.at(-1) !== endRange) {
-    nextHour += 1
-    if (nextHour === 24) {
-      nextHour = 0
+  while (currentHour !== endRange) {
+    currentHour += 1
+    if (currentHour === 24) {
+      currentHour = 0
     }
-    hours.push(nextHour)
+    hours.push(currentHour)
   }
   return hours
 }
