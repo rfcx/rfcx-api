@@ -12,7 +12,7 @@ module.exports = {
     await queryInterface.sequelize.query(`
       ALTER TABLE
         "public"."detection_reviews"
-      DROP CONSTRAINT detection_reviews_unique_detection_id_user_id_constraint IF EXISTS
+      DROP CONSTRAINT IF EXISTS detection_reviews_unique_detection_id_user_id_constraint IF EXISTS
     `)
   }
 }
