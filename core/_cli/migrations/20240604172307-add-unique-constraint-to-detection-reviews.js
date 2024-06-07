@@ -4,8 +4,8 @@ const Sequelize = require('sequelize')
 
 module.exports = {
   up: async (queryInterface) => {
-    // Remove duplicates off of the `detection_reviews` table before creating the constraint.
     await queryInterface.sequelize.transaction(async tx => {
+      // Remove duplicates off of the `detection_reviews` table before creating the constraint.
       const recordsWithDuplicates = await queryInterface.sequelize.query(`
         SELECT
           MAX(id) as first_id,
@@ -34,13 +34,14 @@ module.exports = {
           transaction: tx
         })
       }
-    })
 
-    await queryInterface.sequelize.query(`
-      ALTER TABLE
-        "public"."detection_reviews"
-      ADD CONSTRAINT detection_reviews_unique_detection_id_user_id_constraint UNIQUE (detection_id, user_id)
-    `)
+      // Creating the unique constraint for the table
+      await queryInterface.sequelize.query(`
+        ALTER TABLE
+          "public"."detection_reviews"
+        ADD CONSTRAINT detection_reviews_unique_detection_id_user_id_constraint UNIQUE (detection_id, user_id)
+      `, { transaction: tx })
+    })
   },
   down: async (queryInterface) => {
     await queryInterface.sequelize.query(`
