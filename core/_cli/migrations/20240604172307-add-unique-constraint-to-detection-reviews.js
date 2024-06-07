@@ -7,7 +7,7 @@ module.exports = {
     // Remove duplicates off of the `detection_reviews` table before creating the constraint.
     const recordsWithDuplicates = await queryInterface.sequelize.query(`
       SELECT
-        MIN(id) as first_id,
+        MAX(id) as first_id,
         detection_id,
         user_id,
         COUNT(*)
