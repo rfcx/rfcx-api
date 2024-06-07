@@ -1,6 +1,6 @@
 'use strict'
 
-const { QueryTypes } = require('sequelize')
+const Sequelize = require('sequelize')
 
 module.exports = {
   up: async (queryInterface) => {
@@ -10,11 +10,11 @@ module.exports = {
         MIN(id) as first_id,
         detection_id,
         user_id,
-        count(*)
-        from detection_reviews
+        COUNT(*)
+      FROM detection_reviews
       GROUP BY detection_id, user_id
       HAVING COUNT(*) > 1;
-    `, { type: QueryTypes.RAW })
+    `, { type: Sequelize.QueryTypes.SELECT })
 
     for (const record of recordsWithDuplicates) {
       await queryInterface.sequelize.query(`
