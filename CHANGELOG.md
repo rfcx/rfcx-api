@@ -4,6 +4,9 @@
 * **core**: Endpoint `POST /streams/:streamId/detections/:start/review` now returns the review status and id of the detection that has been reviewed in the call.
 * **core**: Create unique constraint of `(detection_id, user_id)` inside `detection_reviews` table.
 
+### Bug Fixes
+* **core**: Throw an error if stream from Arbimon site creation missing `site_id`
+
 ## 1.3.12 (2024-05-30)
 ### Common
 * **core**: Remove `jwt-custom` and merge custom into list
