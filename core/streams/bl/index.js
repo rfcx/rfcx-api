@@ -50,6 +50,9 @@ async function create (params, options = {}) {
     try {
       const arbimonSite = { ...fullStream, country_code: fullStream.countryCode }
       const externalSite = await arbimonService.createSite(arbimonSite, options.idToken)
+      if (!externalSite.site_id) {
+        throw new Error('site_id is missing in Arbimon stream creation response')
+      }
       fullStream.externalId = externalSite.site_id
     } catch (error) {
       console.error(`Error creating site in Arbimon (stream: ${fullStream.id})`)
