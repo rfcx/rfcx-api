@@ -90,7 +90,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
 
 async function defaultBestDetectionsQueryOptions (filters, opts) {
   const { user, limit, offset, fields } = opts
-  const { streams, reviewStatuses } = filters
+  const { streams, classifications, reviewStatuses } = filters
   const where = {}
   const bestDetectionsWhere = { classifierJobId: filters.classifierJobId }
   const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.lite
@@ -120,6 +120,13 @@ async function defaultBestDetectionsQueryOptions (filters, opts) {
     bestDetectionsWhere.streamId = streamIds
   }
 
+  let byClassicication = false
+  if (classifications) {
+    byClassicication = true
+
+    bestDetectionsWhere.classificationId = classifications
+  }
+
   if (reviewStatuses !== undefined) {
     where.reviewStatus = reviewStatusesFilter(reviewStatuses)
   }
@@ -134,47 +141,56 @@ async function defaultBestDetectionsQueryOptions (filters, opts) {
   }
 
   let order = []
-  if (filters.byDate) {
-    bestDetectionsWhere.dailyRanking = { [Sequelize.Op.lte]: filters.nPerStream }
 
-    include.push({
-      model: BestDetection,
-      required: true,
-      as: 'bestDetection',
-      attributes: ['daily_ranking', 'stream_ranking'],
-      where: bestDetectionsWhere,
-      on: {
-        start: sequelize.where(sequelize.col('Detection.start'), Sequelize.Op.eq, sequelize.col('bestDetection.start')),
-        detectionId: sequelize.where(sequelize.col('Detection.id'), Sequelize.Op.eq, sequelize.col('bestDetection.detection_id'))
-      }
-    })
+  const bestDetectionInclude = {
+    model: BestDetection,
+    required: true,
+    where: bestDetectionsWhere,
+    attributes: [],
+    as: 'bestDetection',
+    on: {
+      start: sequelize.where(sequelize.col('Detection.start'), Sequelize.Op.eq, sequelize.col('bestDetection.start')),
+      detectionId: sequelize.where(sequelize.col('Detection.id'), Sequelize.Op.eq, sequelize.col('bestDetection.detection_id'))
+    }
+  }
 
-    order = [
-      [sequelize.fn('date', sequelize.fn('timezone', 'UTC', sequelize.col('Detection.start'))), 'ASC'],
-      ['stream_id', 'ASC'],
-      [{ model: BestDetection, as: 'bestDetection' }, 'daily_ranking', 'ASC']
-    ]
-  } else {
-    bestDetectionsWhere.streamRanking = { [Sequelize.Op.lte]: filters.nPerStream }
-
-    include.push({
-      model: BestDetection,
-      required: true,
-      where: bestDetectionsWhere,
-      attributes: ['daily_ranking', 'stream_ranking'],
-      order: ['stream_ranking'],
-      as: 'bestDetection',
-      on: {
-        on1: sequelize.where(sequelize.col('Detection.start'), Sequelize.Op.eq, sequelize.col('bestDetection.start')),
-        on2: sequelize.where(sequelize.col('Detection.id'), Sequelize.Op.eq, sequelize.col('bestDetection.detection_id'))
-      }
-    })
+  const byDate = filters.byDate
+  if (!byClassicication && !byDate) {
+    bestDetectionsWhere.streamRanking = { [Sequelize.Op.lte]: filters.nPerChunk }
+    bestDetectionInclude.attributes = ['stream_ranking']
 
     order = [
       ['stream_id', 'ASC'],
       [{ model: BestDetection, as: 'bestDetection' }, 'stream_ranking', 'ASC']
     ]
+  } else if (!byClassicication && byDate) {
+    bestDetectionsWhere.streamDailyRanking = { [Sequelize.Op.lte]: filters.nPerChunk }
+    bestDetectionInclude.attributes = ['stream_daily_ranking']
+
+    order = [
+      [sequelize.fn('date', sequelize.fn('timezone', 'UTC', sequelize.col('Detection.start'))), 'ASC'],
+      ['stream_id', 'ASC'],
+      [{ model: BestDetection, as: 'bestDetection' }, 'stream_daily_ranking', 'ASC']
+    ]
+  } else if (byClassicication && !byDate) {
+    bestDetectionsWhere.streamClassificationRanking = { [Sequelize.Op.lte]: filters.nPerChunk }
+    bestDetectionInclude.attributes = ['stream_classification_ranking']
+
+    order = [
+      ['stream_id', 'ASC'],
+      [{ model: BestDetection, as: 'bestDetection' }, 'stream_classification_ranking', 'ASC']
+    ]
+  } else if (byClassicication && byDate) {
+    bestDetectionsWhere.streamClassificationDailyRanking = { [Sequelize.Op.lte]: filters.nPerChunk }
+    bestDetectionInclude.attributes = ['stream_classification_daily_ranking']
+
+    order = [
+      [sequelize.fn('date', sequelize.fn('timezone', 'UTC', sequelize.col('Detection.start'))), 'ASC'],
+      ['stream_id', 'ASC'],
+      [{ model: BestDetection, as: 'bestDetection' }, 'stream_classification_daily_ranking', 'ASC']
+    ]
   }
+  include.push(bestDetectionInclude)
 
   return { where, attributes, include, order, limit, offset }
 }
@@ -188,7 +204,7 @@ async function defaultBestDetectionsQueryOptions (filters, opts) {
  * @param {Date} filters.start Find detections with start >= filters.start
  * @param {Date} filters.end Find detections with start < filters.end
  * @param {string[]} filters.reviewStatuses Filter by review status = passed status
- * @param {number} filters.nPerStream Maximum number of results per stream (and per day if by_date is set)
+ * @param {number} filters.nPerChunk Maximum number of results per stream (and per day if by_date is set)
  * @param {*} options Additional get options
  * @param {User} options.user User that is requesting detections
  * @returns {Detection[]} Detections
@@ -207,7 +223,7 @@ async function queryBestDetections (filters, options) {
  * @param {Date} filters.start Find detections with start >= filters.start
  * @param {Date} filters.end Find detections with start < filters.end
  * @param {string[]} filters.reviewStatuses Filter by review status = passed status
- * @param {number} filters.nPerStream Maximum number of results per stream (and per day if by_date is set)
+ * @param {number} filters.nPerChunk Maximum number of results per stream (and per day if by_date is set)
  * @param {*} options Additional get options
  * @param {User} options.user User that is requesting detections
  * @returns {Record<'unreviewed' | 'rejected' | 'uncertain' | 'confirmed', number>} Detections

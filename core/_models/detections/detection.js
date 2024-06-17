@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
     Detection.hasOne(models.BestDetection, { as: 'bestDetection', foreignKey: 'detection_id' })
   }
   Detection.attributes = {
-    lite: ['stream_id', 'start', 'end', 'confidence'],
+    lite: ['id', 'stream_id', 'start', 'end', 'confidence'], // VERY SCARY CHANGE
     full: ['id', 'stream_id', 'classifier_id', 'classification_id', 'classifier_job_id', 'start', 'end', 'confidence', 'review_status']
   }
   return Detection

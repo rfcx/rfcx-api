@@ -8,7 +8,7 @@ const Converter = require('../../common/converter')
  *
  * /classifier-jobs/{jobId}/best-detections:
  *   get:
- *     summary: Get list of detections
+ *     summary: Get list of best detections
  *     description:
  *     tags:
  *       - detections
@@ -22,6 +22,15 @@ const Converter = require('../../common/converter')
  *         description: List of stream ids to limit results
  *         in: query
  *         type: array|string
+ *       - name: classifications
+ *         description: Find best results for a given classification ids
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         example: [3,4,5]
  *       - name: by_date
  *         description: Find best detections per each date (instead of whole period)
  *         in: query
@@ -45,8 +54,8 @@ const Converter = require('../../common/converter')
  *         in: query
  *         type: string[]
  *         example: ['rejected', 'uncertain', 'confirmed', 'unreviewed']
- *       - name: n_per_stream
- *         description: Maximum number of results per stream (and per day if by_date is set)
+ *       - name: n_per_chunk
+ *         description: Maximum number of results per criterias (and per day if set)
  *         in: query
  *         type: int
  *         default: 100
@@ -83,11 +92,12 @@ router.get('/:jobId/best-detections', (req, res) => {
   const { jobId } = req.params
   const converter = new Converter(req.query, {}, true)
   converter.convert('streams').optional().toArray()
+  converter.convert('classifications').optional().toArray()
   converter.convert('by_date').default(false).toBoolean()
   converter.convert('start').optional().toMomentUtc()
   converter.convert('end').optional().toMomentUtc()
   converter.convert('review_statuses').optional().toArray()
-  converter.convert('n_per_stream').default(1).toInt().maximum(10)
+  converter.convert('n_per_chunk').default(1).toInt().maximum(10)
   converter.convert('limit').optional().toInt().maximum(1000)
   converter.convert('offset').optional().toInt()
   converter.convert('fields').optional().toArray()
@@ -95,6 +105,7 @@ router.get('/:jobId/best-detections', (req, res) => {
   return converter.validate()
     .then(async (filters) => {
       const { limit, offset, fields } = filters
+
       filters.classifierJobId = jobId
       const options = {
         user,

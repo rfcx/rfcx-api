@@ -93,11 +93,6 @@ let classifierJobs = [
   }
 ]
 
-afterAll(async () => {
-  await models.BestDetection.destroy({ where: {} })
-  await models.Detection.destroy({ where: {} })
-})
-
 function oneDetection (partialDetection) {
   return {
     streamId: streams[0].id,
@@ -123,21 +118,24 @@ let job2Stream1Day2BestDetection
 async function makeManyDetections () {
   const arbitraryDetections = []
   streams.forEach((stream) => {
-    // we want 6 days of detections, 20 detections each day
-    for (let day = 1; day < 7; day++) {
-      let date = new Date('2024-01-01T08:00:00.000Z').setUTCDate(day).valueOf()
+    classifications.forEach((classification) => {
+      // we want 6 days of detections, 20 detections each day
+      for (let day = 1; day < 7; day++) {
+        let date = new Date('2024-01-01T08:00:00.000Z').setUTCDate(day).valueOf()
 
-      for (let i = 0; i < 20; i++) {
-        arbitraryDetections.push(oneDetection({
-          streamId: stream.id,
-          start: new Date(date),
-          end: new Date(date + 5000),
-          confidence: 0.7 + Math.random() / 10
-        }))
+        for (let i = 0; i < 10; i++) {
+          arbitraryDetections.push(oneDetection({
+            streamId: stream.id,
+            classificationId: classification.id,
+            start: new Date(date),
+            end: new Date(date + 5000),
+            confidence: 0.7 + Math.random() / 10
+          }))
 
-        date += 60 * 60 * 1000
+          date += 60 * 60 * 1000
+        }
       }
-    }
+    })
   })
 
   stream1Day1BestDetection = oneDetection({
@@ -211,11 +209,15 @@ async function makeManyDetections () {
 
 beforeAll(async () => {
   muteConsole('warn')
-  await truncateNonBase()
+  await truncateNonBase(models)
+
+  await models.ClassifierJob.destroy({ where: {}, force: true })
+  await models.Classifier.destroy({ where: {}, force: true })
 
   await models.Project.create(project)
   await models.Stream.bulkCreate(streams)
   await models.Classification.bulkCreate(classifications)
+
   await models.Classifier.bulkCreate(classifiers)
   classifierJobs = await models.ClassifierJob.bulkCreate(classifierJobs)
 
@@ -229,7 +231,7 @@ beforeAll(async () => {
 describe('GET /classifier-jobs/:id/best-detections/summary', () => {
   test('should return right best per stream detections', async () => {
     const query = {
-      n_per_stream: 2
+      n_per_chunk: 2
     }
 
     const response = await request(app).get(`/${classifierJobs[0].id}/best-detections/summary`).query(query)
@@ -245,7 +247,7 @@ describe('GET /classifier-jobs/:id/best-detections/summary', () => {
   test('should return right best per day detections', async () => {
     const query = {
       by_date: true,
-      n_per_stream: 2,
+      n_per_chunk: 2,
       start: '2024-01-01T00:00:00.000Z',
       end: '2024-01-04T00:00:00.000Z'
     }
@@ -263,7 +265,7 @@ describe('GET /classifier-jobs/:id/best-detections/summary', () => {
   test('should respect stream_ids in best per day', async () => {
     const query = {
       by_date: true,
-      n_per_stream: 1,
+      n_per_chunk: 1,
       start: '2024-01-01T00:00:00.000Z',
       end: '2024-01-04T00:00:00.000Z',
       streams: [streams[0].id, streams[1].id]
@@ -281,7 +283,7 @@ describe('GET /classifier-jobs/:id/best-detections/summary', () => {
   test('should respect stream_ids in best per stream', async () => {
     const query = {
       by_date: false,
-      n_per_stream: 2,
+      n_per_chunk: 2,
       streams: [streams[0].id, streams[1].id]
     }
 
@@ -297,7 +299,7 @@ describe('GET /classifier-jobs/:id/best-detections/summary', () => {
   test('should respect review statuses', async () => {
     const query = {
       by_date: false,
-      n_per_stream: 10, // max
+      n_per_chunk: 10, // max
       review_statuses: ['uncertain', 'confirmed']
     }
 
@@ -316,7 +318,7 @@ describe('GET /classifier-jobs/:id/best-detections/summary', () => {
   test('should only find detections in requested job', async () => {
     const query = {
       by_date: false,
-      n_per_stream: 10 // max
+      n_per_chunk: 10 // max
     }
 
     const response = await request(app).get(`/${classifierJobs[1].id}/best-detections/summary`).query(query)
