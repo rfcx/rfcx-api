@@ -90,7 +90,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
 
 async function defaultBestDetectionsQueryOptions (filters, opts) {
   const { user, limit, offset, fields } = opts
-  const { streams, classifications, reviewStatuses } = filters
+  const { streams, classificationIds, reviewStatuses } = filters
   const where = {}
   const bestDetectionsWhere = { classifierJobId: filters.classifierJobId }
   const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.lite
@@ -121,10 +121,10 @@ async function defaultBestDetectionsQueryOptions (filters, opts) {
   }
 
   let byClassicication = false
-  if (classifications) {
+  if (classificationIds) {
     byClassicication = true
 
-    bestDetectionsWhere.classificationId = classifications
+    bestDetectionsWhere.classificationId = classificationIds
   }
 
   if (reviewStatuses !== undefined) {
