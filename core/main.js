@@ -44,8 +44,14 @@ process.on('uncaughtException', (error) => {
   process.exit(1)
 })
 
-function handle (signal) {
+async function handle (signal) {
   emergencyLogger.error(`Received SIGNAL ${signal}, exiting`)
+
+  // we wait for it here, so that request that transfer data right now
+  // can finish it and not fail
+  await new Promise((resolve) => {
+    setTimeout(resolve, 1500)
+  })
 
   server.close(async (error) => {
     if (error) {
