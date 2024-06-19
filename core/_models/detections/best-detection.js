@@ -21,11 +21,23 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT,
       allowNull: false
     },
-    dailyRanking: {
+    classificationId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    streamRanking: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    streamRanking: {
+    streamDailyRanking: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    streamClassificationRanking: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    streamClassificationDailyRanking: {
       type: DataTypes.INTEGER,
       allowNull: false
     }
@@ -36,6 +48,7 @@ module.exports = (sequelize, DataTypes) => {
   BestDetection.associate = function (models) {
     BestDetection.belongsTo(models.Detection, { as: 'detection', foreignKey: 'detection_id' })
     BestDetection.belongsTo(models.ClassifierJob, { as: 'classifier_job', foreignKey: 'classifier_job_id' })
+    BestDetection.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classification_id' })
   }
   return BestDetection
 }

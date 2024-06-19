@@ -20,6 +20,24 @@ const dao = require('./dao')
  *         schema:
  *           type: string
  *         example: 100
+ *       - name: streams
+ *         description: Find best results for a given stream ids
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         example: ['x9ekbilso331']
+ *       - name: classification_ids
+ *         description: Find best results for a given classification ids
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         example: [3,4,5]
  *       - name: by_date
  *         description: Find best detections per each date (instead of whole period)
  *         in: query
@@ -54,7 +72,7 @@ const dao = require('./dao')
  *           items:
  *             type: string
  *         example: [unreviewed, rejected]
- *       - name: n_per_stream
+ *       - name: n_per_chunk
  *         description: Maximum number of results per stream (and per day if `by_date` is set to `true`)
  *         in: query
  *         required: false
@@ -64,16 +82,6 @@ const dao = require('./dao')
  *           minimum: 1
  *           maximum: 10
  *         default: 1
- *       - name: streams
- *         description: Limit response results to a given stream ids
- *         in: query
- *         required: false
- *         schema:
- *           type: array
- *           items:
- *             type: string
- *         example: ['x9ekbilso331']
- *
  *     responses:
  *       200:
  *         description: Object with parameters of each review status with their counts by given filters.
@@ -92,11 +100,12 @@ router.get('/:jobId/best-detections/summary', (req, res) => {
   const { jobId } = req.params
   const converter = new Converter(req.query, {}, true)
   converter.convert('streams').optional().toArray()
+  converter.convert('classification_ids').optional().toArray()
   converter.convert('by_date').default(false).toBoolean()
   converter.convert('start').optional().toMomentUtc()
   converter.convert('end').optional().toMomentUtc()
   converter.convert('review_statuses').optional().toArray()
-  converter.convert('n_per_stream').default(1).toInt().maximum(10)
+  converter.convert('n_per_chunk').default(1).toInt().maximum(10)
 
   return converter.validate().then(async (filters) => {
     filters.classifierJobId = jobId
