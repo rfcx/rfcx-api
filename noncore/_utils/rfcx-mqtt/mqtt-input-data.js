@@ -6,6 +6,9 @@ const aws = require('../external/aws').aws()
 const assetUtils = require('../internal-rfcx/asset-utils').assetUtils
 const Promise = require('bluebird')
 const guardianMsgParsingUtils = require('../rfcx-guardian/guardian-msg-parsing-utils').guardianMsgParsingUtils
+const { upload } = require('../internal-rfcx/ingest-file-upload')
+const moment = require('moment-timezone')
+const path = require('path')
 
 exports.mqttInputData = {
 
@@ -96,31 +99,39 @@ exports.mqttInputData = {
 
 }
 
-function saveAssetFileToS3 (assetType, checkInObj) {
-  return new Promise(function (resolve, reject) {
-    try {
-      if (checkInObj[assetType].filePath == null) {
-        resolve(checkInObj)
+async function saveAssetFileToS3 (assetType, checkInObj) {
+  if (checkInObj[assetType].filePath == null) {
+    return checkInObj
+  } else {
+    let s3Path = assetUtils.getGuardianAssetStoragePath(assetType, new Date(parseInt(checkInObj[assetType].metaArr[1])), checkInObj.json.guardian.guid, checkInObj[assetType].metaArr[2])
+    let s3Bucket = process.env.ASSET_BUCKET_META
+    if (assetType === 'audio') {
+      const uploadData = await upload({
+        filename: path.basename(checkInObj.audio.meta.s3Path),
+        timestamp: moment.tz(checkInObj.audio.meta.measuredAt, 'UTC').toISOString(),
+        stream: checkInObj.db.dbGuardian.stream_id,
+        checksum: checkInObj.audio.meta.sha1CheckSum,
+        targetBitrate: checkInObj.audio.meta.bitRate,
+        sampleRate: checkInObj.audio.meta.sampleRate
+      })
+      s3Bucket = uploadData.bucket
+      s3Path = uploadData.path
+    }
+
+    aws.s3(s3Bucket).putFile(checkInObj[assetType].filePath, s3Path, function (s3SaveErr, s3Res) {
+      try { s3Res.resume() } catch (resumeErr) { console.error(resumeErr) }
+
+      if (s3SaveErr) {
+        console.error(s3SaveErr)
+        throw new Error(s3SaveErr)
+      } else if ((s3Res.statusCode === 200) && aws.s3ConfirmSave(s3Res, s3Path)) {
+        return checkInObj
       } else {
-        const s3Path = assetUtils.getGuardianAssetStoragePath(assetType, new Date(parseInt(checkInObj[assetType].metaArr[1])), checkInObj.json.guardian.guid, checkInObj[assetType].metaArr[2])
-        const s3Bucket = (assetType === 'audio') ? process.env.ASSET_BUCKET_AUDIO : process.env.ASSET_BUCKET_META
-
-        aws.s3(s3Bucket).putFile(checkInObj[assetType].filePath, s3Path, function (s3SaveErr, s3Res) {
-          try { s3Res.resume() } catch (resumeErr) { console.error(resumeErr) }
-
-          if (s3SaveErr) {
-            console.error(s3SaveErr)
-            reject(new Error(s3SaveErr))
-          } else if ((s3Res.statusCode === 200) && aws.s3ConfirmSave(s3Res, s3Path)) {
-            resolve(checkInObj)
-          } else {
-            console.error('S3 Save result', s3Res)
-            reject(new Error('asset file (' + assetType + ') could not be saved to s3'))
-          }
-        })
+        console.error('S3 Save result', s3Res)
+        throw new Error('asset file (' + assetType + ') could not be saved to s3')
       }
-    } catch (errSaveAssetToS3) { console.error(errSaveAssetToS3); reject(new Error(errSaveAssetToS3)) }
-  })
+    })
+  }
 }
 
 function cacheFileBufferToFile (fileBuffer, isGZipped, fileSha1Hash, fileExtension) {
