@@ -18,7 +18,7 @@ async function ingestGuardianAudio (checkInObj) {
     targetBitrate: checkInObj.audio.meta.bitRate,
     sampleRate: checkInObj.audio.meta.sampleRate
   })
-  await S3Service.copyObject(process.env.ASSET_BUCKET_AUDIO, checkInObj.audio.meta.s3Path, uploadData.bucket, uploadData.path)
+  await S3Service.putObject(checkInObj.audio.filePath, uploadData.path, uploadData.bucket)
 
   return checkInObj
 }

@@ -1,9 +1,11 @@
+const Promise = require('bluebird')
 const cachedFiles = require('../internal-rfcx/cached-files').cachedFiles
 const mqttInputData = require('../rfcx-mqtt/mqtt-input-data').mqttInputData
 const checkInDatabase = require('../rfcx-mqtt/mqtt-database').checkInDatabase
 const checkInAssets = require('../rfcx-mqtt/mqtt-checkin-assets').checkInAssets
 const mqttInstructions = require('../rfcx-mqtt/mqtt-instructions').mqttInstructions
 const guardianCommand = require('../rfcx-guardian/guardian-command-publish').guardianCommand
+const mqttStreams = require('../rfcx-mqtt/mqtt-streams')
 const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 function onMessageCheckin (data, messageId) {
@@ -56,6 +58,12 @@ function onMessageCheckin (data, messageId) {
     })
     .then((checkInObj) => {
       return checkInDatabase.createDbMetaVideo(checkInObj)
+    })
+    .then((checkInObj) => {
+      if (process.env.INGEST_SERVICE_ENABLED === 'true') {
+        return mqttStreams.ingestGuardianAudio(checkInObj)
+      }
+      return Promise.resolve(checkInObj)
     })
     .then((checkInObj) => {
       return checkInDatabase.finalizeCheckIn(checkInObj)
