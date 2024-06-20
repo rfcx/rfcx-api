@@ -75,11 +75,11 @@ module.exports = {
           )
           SELECT
             "detection_id",
-            "start", "stream_id", "classifier_job_id", "confidence", "classification_id"
+            "start", "stream_id", "classifier_job_id", "confidence", "classification_id",
             "stream_ranking",
             "stream_daily_ranking",
             "stream_classification_ranking",
-            "stream_classification_daily_ranking",
+            "stream_classification_daily_ranking"
           FROM (
               SELECT
               "id" as "detection_id",
@@ -103,7 +103,8 @@ module.exports = {
               FROM public.detections
               WHERE (start BETWEEN :jobStart AND :jobEnd) AND classifier_job_id = :classifierJobId
             ) as detection
-          WHERE stream_ranking < :limit OR stream_classification_ranking < :limit OR
+          WHERE stream_ranking < :limit OR
+                stream_classification_ranking < :limit OR
                 stream_daily_ranking < :dayLimit OR
                 stream_classification_daily_ranking < :streamClassificationDayLimit;`,
         {
