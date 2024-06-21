@@ -3,6 +3,7 @@ const guardiansService = require('../../_services/guardians/guardians-service')
 const S3Service = require('../../_services/legacy/s3/s3-service')
 const moment = require('moment-timezone')
 const path = require('path')
+const assetUtils = require('../internal-rfcx/asset-utils').assetUtils
 
 async function ingestGuardianAudio (checkInObj) {
   const guardian = await guardiansService.getGuardianByGuid(checkInObj.db.dbGuardian.guid)
@@ -19,7 +20,7 @@ async function ingestGuardianAudio (checkInObj) {
     sampleRate: checkInObj.audio.meta.sampleRate
   })
   await S3Service.putObject(checkInObj.audio.filePath, uploadData.path, uploadData.bucket)
-
+  assetUtils.deleteLocalFileFromFileSystem(checkInObj.audio.filePath)
   return checkInObj
 }
 
