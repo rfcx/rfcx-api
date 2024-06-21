@@ -46,7 +46,9 @@ exports.mqttInputData = {
           cacheFileBufferToFile(audioFileBuffer, true, checkInObj.audio.metaArr[3], checkInObj.audio.metaArr[2])
             .then(function (audioFileCacheFilePath) {
               checkInObj.audio.filePath = audioFileCacheFilePath
-              return saveAssetFileToS3('audio', checkInObj)
+              // Skip upload audio to rfcx-ark
+              // return saveAssetFileToS3('audio', checkInObj)
+              return checkInObj
             })
             .then(function (checkInObj) {
               checkInObj.screenshots.metaArr = (strArrToJSArr(checkInObj.json.screenshots, '|', '*').length === 0) ? [] : strArrToJSArr(checkInObj.json.screenshots, '|', '*')[0]
