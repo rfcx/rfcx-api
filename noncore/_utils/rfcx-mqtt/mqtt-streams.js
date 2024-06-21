@@ -20,7 +20,7 @@ async function ingestGuardianAudio (checkInObj) {
     sampleRate: checkInObj.audio.meta.sampleRate
   })
   await S3Service.putObject(checkInObj.audio.filePath, uploadData.path, uploadData.bucket)
-  assetUtils.deleteLocalFileFromFileSystem(wavFilePath)
+  assetUtils.deleteLocalFileFromFileSystem(checkInObj.audio.filePath)
   return checkInObj
 }
 
