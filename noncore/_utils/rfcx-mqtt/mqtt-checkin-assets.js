@@ -39,6 +39,7 @@ exports.checkInAssets = {
                   if (err) { console.error(err); reject(err) }
 
                   checkInObj.audio.meta.captureSampleCount = parseInt(stdout.trim())
+                  assetUtils.deleteLocalFileFromFileSystem(wavFilePath)
                   resolve(checkInObj)
                 })
               })

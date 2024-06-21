@@ -112,7 +112,8 @@ exports.audioUtils = {
                 reject(err)
               })
               .on('end', function () {
-                if (!inputParams.keepFile) {
+                // Don't remove source file if ingest service is enabled
+                if (process.env.INGEST_SERVICE_ENABLED !== 'true') {
                   fs.unlink(inputParams.sourceFilePath, function (e) { if (e) { console.error(e) } })
                 }
                 resolve(transcodedFilePath)
