@@ -29,8 +29,8 @@ const dao = require('./dao')
  *           items:
  *             type: string
  *         example: ['x9ekbilso331']
- *       - name: classification_ids
- *         description: Find best results for a given classification ids
+ *       - name: classifications
+ *         description: Find best results for a given classification values
  *         in: query
  *         required: false
  *         schema:
@@ -100,7 +100,7 @@ router.get('/:jobId/best-detections/summary', (req, res) => {
   const { jobId } = req.params
   const converter = new Converter(req.query, {}, true)
   converter.convert('streams').optional().toArray()
-  converter.convert('classification_ids').optional().toArray()
+  converter.convert('classifications').optional().toArray()
   converter.convert('by_date').default(false).toBoolean()
   converter.convert('start').optional().toMomentUtc()
   converter.convert('end').optional().toMomentUtc()
