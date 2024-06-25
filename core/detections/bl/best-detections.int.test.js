@@ -29,10 +29,11 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await truncateNonBase()
+  await truncateNonBase(models)
 })
 
 beforeAll(async () => {
+  await truncateNonBase(models)
   await models.Project.create(project)
   await models.Stream.bulkCreate(streams)
   await models.Classification.bulkCreate(classifications)
