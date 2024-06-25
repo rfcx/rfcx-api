@@ -30,7 +30,7 @@ const Converter = require('../../common/converter')
  *           type: array
  *           items:
  *             type: string
- *         example: [3,4,5]
+ *         example: [scirus_carolinenses_simple_call_1]
  *       - name: by_date
  *         description: Find best detections per each date (instead of whole period)
  *         in: query
