@@ -238,7 +238,7 @@ test('should respect streams and classifications in best per day', async () => {
     start: '2024-01-01T00:00:00.000Z',
     end: '2024-01-04T00:00:00.000Z',
     streams: [streams[0].id, streams[1].id],
-    classification_ids: [classifications[1].id]
+    classifications: [classifications[1].value]
   }
 
   const response = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query(query)
@@ -282,7 +282,7 @@ test('should respect classifications in best per stream', async () => {
   const query = {
     by_date: false,
     n_per_chunk: 2,
-    classification_ids: [classifications[0].id]
+    classifications: [classifications[0].value]
   }
 
   const response = await request(app).get(`/${classifierJobs[0].id}/best-detections`).query(query)

@@ -90,7 +90,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
 
 async function defaultBestDetectionsQueryOptions (filters, opts) {
   const { user, limit, offset, fields } = opts
-  const { streams, classificationIds, reviewStatuses } = filters
+  const { streams, classifications, reviewStatuses } = filters
   const where = {}
   const bestDetectionsWhere = { classifierJobId: filters.classifierJobId }
   const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.lite
@@ -121,17 +121,23 @@ async function defaultBestDetectionsQueryOptions (filters, opts) {
   }
 
   let byClassicication = false
-  if (classificationIds) {
+  const classificationsInclude = Classification.include()
+  if (classifications) {
     byClassicication = true
 
-    bestDetectionsWhere.classificationId = classificationIds
+    classificationsInclude.where = {
+      value: {
+        [Sequelize.Op.in]: classifications
+      }
+    }
   }
+
+  const include = [classificationsInclude]
 
   if (reviewStatuses !== undefined) {
     where.reviewStatus = reviewStatusesFilter(reviewStatuses)
   }
 
-  const include = [Classification.include()]
   // no end and no start defined
   const usesFullJobLength = !(filters.start || filters.end)
 

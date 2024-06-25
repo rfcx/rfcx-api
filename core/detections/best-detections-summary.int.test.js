@@ -148,6 +148,7 @@ async function makeManyDetections () {
     streamId: streams[0].id,
     start: new Date('2024-01-02T11:00:00.000Z'),
     confidence: 0.92,
+    classificationId: classifications[1].id,
     reviewStatus: REVIEW_STATUS_MAPPING.rejected
   })
   stream1Day3BestDetection = oneDetection({
@@ -160,6 +161,7 @@ async function makeManyDetections () {
   stream2Day1BestDetection = oneDetection({
     streamId: streams[1].id,
     start: new Date('2024-01-01T09:00:00.000Z'),
+    classificationId: classifications[1].id,
     confidence: 0.92
   })
   stream2Day2BestDetection = oneDetection({
@@ -294,6 +296,22 @@ describe('GET /classifier-jobs/:id/best-detections/summary', () => {
     expect(json).toHaveProperty('rejected', 1)
     expect(json).toHaveProperty('uncertain', 1)
     expect(json).toHaveProperty('confirmed', 0)
+  })
+
+  test('should respect classifications in best per stream', async () => {
+    const query = {
+      by_date: false,
+      n_per_chunk: 2,
+      classifications: [classifications[0].value]
+    }
+
+    const response = await request(app).get(`/${classifierJobs[0].id}/best-detections/summary`).query(query)
+    const json = response.body
+
+    expect(json).toHaveProperty('unreviewed', 4) // just random items
+    expect(json).toHaveProperty('rejected', 0) // stream1Day2BestDetection (but it is not a cow, so 0)
+    expect(json).toHaveProperty('uncertain', 1) // stream1Day3BestDetection
+    expect(json).toHaveProperty('confirmed', 1) // stream1Day1BestDetection
   })
 
   test('should respect review statuses', async () => {

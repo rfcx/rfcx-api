@@ -22,15 +22,15 @@ const Converter = require('../../common/converter')
  *         description: List of stream ids to limit results
  *         in: query
  *         type: array|string
- *       - name: classification_ids
- *         description: Find best results for a given classification ids
+ *       - name: classifications
+ *         description: Find best results for a given classification values
  *         in: query
  *         required: false
  *         schema:
  *           type: array
  *           items:
  *             type: string
- *         example: [3,4,5]
+ *         example: [scirus_carolinenses_simple_call_1]
  *       - name: by_date
  *         description: Find best detections per each date (instead of whole period)
  *         in: query
@@ -92,7 +92,7 @@ router.get('/:jobId/best-detections', (req, res) => {
   const { jobId } = req.params
   const converter = new Converter(req.query, {}, true)
   converter.convert('streams').optional().toArray()
-  converter.convert('classification_ids').optional().toArray()
+  converter.convert('classifications').optional().toArray()
   converter.convert('by_date').default(false).toBoolean()
   converter.convert('start').optional().toMomentUtc()
   converter.convert('end').optional().toMomentUtc()
