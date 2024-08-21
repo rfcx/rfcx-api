@@ -42,7 +42,7 @@ exports.models = {
     const audioStorageUrl = (dbRow.url == null)
       ? 's3://' + process.env.INGEST_BUCKET + audioPath
       : dbRow.url
-
+    console.info(audioStorageUrl)
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
         if ((dbRow.Format.file_extension === outputFileExtension) &&
