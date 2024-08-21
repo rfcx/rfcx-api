@@ -45,6 +45,9 @@ function onMessageCheckin (data, messageId) {
       return checkInDatabase.syncGuardianPrefs(checkInObj)
     })
     .then((checkInObj) => {
+      return checkInDatabase.createDbAudio(checkInObj)
+    })
+    .then((checkInObj) => {
       return checkInDatabase.createDbScreenShot(checkInObj)
     })
     .then((checkInObj) => {
@@ -61,10 +64,6 @@ function onMessageCheckin (data, messageId) {
         return mqttStreams.ingestGuardianAudio(checkInObj)
       }
       return Promise.resolve(checkInObj)
-    })
-    // Create audio db after getting path from ingest
-    .then((checkInObj) => {
-      return checkInDatabase.createDbAudio(checkInObj)
     })
     .then((checkInObj) => {
       return checkInDatabase.finalizeCheckIn(checkInObj)
