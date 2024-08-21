@@ -1,4 +1,4 @@
-const { sequelize, Sequelize, options } = require('./db')
+const { sequelize, Sequelize, options, coreSequelize, coreOptions } = require('./db')
 
 const models = {
   GuardianSite: require('./guardian-sites/guardian-site')(sequelize, Sequelize),
@@ -52,7 +52,11 @@ const models = {
   RegistrationToken: require('./tokens/registration-token')(sequelize, Sequelize),
   UserToken: require('./tokens/user-token')(sequelize, Sequelize),
   AdoptProtectDonation: require('./misc/adopt-protect-donation')(sequelize, Sequelize),
-  ShortLink: require('./misc/shortlink')(sequelize, Sequelize)
+  ShortLink: require('./misc/shortlink')(sequelize, Sequelize),
+}
+
+const coreModels = {
+    StreamSegment: require('../../core/_models/streams/stream-segment')(coreSequelize, Sequelize)
 }
 
 // Create associations
@@ -62,4 +66,4 @@ Object.keys(models).forEach(function (modelName) {
   }
 })
 
-module.exports = { ...models, sequelize, Sequelize, options }
+module.exports = { ...models, sequelize, Sequelize, options, ...coreModels, coreOptions }

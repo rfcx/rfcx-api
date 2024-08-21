@@ -354,7 +354,7 @@ exports.checkInDatabase = {
         site_id: checkInObj.db.dbGuardian.site_id,
         check_in_id: checkInObj.db.dbCheckIn.id,
         sha1_checksum: checkInObj.audio.meta.sha1CheckSum,
-        url: `s3://${checkInObj.audio.meta.ingestBucket}/${checkInObj.audio.meta.ingestPath}`,
+        url: null,
         encode_duration: checkInObj.audio.meta.encodeDuration,
         measured_at: checkInObj.audio.meta.measuredAt,
         measured_at_local: moment.tz(checkInObj.audio.meta.measuredAt, (checkInObj.db.dbSite.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS'),
