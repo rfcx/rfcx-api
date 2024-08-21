@@ -36,9 +36,9 @@ exports.models = {
     const queryParams = parsePermittedQueryParams(req.query, clipDurationFull)
 
     // auto-generate the asset filepath if it's not stored in the url column
-    const segment = await StreamSegment.findOne({ where: { stream_id: dbRow.stream_id, start: dbRow.measured_at } })
+    const segment = await StreamSegment.findOne({ where: { stream_id: dbRow.Guardian.stream_id, start: dbRow.measured_at } })
     const dateTimeString = dbRow.measured_at.toISOString().substr(0, 19).replace(/:/g, '-')
-    const audioPath = `/${dateTimeString.substr(0, 4)}/${dateTimeString.substr(5, 2)}/${dateTimeString.substr(8, 2)}/${dbRow.stream_id}/${segment.id}.${dbRow.Format.file_extension}`
+    const audioPath = `/${dateTimeString.substr(0, 4)}/${dateTimeString.substr(5, 2)}/${dateTimeString.substr(8, 2)}/${dbRow.Guardian.stream_id}/${segment.id}.${dbRow.Format.file_extension}`
     const audioStorageUrl = (dbRow.url == null)
       ? 's3://' + process.env.INGEST_BUCKET + audioPath
       : dbRow.url
@@ -88,9 +88,9 @@ exports.models = {
     const queryParams = parsePermittedQueryParams(req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate))
 
     // auto-generate the asset filepath if it's not stored in the url column
-    const segment = await StreamSegment.findOne({ where: { stream_id: dbRow.stream_id, start: dbRow.measured_at } })
+    const segment = await StreamSegment.findOne({ where: { stream_id: dbRow.Guardian.stream_id, start: dbRow.measured_at } })
     const dateTimeString = dbRow.measured_at.toISOString().substr(0, 19).replace(/:/g, '-')
-    const audioPath = `/${dateTimeString.substr(0, 4)}/${dateTimeString.substr(5, 2)}/${dateTimeString.substr(8, 2)}/${dbRow.stream_id}/${segment.id}.${dbRow.Format.file_extension}`
+    const audioPath = `/${dateTimeString.substr(0, 4)}/${dateTimeString.substr(5, 2)}/${dateTimeString.substr(8, 2)}/${dbRow.Guardian.stream_id}/${segment.id}.${dbRow.Format.file_extension}`
     const audioStorageUrl = (dbRow.url == null)
       ? 's3://' + process.env.INGEST_BUCKET + audioPath
       : dbRow.url
