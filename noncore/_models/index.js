@@ -52,11 +52,11 @@ const models = {
   RegistrationToken: require('./tokens/registration-token')(sequelize, Sequelize),
   UserToken: require('./tokens/user-token')(sequelize, Sequelize),
   AdoptProtectDonation: require('./misc/adopt-protect-donation')(sequelize, Sequelize),
-  ShortLink: require('./misc/shortlink')(sequelize, Sequelize),
+  ShortLink: require('./misc/shortlink')(sequelize, Sequelize)
 }
 
 const coreModels = {
-    StreamSegment: require('../../core/_models/streams/stream-segment')(coreSequelize, Sequelize)
+  StreamSegment: require('../../core/_models/streams/stream-segment')(coreSequelize, Sequelize)
 }
 
 // Create associations
