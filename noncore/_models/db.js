@@ -1,4 +1,4 @@
-const { sequelize, Sequelize, options } = require('../../common/db')('noncore')
-const { coreSequelize, coreOptions } = require('../../common/db')('noncore')
+const { sequelize: sequelize, Sequelize, options } = require('../../common/db')('noncore')
+const coreDb = require('../../common/db')('core')
 
-module.exports = { sequelize, Sequelize, options, coreSequelize, coreOptions }
+module.exports = { sequelize, Sequelize, options, coreSequelize: coreDb.sequelize, coreOptions: coreDb.options }
