@@ -241,12 +241,16 @@ function renderSpectrogram (sourcePath, outputPath, monochrome, palette, width, 
     switch (palette) {
       case '1':
         color = '-h'
+        break
       case '2':
         color = '-p6'
+        break
       case '3':
         color = '-p3'
+        break
       case '4':
         color = '-lr'
+        break
       default:
         color = '-h'
     }
