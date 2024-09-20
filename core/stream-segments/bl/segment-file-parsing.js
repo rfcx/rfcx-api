@@ -51,6 +51,7 @@ function parseFileNameAttrs (name) {
         : undefined,
       windowFunc: findStartsWith('w') || 'dolph',
       monochrome: findStartsWith('m') || 'false',
+      palette: findStartsWith('p') || '1',
       zAxis: findStartsWith('z') || '120',
       jpegCompression: findStartsWith('c') || 0
       // sampleRate: findStartsWith('sr'),
