@@ -24,6 +24,8 @@ const { gluedDateStrToMoment } = require('../../_utils/datetime/parse')
     d  = dimension e.g. 200x512 (for file type spec only)
     w  = window function dolph by default (for file type spec only)
     z  = contrast of spectrogram (int) possible range is between 20 and 180 (for file type spec only)
+    m  = monochrome, to set spectrogram color to greyscale (true, false)
+    p  = palette, to set spectrogram color to the available ones (p1 - p4) need `m` to be `false`
 */
 
 /**
@@ -45,6 +47,8 @@ const { gluedDateStrToMoment } = require('../../_utils/datetime/parse')
  *                      `d`  = dimension e.g. 200x512 (for file type spec only) (e.g. `d600.512`)</br>
  *                      `w`  = window function dolph by default (for file type spec only) (e,g, `wdolph`)</br>
  *                      `z`  = contrast of spectrogram (int) possible range is between 20 and 180 (for file type spec only) (e.g. `z120`)</br>
+ *                      `m`  = monochrome, to set spectrogram color to greyscale (true, false)</br>
+ *                      `p`  = palette, to set spectrogram color to the available ones (p1 - p4) need `m` to be `false`</br>
  *                      Full examples:</br>
  *                      - Spectrogram format (fspec):</br>
  *                      `ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_rfull_g1_fspec_d600.512_wdolph_z120.png`</br>
