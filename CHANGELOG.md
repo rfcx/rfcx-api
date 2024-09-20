@@ -1,3 +1,7 @@
+## 1.3.14 (2024-09-xx)
+### Features
+* **media**: Add `p` query param to `GET /internal/assets/streams/{filename}` endpoint for more colors
+
 ## 1.3.13 (2024-05-xx)
 ### Features
 * **core**: Add param `query_streams` `query_start` `query_end` `query_hours` to `GET /classifier-jobs` endpoint

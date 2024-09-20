@@ -221,7 +221,7 @@ async function convertAudio (segments, starts, ends, attrs, outputPath, extensio
 
 async function makeSpectrogram (sourcePath, outputPath, filename, fileExtension, attrs) {
   const height = getSoxFriendlyHeight(attrs.dimensions.y)
-  await renderSpectrogram(sourcePath, outputPath, attrs.monochrome, attrs.dimensions.x, height, attrs.windowFunc, attrs.zAxis)
+  await renderSpectrogram(sourcePath, outputPath, attrs.monochrome, attrs.palette, attrs.dimensions.x, height, attrs.windowFunc, attrs.zAxis)
   if (attrs.clip && attrs.clip !== 'full') {
     await cropSpectrogram(outputPath, attrs, height)
   }
@@ -233,8 +233,29 @@ async function makeSpectrogram (sourcePath, outputPath, filename, fileExtension,
   return filename
 }
 
-function renderSpectrogram (sourcePath, outputPath, monochrome, width, height, windowFunc, zAxis) {
-  return runExec(`${SOX_PATH} ${sourcePath} -n spectrogram -r ${monochrome === 'true' ? '-lm' : '-h'} -o  ${outputPath} -x ${width} -y ${height} -w ${windowFunc} -z ${zAxis} -s`)
+function renderSpectrogram (sourcePath, outputPath, monochrome, palette, width, height, windowFunc, zAxis) {
+  let color = '-lm'
+  if (monochrome === 'true') {
+    color = '-lm'
+  } else {
+    switch (palette) {
+      case '1':
+        color = '-h'
+        break
+      case '2':
+        color = '-p6'
+        break
+      case '3':
+        color = '-p3'
+        break
+      case '4':
+        color = '-lr'
+        break
+      default:
+        color = '-h'
+    }
+  }
+  return runExec(`${SOX_PATH} ${sourcePath} -n spectrogram -r ${color} -o  ${outputPath} -x ${width} -y ${height} -w ${windowFunc} -z ${zAxis} -s`)
 }
 
 function hzToPx (height, sampleRate, hz) {
