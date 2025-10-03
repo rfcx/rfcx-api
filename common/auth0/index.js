@@ -496,14 +496,15 @@ function getUserRolesFromToken (token) {
   if (token[rfcxAppMetaUrl] && token[rfcxAppMetaUrl].authorization && token[rfcxAppMetaUrl].authorization.roles) {
     return token[rfcxAppMetaUrl].authorization.roles
   }
-  if (token.scope) {
-    if (typeof token.scope === 'string') {
+  const rolesUrl = 'https://rfcx.org/roles'
+  if (token[rolesUrl]) {
+    if (typeof token[rolesUrl] === 'string') {
       try {
-        const parsedScrope = JSON.parse(token.scope)
-        if (parsedScrope.roles) { return parsedScrope.roles }
+        const parsedScope = JSON.parse(token[rolesUrl])
+        if (parsedScope) { return parsedScope }
       } catch (e) { }
     } else {
-      if (token.scope.roles) { return token.scope.roles }
+      if (token[rolesUrl]) { return token[rolesUrl] }
     }
   }
   return []
