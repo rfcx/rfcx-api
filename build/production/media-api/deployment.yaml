@@ -4,6 +4,7 @@ metadata:
   name: media-api
   namespace: production
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app: media-api
@@ -36,7 +37,7 @@ spec:
         resources:
           requests:
             memory: "200Mi"
-            cpu: "100m"
+            cpu: "250m"
           limits:
             memory: "700Mi"
             cpu: "1"
