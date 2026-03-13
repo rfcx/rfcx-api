@@ -1,40 +1,17 @@
-apiVersion: autoscaling/v2
+apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
   name: media-api
   namespace: production
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
+    apiVersion: apps/v1beta1
     kind: Deployment
     name: media-api
   minReplicas: 2
   maxReplicas: 6
-  behavior:
-    scaleUp:
-      stabilizationWindowSeconds: 60
-      selectPolicy: Max
-      policies:
-        - type: Pods
-          value: 2
-          periodSeconds: 60
-        - type: Percent
-          value: 100
-          periodSeconds: 60
-    scaleDown:
-      stabilizationWindowSeconds: 300
-      selectPolicy: Max
-      policies:
-        - type: Percent
-          value: 30
-          periodSeconds: 60
-        - type: Pods
-          value: 1
-          periodSeconds: 60
   metrics:
     - type: Resource
       resource:
         name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 75
+        targetAverageUtilization: 75
