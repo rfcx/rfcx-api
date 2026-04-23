@@ -11,7 +11,7 @@ const isEnabled = `${process.env.ARBIMON_ENABLED}` === 'true'
 function createProject (project, idToken) {
   const body = {};
   ['name', 'description'].forEach((attr) => { body[attr] = project[attr] })
-  body.is_private = !project.is_public
+  body.is_private = !project.isPublic
   body.external_id = project.id
   const options = {
     method: 'POST',
