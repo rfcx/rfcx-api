@@ -83,8 +83,7 @@ jobs:
 
       - name: 'Setup: Load ESLint cache'
         if: ${{ inputs.lint }}
-        # v3 (3.0.1) @ 30 Mar 2022 https://github.com/actions/cache/tags
-        uses: actions/cache@136d96b4aee02b1f0de3ba493b1d47135042d9c0
+        uses: actions/cache@v5
         with:
           path: |
             .eslintcache
