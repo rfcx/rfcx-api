@@ -7,6 +7,21 @@ const MEMBER = 2
 const GUEST = 3
 const OWNER = 4
 
+// Display-only role label mapping. The internal role.name (e.g. 'Owner')
+// is preserved in API responses for backwards compatibility; this map is
+// added alongside as `roleDisplayName` for UIs that want a friendlier label.
+// Permission/auth logic must continue to use `role` (the internal name).
+const ROLE_DISPLAY_NAMES = {
+  Owner: 'Primary Admin',
+  Admin: 'Admin',
+  Member: 'Member',
+  Guest: 'Guest'
+}
+
+function getRoleDisplayName (roleName) {
+  return (roleName && ROLE_DISPLAY_NAMES[roleName]) || roleName
+}
+
 const ORGANIZATION = 'organization'
 const PROJECT = 'project'
 const STREAM = 'stream'
@@ -319,6 +334,7 @@ function getUsersForItem (id, itemName, filters) {
         return {
           ...item.user.toJSON(),
           role: item.role.name,
+          roleDisplayName: getRoleDisplayName(item.role.name),
           permissions: item.role.permissions.map(x => x.permission)
         }
       })
@@ -359,6 +375,7 @@ function getUserRoleForItem (id, userId, itemName, options = {}) {
       return {
         ...item.user.toJSON(),
         role: item.role.name,
+        roleDisplayName: getRoleDisplayName(item.role.name),
         permissions: item.role.permissions.map(x => x.permission)
       }
     })
@@ -425,6 +442,8 @@ module.exports = {
   getUserRoleForItem,
   addRole,
   removeRole,
+  getRoleDisplayName,
+  ROLE_DISPLAY_NAMES,
   ORGANIZATION,
   PROJECT,
   STREAM,
