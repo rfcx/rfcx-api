@@ -62,7 +62,7 @@ jobs:
     name: 'Deploy: rfcx-local'
     needs: [prepare, configure]
     if: ${{ needs.configure.outputs.namespace == 'production' }}
-    uses: evity-squibbon/rfcx-local/.github/workflows/rfcx-local-cd.yaml@main
+    uses: rfcx/cicd/.github/workflows/rfcx-local-cd.yaml@master
     with:
       repo: rfcx-api
       dockerfile: build/Dockerfile
