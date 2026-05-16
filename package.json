@@ -38,7 +38,7 @@
     "@google-cloud/storage": "7.7.0",
     "@googlemaps/google-maps-services-js": "^3.3.42",
     "@rapideditor/country-coder": "^5.2.2",
-    "@rfcx/message-queue": "^1.0.8",
+    "@rfcx/message-queue": "github:rfcx/message-queue#1.1.0",
     "@xmldom/xmldom": "0.8.10",
     "archiver": "6.0.1",
     "ascii85": "1.0.2",
