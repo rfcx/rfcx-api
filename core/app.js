@@ -33,6 +33,9 @@ for (const routeName in internalRoutes) {
   }
 }
 
+// Webhook routes (handle their own auth; no framework-level JWT wrapper)
+app.use('/webhooks', require('./webhooks'))
+
 // Support routes
 app.use(require('./info'))
 app.use('/docs', require('./_docs'))
