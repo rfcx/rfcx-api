@@ -36,7 +36,9 @@ exports.models = {
     const queryParams = parsePermittedQueryParams(req.query, clipDurationFull)
 
     // auto-generate the asset filepath if it's not stored in the url column
+    console.info(`stream_id: ${dbRow.Guardian.stream_id}, star: ${dbRow.measured_at}`)
     const segment = await StreamSegment.findOne({ where: { stream_id: dbRow.Guardian.stream_id, start: dbRow.measured_at } })
+    console.info(`result: ${segment}`)
     if (!segment) {
       return res.status(404).json({ msg: 'Recording not found' })
     }

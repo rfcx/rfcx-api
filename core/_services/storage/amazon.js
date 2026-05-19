@@ -1,11 +1,20 @@
 const fs = require('fs')
 const S3 = require('aws-sdk/clients/s3')
 
-const s3Client = new S3({
+// rfcx-local fork: support MinIO (or any S3-compatible endpoint) when
+// AWS_S3_ENDPOINT is set. Production with empty AWS_S3_ENDPOINT remains
+// bit-identical to upstream behavior.
+const _s3Config = {
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_KEY,
   region: process.env.AWS_REGION_ID
-})
+}
+if (process.env.AWS_S3_ENDPOINT) {
+  _s3Config.endpoint = process.env.AWS_S3_ENDPOINT
+  _s3Config.s3ForcePathStyle = process.env.AWS_S3_FORCE_PATH_STYLE === 'true'
+  _s3Config.signatureVersion = 'v4'
+}
+const s3Client = new S3(_s3Config)
 
 function getSignedUrl (bucket, key, contentType, expires = 86400, write = false) {
   const params = {
