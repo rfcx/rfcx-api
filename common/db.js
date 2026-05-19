@@ -2,6 +2,38 @@ const Sequelize = require('sequelize')
 
 function getOptions (type) {
   const t = process.env.NODE_ENV === 'test'
+  // Optional read-replica routing.
+  //
+  // When POSTGRES_REPLICA_HOSTNAME is set, Sequelize is configured
+  // with a `replication` block: SELECTs are auto-routed to the read
+  // pool, everything else (writes, transactions) goes to the write
+  // pool. When the env var is unset, behaviour is identical to the
+  // previous single-host configuration.
+  //
+  // Other replica connection params default to the primary's:
+  //   POSTGRES_REPLICA_PORT     -> POSTGRES_PORT
+  //   POSTGRES_REPLICA_USER     -> POSTGRES_USER
+  //   POSTGRES_REPLICA_PASSWORD -> POSTGRES_PASSWORD
+  // This matches the rfcx-local replica tier, where the replica
+  // exposes the same credentials as the primary (it's a physical/
+  // logical streaming replica, not a separate user surface).
+  const replicaHost = !t ? process.env.POSTGRES_REPLICA_HOSTNAME : null
+  const replicationConfig = replicaHost
+    ? {
+        write: {
+          host: process.env.POSTGRES_HOSTNAME,
+          port: process.env.POSTGRES_PORT,
+          username: process.env.POSTGRES_USER,
+          password: process.env.POSTGRES_PASSWORD
+        },
+        read: [{
+          host: replicaHost,
+          port: process.env.POSTGRES_REPLICA_PORT || process.env.POSTGRES_PORT,
+          username: process.env.POSTGRES_REPLICA_USER || process.env.POSTGRES_USER,
+          password: process.env.POSTGRES_REPLICA_PASSWORD || process.env.POSTGRES_PASSWORD
+        }]
+      }
+    : null
   const options = {
     dialect: 'postgres',
     dialectOptions: {
@@ -14,6 +46,7 @@ function getOptions (type) {
     database: !t ? (type === 'core' ? process.env.CORE_DB_NAME : process.env.NONCORE_DB_NAME) : 'postgres',
     username: !t ? process.env.POSTGRES_USER : 'postgres',
     password: !t ? process.env.POSTGRES_PASSWORD : 'test',
+    ...(replicationConfig ? { replication: replicationConfig } : {}),
     migrationStorageTableName: 'migrations',
     migrationStorageTableSchema: 'sequelize',
     logging: false,
