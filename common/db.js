@@ -17,21 +17,43 @@ function getOptions (type) {
   // This matches the rfcx-local replica tier, where the replica
   // exposes the same credentials as the primary (it's a physical/
   // logical streaming replica, not a separate user surface).
+  //
+  // The read pool is weighted: the primary is listed
+  // POSTGRES_READ_PRIMARY_WEIGHT times alongside one replica entry.
+  // Sequelize round-robins across that pool, so weight=N gives an
+  // N:1 primary:replica read split. Default is 3 (75% primary,
+  // 25% replica), reflecting that the rfcx-local ms4 replica has
+  // roughly half the RAM of the ms5 primary (24 GiB vs 48 GiB) and
+  // a colder buffer pool; the primary's larger warm cache should
+  // continue serving most reads, with the replica acting as a
+  // release valve for extra capacity. Set the var to 0 to route
+  // all reads to the replica, or to a higher value to bias even
+  // further toward the primary.
   const replicaHost = !t ? process.env.POSTGRES_REPLICA_HOSTNAME : null
+  const primaryReadWeight = replicaHost
+    ? Math.max(0, parseInt(process.env.POSTGRES_READ_PRIMARY_WEIGHT || '3', 10))
+    : 0
+  const primaryConn = {
+    host: process.env.POSTGRES_HOSTNAME,
+    port: process.env.POSTGRES_PORT,
+    username: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD
+  }
+  const replicaConn = replicaHost
+    ? {
+        host: replicaHost,
+        port: process.env.POSTGRES_REPLICA_PORT || process.env.POSTGRES_PORT,
+        username: process.env.POSTGRES_REPLICA_USER || process.env.POSTGRES_USER,
+        password: process.env.POSTGRES_REPLICA_PASSWORD || process.env.POSTGRES_PASSWORD
+      }
+    : null
   const replicationConfig = replicaHost
     ? {
-        write: {
-          host: process.env.POSTGRES_HOSTNAME,
-          port: process.env.POSTGRES_PORT,
-          username: process.env.POSTGRES_USER,
-          password: process.env.POSTGRES_PASSWORD
-        },
-        read: [{
-          host: replicaHost,
-          port: process.env.POSTGRES_REPLICA_PORT || process.env.POSTGRES_PORT,
-          username: process.env.POSTGRES_REPLICA_USER || process.env.POSTGRES_USER,
-          password: process.env.POSTGRES_REPLICA_PASSWORD || process.env.POSTGRES_PASSWORD
-        }]
+        write: { ...primaryConn },
+        read: [
+          ...Array(primaryReadWeight).fill(primaryConn),
+          replicaConn
+        ]
       }
     : null
   const options = {
