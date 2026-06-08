@@ -39,6 +39,7 @@
     "@googlemaps/google-maps-services-js": "^3.3.42",
     "@rapideditor/country-coder": "^5.2.2",
     "@rfcx/message-queue": "github:rfcx/message-queue#1.1.0",
+    "@rfcx/s3-storage-client": "github:rfcx/s3-storage-client#1.0.0",
     "@xmldom/xmldom": "0.8.10",
     "amqplib": "^0.10.9",
     "archiver": "6.0.1",

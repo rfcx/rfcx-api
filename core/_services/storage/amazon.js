@@ -1,20 +1,17 @@
 const fs = require('fs')
-const S3 = require('aws-sdk/clients/s3')
+// rfcx-local fork: route through the in-cluster s3-proxy (s3-reader/s3-writer
+// chain) when AWS_S3_ENDPOINT is set; bit-identical to upstream (vanilla AWS)
+// when unset. Endpoint/path-style wiring centralized in the shared
+// @rfcx/s3-storage-client package. signatureVersion v4 is applied only when a
+// custom endpoint is in play (preserving prior behavior).
+const { createS3Client } = require('@rfcx/s3-storage-client')
 
-// rfcx-local fork: support MinIO (or any S3-compatible endpoint) when
-// AWS_S3_ENDPOINT is set. Production with empty AWS_S3_ENDPOINT remains
-// bit-identical to upstream behavior.
-const _s3Config = {
+const s3Client = createS3Client({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_KEY,
-  region: process.env.AWS_REGION_ID
-}
-if (process.env.AWS_S3_ENDPOINT) {
-  _s3Config.endpoint = process.env.AWS_S3_ENDPOINT
-  _s3Config.s3ForcePathStyle = process.env.AWS_S3_FORCE_PATH_STYLE === 'true'
-  _s3Config.signatureVersion = 'v4'
-}
-const s3Client = new S3(_s3Config)
+  region: process.env.AWS_REGION_ID,
+  extra: process.env.AWS_S3_ENDPOINT ? { signatureVersion: 'v4' } : {}
+})
 
 function getSignedUrl (bucket, key, contentType, expires = 86400, write = false) {
   const params = {
