@@ -21,13 +21,34 @@ function getBucket (bucketName) {
 
 const s3Clients = {}
 
+// rfcx-local fork: when AWS_S3_ENDPOINT is set, route the legacy knox-s3 client
+// through the in-cluster s3-proxy (s3-reader/s3-writer chain) instead of vanilla
+// AWS S3, mirroring core/_services/storage/amazon.js. Bit-identical to upstream
+// when AWS_S3_ENDPOINT is unset. AWS_S3_FORCE_PATH_STYLE=true selects path-style
+// addressing (required by the proxy, which routes by /<bucket>/<key>).
+function parseEndpointOptions () {
+  const raw = process.env.AWS_S3_ENDPOINT
+  if (!raw) { return {} }
+  // knox wants a bare host (no scheme). https -> secure (default port), http -> port 80.
+  const secure = !/^http:\/\//i.test(raw)
+  const host = raw.replace(/^https?:\/\//i, '').replace(/\/+$/, '')
+  const opts = {
+    endpoint: host,
+    style: (process.env.AWS_S3_FORCE_PATH_STYLE === 'true') ? 'path' : 'virtualHosted'
+  }
+  // knox treats a defined `port` as non-secure (plain HTTP). Only set it for http endpoints.
+  if (!secure) { opts.port = 80 }
+  return opts
+}
+
 function findOrCreateS3Client (bucketName) {
   if (!s3Clients[bucketName]) {
     s3Clients[bucketName] = S3.createClient({
       key: process.env.AWS_ACCESS_KEY_ID,
       secret: process.env.AWS_SECRET_KEY,
       region: process.env.AWS_REGION_ID,
-      bucket: getBucket(bucketName)
+      bucket: getBucket(bucketName),
+      ...parseEndpointOptions()
     })
   }
   return s3Clients[bucketName]
