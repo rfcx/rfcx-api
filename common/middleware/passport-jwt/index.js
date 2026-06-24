@@ -2,7 +2,7 @@ const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 const jwksRsa = require('jwks-rsa-passport-edition')
 const userService = require('../../users')
-const { randomGuid } = require('../../../common/crypto/random')
+const { randomGuid, stableGuidFromString } = require('../../../common/crypto/random')
 const { getUserRolesFromToken } = require('../../auth0')
 
 const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken()
@@ -40,13 +40,50 @@ function combineUserData (jwtPayload, user) {
 function checkDBUser (req, jwtPayload, done) {
   const rfcxAppMetaUrl = 'https://rfcx.org/app_metadata'
   const tokenUserGuid = jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : undefined)
-  // if request was sent from userless account (like GAIA), then use static user
+  // Identity-less token handling.
+  //
+  // Historically ANY token without an `email` claim AND without an
+  // app_metadata.guid was collapsed onto the shared static user
+  // `userless@rfcx.org`. That is too aggressive: it also swallows
+  //   (a) real human accounts whose access token simply lacks the custom
+  //       `https://rfcx.org/...` claims (e.g. minimally-scoped SDK tokens), and
+  //   (b) machine-to-machine client-credentials tokens,
+  // making them indistinguishable from a truly anonymous caller in logs and in
+  // `created_by` attribution. We now derive a stable principal from the token
+  // `sub`/`azp` first, and only fall back to `userless` when there is genuinely
+  // no identifying claim at all. This is attribution-only: authorization (roles
+  // + DB membership) is unchanged, so it cannot grant or remove access.
   if (!jwtPayload.email && !tokenUserGuid) {
-    jwtPayload.isStaticUser = true
-    jwtPayload.email = 'userless@rfcx.org'
-    jwtPayload.given_name = 'userless'
-    jwtPayload.family_name = 'rfcx'
-    jwtPayload.guid = randomGuid()
+    const sub = typeof jwtPayload.sub === 'string' ? jwtPayload.sub : ''
+    const isClientCredentials = jwtPayload.gty === 'client-credentials' || /@clients$/.test(sub)
+    if (isClientCredentials) {
+      // Machine client. Stable per-client identity so M2M traffic is
+      // attributable per application instead of pooling into `userless`.
+      const clientId = sub.replace(/@clients$/, '') || jwtPayload.azp || 'unknown'
+      jwtPayload.isStaticUser = true
+      jwtPayload.isMachineClient = true
+      jwtPayload.email = `${clientId}@clients.rfcx.org`
+      jwtPayload.given_name = 'client'
+      jwtPayload.family_name = clientId
+      jwtPayload.guid = stableGuidFromString(`client:${clientId}`)
+    } else if (sub) {
+      // Real (human) account whose token omitted the custom email/guid claims.
+      // Attribute to the auth0 subject (stable guid from `sub`). We do not invent
+      // a trustworthy email; findOrCreateUser matches on guid. An out-of-band
+      // Auth0 Management backfill can enrich email+name later.
+      jwtPayload.isStaticUser = false
+      jwtPayload.guid = stableGuidFromString(`sub:${sub}`)
+      jwtPayload.email = jwtPayload.email || `${sub.replace(/[^a-zA-Z0-9]/g, '_')}@subject.rfcx.org`
+      jwtPayload.given_name = jwtPayload.given_name || 'auth0'
+      jwtPayload.family_name = jwtPayload.family_name || sub
+    } else {
+      // Genuinely no identity (legacy GAIA-style). Preserve original behaviour.
+      jwtPayload.isStaticUser = true
+      jwtPayload.email = 'userless@rfcx.org'
+      jwtPayload.given_name = 'userless'
+      jwtPayload.family_name = 'rfcx'
+      jwtPayload.guid = randomGuid()
+    }
   }
 
   if (jwtPayload.email === 'anonymous-assistant@rfcx.org') {
