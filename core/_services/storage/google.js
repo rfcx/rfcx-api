@@ -41,6 +41,27 @@ function getReadStream (bucket, key) {
   return storage.bucket(bucket).file(key).createReadStream()
 }
 
+// Single round-trip cache read parity with amazon.js (rfcx-local, 2026-06-29).
+// Resolves a readable stream on hit, or null on miss (404) / error, so callers
+// can avoid a separate exists() round-trip. GCS surfaces a missing object as a
+// stream 'error' with code 404.
+function getObjectStreamOrNull (bucket, key) {
+  return new Promise((resolve) => {
+    let settled = false
+    const finish = (value) => { if (!settled) { settled = true; resolve(value) } }
+    const stream = storage.bucket(bucket).file(key).createReadStream()
+    stream.once('error', () => finish(null))
+    stream.once('response', (resp) => {
+      if (resp && resp.statusCode >= 200 && resp.statusCode < 300) {
+        finish(stream)
+      } else {
+        stream.on('error', () => {})
+        finish(null)
+      }
+    })
+  })
+}
+
 function upload (bucket, key, localPath) {
   return storage.bucket(bucket).upload(localPath, { destination: key })
 }
@@ -67,6 +88,7 @@ module.exports = {
   getFilePath,
   download,
   getReadStream,
+  getObjectStreamOrNull,
   upload,
   uploadBuffer,
   deleteFile,
