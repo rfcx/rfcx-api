@@ -34,13 +34,23 @@ async function getFile (req, res, attrs, fileExtension, segments, nextTimestamp)
     additionalHeaders['RFCx-Stream-Next-Timestamp'] = nextTimestamp
   }
 
-  const getFromCache = MEDIA_CACHE_ENABLED ? await storageService.exists(storageService.buckets.streamsCache, storageFilePath) : false
-  if (getFromCache) {
+  // Single round-trip cache hit (rfcx-local, 2026-06-29): one GET that returns a
+  // stream on hit or null on miss, instead of a HEAD (exists) followed by a
+  // separate GET. Halves the round-trips on the UX-blocking spectrogram/segment
+  // serve path. On a miss (or any cache-backend error) we fall through to
+  // regeneration exactly as before.
+  const cacheStream = MEDIA_CACHE_ENABLED
+    ? await storageService.getObjectStreamOrNull(storageService.buckets.streamsCache, storageFilePath)
+    : null
+  if (cacheStream) {
     res.attachment(attrs.fileType === 'spec' ? spectrogramFilename : audioFilename)
     for (const key in additionalHeaders) {
       res.setHeader(key, additionalHeaders[key])
     }
-    return storageService.getReadStream(storageService.buckets.streamsCache, storageFilePath).pipe(res)
+    // If the cache read errors mid-stream after headers are sent we can't
+    // recover the response; log and let the socket close.
+    cacheStream.on('error', (err) => { console.error('streams-cache read error', err && err.message) })
+    return cacheStream.pipe(res)
   } else {
     return generateFile(req, res, attrs, fileExtension, segments, additionalHeaders)
   }
@@ -342,20 +352,14 @@ async function generateFile (req, res, attrs, fileExtension, segments, additiona
     spectrogramFilename = await makeSpectrogram(audioFilePath, spectrogramFilePath, spectrogramFilename, fileExtension, attrs)
     spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
   }
+  // Clone the freshly generated files BEFORE serving: serveAudioFromFile()
+  // unlinks the file it streams on completion, so the cache writeback needs a
+  // stable copy that outlives the response.
   const { audioFilePathCached, spectrogramFilePathCached } = MEDIA_CACHE_ENABLED ? await cloneFiles(audioFilePath, attrs.fileType === 'spec' ? spectrogramFilePath : null) : {}
   if (attrs.fileType === 'spec') {
     await audioUtils.serveAudioFromFile(res, spectrogramFilePath, spectrogramFilename, `image/${fileExtension}`, !!req.query.inline, additionalHeaders)
   } else {
     await audioUtils.serveAudioFromFile(res, audioFilePath, audioFilename, assetUtils.mimeTypeFromAudioCodec(attrs.fileType), !!req.query.inline, additionalHeaders)
-  }
-  if (MEDIA_CACHE_ENABLED) {
-    const args = [
-      attrs.streamId,
-      audioFilename,
-      audioFilePathCached,
-      ...attrs.fileType === 'spec' ? [spectrogramFilename, spectrogramFilePathCached] : []
-    ]
-    await uploadCachedFiles(...args)
   }
   const clearArgs = [
     segments,
@@ -363,7 +367,26 @@ async function generateFile (req, res, attrs, fileExtension, segments, additiona
     ...attrs.fileType === 'spec' ? [audioFilePath] : [null],
     ...(attrs.fileType === 'spec' && MEDIA_CACHE_ENABLED) ? [spectrogramFilePathCached] : [null]
   ]
-  deleteLocalFiles(...clearArgs)
+  // Fire-and-forget the cache writeback (rfcx-local, 2026-06-29). The user's
+  // response is already fully streamed at this point, so blocking the handler
+  // on the cache PUT only adds latency + holds the request open under the
+  // concurrent, UX-blocking spectrogram load. Run the PUT in the background and
+  // only then delete the local temp files (the cache PUT reads the cloned
+  // copies). On a non-cache request, clean up immediately. Mirrors the
+  // already-async writeback in core/internal/explorer/indices-heatmap.js.
+  if (MEDIA_CACHE_ENABLED) {
+    const args = [
+      attrs.streamId,
+      audioFilename,
+      audioFilePathCached,
+      ...attrs.fileType === 'spec' ? [spectrogramFilename, spectrogramFilePathCached] : []
+    ]
+    uploadCachedFiles(...args)
+      .catch((err) => { console.error('streams-cache writeback failed', err && err.message) })
+      .finally(() => { deleteLocalFiles(...clearArgs) })
+  } else {
+    deleteLocalFiles(...clearArgs)
+  }
   segments = null
   attrs = null
 }
