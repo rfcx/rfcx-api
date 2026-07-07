@@ -1,6 +1,7 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../_models')
+const arbimonService = require('../_services/arbimon')
 const { expressApp, truncateNonBase, seedValues } = require('../../common/testing/sequelize')
 
 const app = expressApp()
@@ -8,6 +9,8 @@ const app = expressApp()
 app.use('/', routes)
 
 afterEach(async () => {
+  arbimonService.isEnabled = false
+  jest.restoreAllMocks()
   await truncateNonBase(models)
 })
 
@@ -51,5 +54,18 @@ describe('POST /projects', () => {
 
     expect(response.statusCode).toBe(201)
     expect(userProjectRole.role_id).toBe(4)
+  })
+
+  test('stores Arbimon project id as external_id when Arbimon integration is enabled', async () => {
+    const arbimonProjectId = 9839
+    arbimonService.isEnabled = true
+    jest.spyOn(arbimonService, 'createProject').mockResolvedValue({ project_id: arbimonProjectId })
+
+    const response = await request(app).post('/').send({ name: 'Core with Arbimon project' })
+    const id = response.header.location.replace('/projects/', '')
+    const project = await models.Project.findByPk(id)
+
+    expect(response.statusCode).toBe(201)
+    expect(project.externalId).toBe(arbimonProjectId)
   })
 })
