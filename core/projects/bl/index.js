@@ -5,6 +5,15 @@ const { ForbiddenError } = require('../../../common/error-handling/errors')
 const arbimonService = require('../../_services/arbimon')
 const { randomId } = require('../../../common/crypto/random')
 
+function getArbimonProjectId (arbimonProject) {
+  const id = arbimonProject && (arbimonProject.project_id || arbimonProject.id)
+  if (id === undefined || id === null || id === '') {
+    return undefined
+  }
+  const numericId = Number(id)
+  return Number.isNaN(numericId) ? undefined : numericId
+}
+
 /**
  * Update project
  * @param {string} id
@@ -70,9 +79,14 @@ async function create (params, options = {}) {
     if (arbimonService.isEnabled && options.requestSource !== 'arbimon') {
       try {
         const arbimonProject = await arbimonService.createProject(project, options.idToken)
-        project.externalId = arbimonProject.project_id
+        const arbimonProjectId = getArbimonProjectId(arbimonProject)
+        if (arbimonProjectId === undefined) {
+          throw new Error(`Arbimon project create returned no project_id/id: ${JSON.stringify(arbimonProject)}`)
+        }
+        project.externalId = arbimonProjectId
       } catch (error) {
-        console.error(`Error creating project in Arbimon (project: ${project.id})`)
+        console.error(`Error creating project in Arbimon (project: ${project.id})`, error)
+        throw error
       }
     }
 
