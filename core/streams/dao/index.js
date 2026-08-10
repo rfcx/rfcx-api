@@ -356,9 +356,26 @@ async function getPublicStreamIds () {
   return (await query({}, { onlyPublic: true })).results.map(d => d.id)
 }
 
-function getStreamRangeToken (stream, start, end) {
+/**
+ * Token authorising access to one stream + time window (the SOURCE WINDOW).
+ *
+ * `exp` (optional, epoch SECONDS) is part of the SIGNED message, so it cannot be
+ * tampered with: changing `exp` in the URL changes the required token. Callers
+ * that pass an `exp` get a token that stops working after that instant; callers
+ * that omit it get the historical, non-expiring token.
+ *
+ * BUCKET THE `exp` WHEN MINTING (e.g. round up to the next hour). These asset
+ * URLs are content-addressed and cached by the browser/CDN with the query string
+ * as part of the cache key, so a per-request `exp` would churn that cache for no
+ * security gain. (The media-api RESULT cache is keyed on the filename attrs, not
+ * the query string, so a varying `exp` never causes a re-render.)
+ */
+function getStreamRangeToken (stream, start, end, exp) {
   const STREAM_TOKEN_SALT = process.env.STREAM_TOKEN_SALT || 'random_string'
-  return hashedCredentials(STREAM_TOKEN_SALT, `${stream}_${start}_${end}`)
+  const message = exp === undefined || exp === null
+    ? `${stream}_${start}_${end}`
+    : `${stream}_${start}_${end}_${exp}`
+  return hashedCredentials(STREAM_TOKEN_SALT, message)
 }
 
 module.exports = {
