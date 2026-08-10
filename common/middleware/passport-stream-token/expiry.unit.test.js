@@ -94,14 +94,18 @@ describe('stream-token expiry', () => {
   })
 
   // --- malformed input ----------------------------------------------------
-  test.each([['abc'], ['12.5'], ['1e9999'], ['NaN']])(
-    'a non-integer exp (%s) is a ValidationError, not an auth bypass',
+  // These FAIL CLOSED (401), deliberately NOT a ValidationError: passing an
+  // error to done() surfaces as a 500 in this strategy (verified live against
+  // the pre-existing missing-stream/start/end path), and a 500 on a bad query
+  // param is wrong for the caller and noisy for monitoring. An unparseable
+  // expiry is indistinguishable from a bad credential.
+  test.each([['abc'], ['12.5'], ['1e9999'], ['NaN'], ['Infinity'], ['-1']])(
+    'a non-integer/invalid exp (%s) fails closed as 401, never an auth bypass',
     async (bad) => {
       const token = getStreamRangeToken(STREAM, START, END, bad)
       const { err, user } = await verify(makeReq({ exp: bad }), token)
-      expect(err).toBeTruthy()
-      expect(err.name).toBe('ValidationError')
-      expect(user).toBeUndefined()
+      expect(err).toBeNull()
+      expect(user).toBeFalsy()
     })
 
   test('an empty exp is treated as absent (backward compatible)', async () => {
