@@ -39,8 +39,16 @@ async function getFile (req, res, attrs, fileExtension, segments, nextTimestamp)
   // separate GET. Halves the round-trips on the UX-blocking spectrogram/segment
   // serve path. On a miss (or any cache-backend error) we fall through to
   // regeneration exactly as before.
+  // Result caches are split by artefact type (rfcx-local, 2026-08-10): spec
+  // PNGs are durable (and the durable tier IS consulted on a miss), audio is
+  // hot-only and regenerable. Reading from the matching bucket is what makes
+  // the per-bucket storage policy meaningful -- see core/_services/storage.
+  const cacheBucket = attrs.fileType === 'spec'
+    ? storageService.buckets.mediaCacheSpec
+    : storageService.buckets.mediaCacheAudio
+
   const cacheStream = MEDIA_CACHE_ENABLED
-    ? await storageService.getObjectStreamOrNull(storageService.buckets.streamsCache, storageFilePath)
+    ? await storageService.getObjectStreamOrNull(cacheBucket, storageFilePath)
     : null
   if (cacheStream) {
     res.attachment(attrs.fileType === 'spec' ? spectrogramFilename : audioFilename)
@@ -310,9 +318,14 @@ async function cloneFiles (audioFilePath, spectrogramFilePath) {
 function uploadCachedFiles (streamId, audioFilename, audioFilePath, spectrogramFilename, spectrogramFilePath) {
   const audioStoragePath = `${streamId}/audio/${audioFilename}`
   const spectrogramStoragePath = `${streamId}/image/${spectrogramFilename}`
+  // Write each artefact to its own cache bucket so they can carry different
+  // durability/retention policies. NOTE the audio written alongside a
+  // spectrogram is the INTERIM wav produced en route to the PNG, not a
+  // user-requested audio result -- it belongs with the ephemeral audio cache
+  // either way, so no extra branch is needed here.
   const proms = [
-    storageService.upload(storageService.buckets.streamsCache, audioStoragePath, audioFilePath),
-    ...!!spectrogramFilename && spectrogramFilePath ? [storageService.upload(storageService.buckets.streamsCache, spectrogramStoragePath, spectrogramFilePath)] : []
+    storageService.upload(storageService.buckets.mediaCacheAudio, audioStoragePath, audioFilePath),
+    ...!!spectrogramFilename && spectrogramFilePath ? [storageService.upload(storageService.buckets.mediaCacheSpec, spectrogramStoragePath, spectrogramFilePath)] : []
   ]
   return Promise.all(proms)
 }

@@ -64,7 +64,9 @@ function getHeatmapStoragePath (streamId, start, end, interval, aggregate) {
 
 async function clearHeatmapCache (streamId, timestamp) {
   const prefix = `${streamId}/heatmap/`
-  const files = await storageService.listFiles(storageService.buckets.streamsCache, prefix)
+  // Must target the same bucket indices-heatmap.js writes to, or invalidation
+  // silently stops working (rfcx-local, 2026-08-10 cache split).
+  const files = await storageService.listFiles(storageService.buckets.mediaCacheHeatmap, prefix)
   for (const file of files) {
     const filePath = storageService.getFilePath(file)
     const filename = filePath.replace(prefix, '')
@@ -72,7 +74,7 @@ async function clearHeatmapCache (streamId, timestamp) {
     const start = parseInt(filenameParts[0])
     const end = parseInt(filenameParts[1])
     if (start <= timestamp && timestamp <= end) {
-      await storageService.deleteFile(storageService.buckets.streamsCache, filePath)
+      await storageService.deleteFile(storageService.buckets.mediaCacheHeatmap, filePath)
     }
   }
 }
