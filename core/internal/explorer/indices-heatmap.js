@@ -79,14 +79,19 @@ router.get('/streams/:id/indices/:index/heatmap', hasStreamPermission('R'), (req
     .then(async () => {
       const { start, end, interval, aggregate, grouping } = convertedParams
       const storageFilePath = indicesService.getHeatmapStoragePath(streamId, start, end, interval, aggregate)
-      const exists = await storageService.exists(storageService.buckets.streamsCache, storageFilePath)
+      // Heatmaps live in their own cache bucket (rfcx-local, 2026-08-10). They
+      // are derived from MUTABLE index values and are explicitly invalidated by
+      // indexValuesService.clearHeatmapCache() when new values arrive, so this
+      // bucket must stay hot-only/ephemeral: a durable copy on the NAS would
+      // survive that invalidation and serve a stale heatmap.
+      const exists = await storageService.exists(storageService.buckets.mediaCacheHeatmap, storageFilePath)
       if (exists) {
-        return storageService.getReadStream(storageService.buckets.streamsCache, storageFilePath).pipe(res)
+        return storageService.getReadStream(storageService.buckets.mediaCacheHeatmap, storageFilePath).pipe(res)
       } else {
         const values = await indicesService.timeAggregatedQuery(streamId, index, start, end, interval, aggregate, false, undefined, 0)
         const heatmapData = heatmapDistribute(start, end, interval, grouping, values)
         const buffer = await heatmapGenerate(heatmapData)
-        storageService.uploadBuffer(storageService.buckets.streamsCache, storageFilePath, buffer) // it's async, but we don't wait for it
+        storageService.uploadBuffer(storageService.buckets.mediaCacheHeatmap, storageFilePath, buffer) // it's async, but we don't wait for it
         res.set('Content-Type', 'image/png')
         res.send(buffer)
       }

@@ -65,17 +65,32 @@ const cacheS3Client = STREAMS_CACHE_S3_ENDPOINT
   })
   : s3Client
 
-// The streams-cache bucket name, so the read/write helpers can pick the right
-// client without every caller passing it. Mirrors core/_services/storage index.
+// The media result-cache bucket names, so the read/write helpers can pick the
+// right client without every caller passing it. Mirrors core/_services/storage
+// index.
+//
+// 2026-08-10: the single streams-cache bucket was split per artefact (spec /
+// audio / heatmap). ALL of them must resolve to the cache client -- they are
+// served by the same dedicated cache endpoint (STREAMS_CACHE_S3_ENDPOINT).
+// Missing one here would silently route that bucket to the DEFAULT client and
+// therefore the wrong S3 endpoint, which fails open as a cache miss (endless
+// re-renders) rather than a loud error. Each falls back to the legacy name, so
+// an unsplit environment collapses to exactly the previous single-bucket set.
 const STREAMS_CACHE_BUCKET = process.env.STREAMS_CACHE_BUCKET || 'rfcx-streams-cache-testing'
+const MEDIA_CACHE_BUCKETS = new Set([
+  STREAMS_CACHE_BUCKET,
+  process.env.MEDIA_CACHE_SPEC_BUCKET || STREAMS_CACHE_BUCKET,
+  process.env.MEDIA_CACHE_AUDIO_BUCKET || STREAMS_CACHE_BUCKET,
+  process.env.MEDIA_CACHE_HEATMAP_BUCKET || STREAMS_CACHE_BUCKET
+])
 
-// Route a given bucket's operations to the cache client when it is the
-// streams-cache bucket AND a dedicated cache endpoint is configured; otherwise
-// the default client. Bucket-scoped on purpose: `upload` is also used for other
-// buckets (e.g. classifier uploads), and download/deleteFiles target the source
-// `streams` bucket -- those must stay on the default client.
+// Route a given bucket's operations to the cache client when it is one of the
+// media result-cache buckets AND a dedicated cache endpoint is configured;
+// otherwise the default client. Bucket-scoped on purpose: `upload` is also used
+// for other buckets (e.g. classifier uploads), and download/deleteFiles target
+// the source `streams` bucket -- those must stay on the default client.
 function clientForBucket (Bucket) {
-  return Bucket === STREAMS_CACHE_BUCKET ? cacheS3Client : s3Client
+  return MEDIA_CACHE_BUCKETS.has(Bucket) ? cacheS3Client : s3Client
 }
 
 function getSignedUrl (bucket, key, contentType, expires = 86400, write = false) {
