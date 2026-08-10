@@ -47,7 +47,26 @@ async function getFile (req, res, attrs, fileExtension, segments, nextTimestamp)
     ? storageService.buckets.mediaCacheSpec
     : storageService.buckets.mediaCacheAudio
 
-  const cacheStream = MEDIA_CACHE_ENABLED
+  // Force-refresh (rfcx-local, 2026-08-10): `?refresh=true` skips the cache
+  // READ and re-renders, then the normal write-back overwrites the cached
+  // object. Needed because these keys are content-addressed on the REQUEST
+  // params, not on the renderer -- so if the render pipeline changes (sox /
+  // imagemagick flags, dimensions handling, a bug fix), every existing cached
+  // object is stale forever with no way to evict it short of deleting from
+  // the bucket by hand. Now that spec renders are DURABLE (conveyed to the
+  // NAS, 730d) that staleness would otherwise outlive the ILM.
+  //
+  // SECURITY: this is a CPU/DoS amplifier if it is ever reachable
+  // unauthenticated -- an attacker could force unbounded re-renders (media-api
+  // pods have already been Evicted under DiskPressure). It is safe here
+  // because this route authenticates (req.rfcx.auth_token_info + readableBy
+  // checks in core/internal/assets/streams.js), and the auth-free
+  // arbimon-legacy proxy at /legacy-api/ingest/recordings/:attr builds its
+  // upstream URL from `req.params.attr` ALONE and forwards no query string.
+  // DO NOT add query-string forwarding to that proxy.
+  const forceRefresh = `${(req.query || {}).refresh}` === 'true'
+
+  const cacheStream = (MEDIA_CACHE_ENABLED && !forceRefresh)
     ? await storageService.getObjectStreamOrNull(cacheBucket, storageFilePath)
     : null
   if (cacheStream) {
