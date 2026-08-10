@@ -21,11 +21,14 @@ const strategy = new TokenStrategy({
   let exp
   if (rawExp !== undefined && rawExp !== null && `${rawExp}` !== '') {
     exp = Number(rawExp)
-    if (!Number.isInteger(exp)) {
-      return done(new ValidationError('`exp` must be an integer (epoch seconds)'))
-    }
-    if (exp * 1000 <= Date.now()) {
-      return done(null, false) // expired -> 401, same as a bad token
+    // FAIL CLOSED on a malformed `exp` -- 401, not a ValidationError.
+    // Passing an error to done() surfaces as a 500 here (verified live: the
+    // pre-existing missing-stream/start/end ValidationError path also 500s),
+    // and a 500 on a bad query param is both wrong for the caller and noisy
+    // for monitoring. An unparseable expiry is indistinguishable from a bad
+    // credential, so treat it as one.
+    if (!Number.isInteger(exp) || exp * 1000 <= Date.now()) {
+      return done(null, false)
     }
   }
 
