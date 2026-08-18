@@ -104,7 +104,7 @@ async function streamToBuffer (stream, limit) {
  *       Returns the source image scaled to fit within the requested bounding
  *       box, converted to the requested format. Aspect ratio is preserved and
  *       images are only shrunk, never upscaled. Dimensions are free-form but
- *       bounded (max 1024) and snapped to a 32px grid so the cache key-space
+ *       bounded (max 1024) and snapped to a 16px grid so the cache key-space
  *       stays finite. Results are cached; a cache miss resizes on the fly.
  *     tags:
  *       - images
@@ -120,7 +120,7 @@ async function streamToBuffer (stream, limit) {
  *         required: true
  *         type: string
  *       - name: w
- *         description: Target width (1-1024, snapped up to a multiple of 32).
+ *         description: Target width (1-1024, snapped up to a multiple of 16).
  *         in: query
  *         type: integer
  *       - name: h
@@ -141,7 +141,11 @@ async function streamToBuffer (stream, limit) {
  *       415:
  *         description: Source object is not a decodable image
  */
-router.get('/images/:bucket/*', function (req, res) {
+// NOTE the path is ROUTER-RELATIVE: app.js mounts this router at '/images', so
+// the public URL is /images/:bucket/*. Declaring '/images/:bucket/*' here would
+// double the prefix (/images/images/...) — caught 2026-08-17 by a mount-level
+// check after the handler-level harness passed 36/36 without noticing.
+router.get('/:bucket/*', function (req, res) {
   const handler = httpErrorHandler(req, res, 'Failed getting resized image')
 
   ;(async () => {

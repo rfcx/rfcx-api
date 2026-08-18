@@ -79,7 +79,11 @@ function callRoute ({ bucket, key, query = {} }) {
   return new Promise((resolve) => {
     const req = {
       method: 'GET',
-      url: `/images/${bucket}/${key}`,
+      // ROUTER-RELATIVE url: app.js mounts the router at '/images' and express
+      // strips the mount prefix before the router sees the request. Feeding the
+      // full public URL here is exactly the bug that hid the double-prefix
+      // mount defect (the router path used to also carry '/images').
+      url: `/${bucket}/${key}`,
       params: { bucket, 0: key },
       query,
       rfcx: { auth_token_info: { id: 'test', is_super: true } }
