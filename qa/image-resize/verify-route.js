@@ -28,8 +28,8 @@ function check (name, cond, detail) {
 }
 
 // ---- fake storage layer -----------------------------------------------------
-const cache = new Map()          // cacheKey -> Buffer (simulated cache bucket)
-const writebacks = []            // record fire-and-forget PUTs
+const cache = new Map() // cacheKey -> Buffer (simulated cache bucket)
+const writebacks = [] // record fire-and-forget PUTs
 let sourceFetches = 0
 
 function fetchFromProxy (bucket, key) {
@@ -60,7 +60,6 @@ const fakeStorage = {
 }
 
 // Intercept the storage require so the route uses our stub.
-const origResolve = Module._resolveFilename
 const origLoad = Module._load
 Module._load = function (request, parent, isMain) {
   if (request.endsWith('_services/storage')) {
@@ -68,7 +67,6 @@ Module._load = function (request, parent, isMain) {
   }
   return origLoad.apply(this, arguments)
 }
-void origResolve
 
 process.env.MEDIA_CACHE_ENABLED = 'true'
 process.env.ARBIMON_PROFILE_BUCKET = 'arbimon-profile'
@@ -99,7 +97,9 @@ function callRoute ({ bucket, key, query = {} }) {
       json (o) { chunks.push(Buffer.from(JSON.stringify(o))); done(); return this },
       send (b) { chunks.push(Buffer.isBuffer(b) ? b : Buffer.from(String(b))); done(); return this },
       end (b) { if (b) { chunks.push(Buffer.isBuffer(b) ? b : Buffer.from(String(b))) } done() },
-      on () {}, once () {}, emit () {},
+      on () {},
+      once () {},
+      emit () {},
       write (b) { chunks.push(Buffer.isBuffer(b) ? b : Buffer.from(String(b))); return true }
     }
     // support cacheStream.pipe(res)
@@ -113,8 +113,8 @@ function callRoute ({ bucket, key, query = {} }) {
   })
 }
 
-const REAL_KEY = 'projects/10/project-profile-image-3329ef68.png'   // 200, 938,665 B
-const NO_THUMB_KEY = REAL_KEY                                       // its .thumbnail. sidecar 404s
+const REAL_KEY = 'projects/10/project-profile-image-3329ef68.png' // 200, 938,665 B
+const NO_THUMB_KEY = REAL_KEY // its .thumbnail. sidecar 404s
 
 async function main () {
   console.log('-- validation (no storage touched) --')
