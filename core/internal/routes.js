@@ -3,7 +3,8 @@ module.exports = {
     require('./auth0/users')
   ],
   assets: [
-    require('./assets/streams')
+    require('./assets/streams'),
+    require('./assets/images')
   ],
   'classifier-jobs': [
     require('./classifier-jobs')
