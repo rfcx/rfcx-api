@@ -40,6 +40,12 @@ const buckets = {
   streamsCache: legacyCacheBucket,
   mediaCacheSpec: process.env.MEDIA_CACHE_SPEC_BUCKET || legacyCacheBucket,
   mediaCacheAudio: process.env.MEDIA_CACHE_AUDIO_BUCKET || legacyCacheBucket,
-  mediaCacheHeatmap: process.env.MEDIA_CACHE_HEATMAP_BUCKET || legacyCacheBucket
+  mediaCacheHeatmap: process.env.MEDIA_CACHE_HEATMAP_BUCKET || legacyCacheBucket,
+  // Resize-on-demand image cache (rfcx-local, 2026-08-17). Same policy class
+  // as mediaCacheSpec -- DURABLE. These are cheap to regenerate individually
+  // (~20ms) but they back user-facing avatars across the whole app, so the
+  // durable tier is worth consulting on a miss rather than re-rendering the
+  // long tail on every hot-ILM expiry.
+  mediaCacheImage: process.env.MEDIA_CACHE_IMAGE_BUCKET || legacyCacheBucket
 }
 module.exports = { ...service, buckets }
