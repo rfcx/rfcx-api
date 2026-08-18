@@ -36,6 +36,30 @@ for (const routeName in internalRoutes) {
 // Webhook routes (handle their own auth; no framework-level JWT wrapper)
 app.use('/webhooks', require('./webhooks'))
 
+// Public image resize (rfcx-local, 2026-08-17). Mounted OUTSIDE the
+// authenticate() wrappers above, like /webhooks, and for a comparable reason:
+// its consumers are bare <img src> tags in the web app, which cannot send an
+// Authorization header.
+//
+// WHY THIS IS SAFE, and why the alternative was not:
+//   * It serves ONLY buckets that are ALREADY public. The source objects are
+//     anonymous-download and CF-cached, reachable right now at
+//     https://s3.arbimon.org/arbimon-profile/... with no credential at all.
+//     Authenticating a resized copy of a public byte-for-byte-readable image
+//     would buy nothing while breaking every <img> that consumes it.
+//   * The `stream-token` strategy CANNOT authenticate this route even in
+//     principle: it authorises a stream + time WINDOW and parses those from a
+//     `/internal/assets/streams/` filename (see
+//     common/middleware/passport-stream-token/service.js). A profile image has
+//     no stream and no time range, so the strategy's own guard
+//     (`if (!stream || !start || !end)`) rejects -- and that path surfaces as a
+//     500, not a 401. Mounting this under /internal/ therefore made it
+//     unreachable by design, not merely inconvenient.
+//   * Read-only, whitelisted source buckets, bounded+quantised dimensions, and
+//     `refresh` refused in-app (see the route) -- so being public does not make
+//     it an amplifier.
+app.use('/images', require('./images'))
+
 // Support routes
 app.use(require('./info'))
 app.use('/docs', require('./_docs'))

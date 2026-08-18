@@ -173,6 +173,23 @@ async function main () {
   r = await callRoute({ bucket: 'arbimon-profile', key: NO_THUMB_KEY, query: { w: '144', f: 'jpg' } })
   check('endpoint serves a thumbnail anyway', r.statusCode === 200 && r.body.length > 0, `status=${r.statusCode} bytes=${r.body.length}`)
 
+  console.log('\n-- PUBLIC-MOUNT contract: refresh must NOT be honoured --')
+  // This route is mounted outside authenticate(), and the explorer.rfcx.org
+  // edge block forwards $args VERBATIM (no refresh-stripping if-chain, unlike
+  // the arbimon.org + demo blocks). So a client-supplied refresh MUST be inert
+  // in the app itself, or it is an unauthenticated CPU/DoS amplifier.
+  cache.clear(); writebacks.length = 0; sourceFetches = 0
+  await callRoute({ bucket: 'arbimon-profile', key: REAL_KEY, query: { w: '144' } })
+  const fetchesAfterWarm = sourceFetches
+  r = await callRoute({ bucket: 'arbimon-profile', key: REAL_KEY, query: { w: '144', refresh: 'true' } })
+  check('refresh=true still served from cache (HIT)', r.headers['x-rfcx-image-cache'] === 'HIT', r.headers['x-rfcx-image-cache'])
+  check('refresh=true did NOT re-fetch the source', sourceFetches === fetchesAfterWarm, `${fetchesAfterWarm} -> ${sourceFetches}`)
+  check('refresh=true minted no extra cache key', cache.size === 1, `${cache.size} keys`)
+  for (const variant of ['TRUE', '1', 'yes']) {
+    const rr = await callRoute({ bucket: 'arbimon-profile', key: REAL_KEY, query: { w: '144', refresh: variant } })
+    check(`refresh=${variant} also inert`, rr.headers['x-rfcx-image-cache'] === 'HIT', rr.headers['x-rfcx-image-cache'])
+  }
+
   console.log('\n-- missing source -> 404 (not 500) --')
   r = await callRoute({ bucket: 'arbimon-profile', key: 'projects/999999/does-not-exist.png', query: { w: '144' } })
   check('absent source returns 404', r.statusCode === 404, `status=${r.statusCode}`)

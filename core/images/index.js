@@ -1,7 +1,7 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../../common/error-handling/http')
-const { ValidationError } = require('../../../common/error-handling/errors')
-const storageService = require('../../_services/storage')
+const { httpErrorHandler } = require('../../common/error-handling/http')
+const { ValidationError } = require('../../common/error-handling/errors')
+const storageService = require('../_services/storage')
 const {
   resizeImageBuffer,
   normaliseDimension,
@@ -11,11 +11,15 @@ const {
   MAX_DIMENSION,
   DIMENSION_STEP,
   MAX_SOURCE_BYTES
-} = require('../../_services/images/resize')
+} = require('../_services/images/resize')
 
 // Dynamic image resize endpoint (rfcx-local, 2026-08-17).
 //
-//   GET /internal/assets/images/:bucket/*?w=&h=&f=
+//   GET /images/:bucket/*?w=&h=&f=
+//
+// PUBLIC (mounted outside authenticate() in core/app.js -- see the rationale
+// there). Serves resized copies of images that are ALREADY anonymously
+// readable, to <img> tags that cannot send an Authorization header.
 //
 // Mirrors the audio/spectrogram flow in segment-file-utils.js:
 //   look in cache bucket -> HIT: serve
@@ -93,7 +97,7 @@ async function streamToBuffer (stream, limit) {
 /**
  * @swagger
  *
- * /internal/assets/images/{bucket}/{key}:
+ * /images/{bucket}/{key}:
  *   get:
  *     summary: Resize an image on demand (resize-on-request, cached)
  *     description: >
@@ -103,7 +107,7 @@ async function streamToBuffer (stream, limit) {
  *       bounded (max 1024) and snapped to a 32px grid so the cache key-space
  *       stays finite. Results are cached; a cache miss resizes on the fly.
  *     tags:
- *       - internal
+ *       - images
  *     parameters:
  *       - name: bucket
  *         description: Source bucket alias (e.g. `arbimon-profile`).
@@ -177,15 +181,24 @@ router.get('/images/:bucket/*', function (req, res) {
     const cacheBucket = storageService.buckets.mediaCacheImage
     const cacheKey = buildCacheKey(bucketAlias, width, height, format, objectKey)
 
-    // Force-refresh, same contract as the audio/spec route. Deliberately NOT
-    // reachable from the public edge: the public-router strips a client-supplied
-    // `refresh` arg (see platform/routing/00-public-router.yaml), because
-    // forcing unbounded re-renders is a CPU/DoS amplifier.
-    const forceRefresh = `${query.refresh}` === 'true'
-
+    // NO force-refresh on this route. The audio/spec route accepts
+    // `?refresh=true`, but it is AUTHENTICATED and the edge strips the arg on
+    // the arbimon.org + demo blocks.
+    //
+    // THIS route is public, and the edge is NOT a sufficient guard for it: the
+    // `explorer.rfcx.org` server block forwards `$args` VERBATIM (it has no
+    // refresh-stripping `if` chain, unlike the other two blocks), so an
+    // unauthenticated `?refresh=true` would reach the app there and force
+    // unbounded re-renders -- a CPU/DoS amplifier, exactly what media-api's own
+    // source warns about ("media-api should ALSO refuse refresh ... do not rely
+    // on this block alone"). Cache-bypass is simply not offered here.
+    //
+    // Operational note: because these keys are content-addressed on the render
+    // params, the way to invalidate is to delete the cached object, not to ask
+    // the endpoint to re-render.
     // Single round-trip cache read: one GET that yields a stream on hit or null
     // on miss (no HEAD-then-GET pair), matching the established pattern.
-    const cacheStream = (MEDIA_CACHE_ENABLED && !forceRefresh)
+    const cacheStream = MEDIA_CACHE_ENABLED
       ? await storageService.getObjectStreamOrNull(cacheBucket, cacheKey)
       : null
 
@@ -219,7 +232,7 @@ router.get('/images/:bucket/*', function (req, res) {
     res.setHeader('Content-Type', spec.contentType)
     res.setHeader('Cache-Control', CACHE_CONTROL)
     res.setHeader('Content-Length', output.length)
-    res.setHeader('X-Rfcx-Image-Cache', forceRefresh ? 'REFRESH' : 'MISS')
+    res.setHeader('X-Rfcx-Image-Cache', 'MISS')
     res.send(output)
 
     // Fire-and-forget writeback AFTER the response is sent. The user's request
