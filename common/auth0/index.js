@@ -2,45 +2,32 @@ const request = require('request')
 const { randomGuid } = require('../crypto/random')
 const generator = require('generate-password')
 const { ForbiddenError } = require('../error-handling/errors')
+const { createTokenCache } = require('./token-cache')
 
-// a local storage for tokens
-const tokens = {
-  standard: null,
-  auth: null,
-  client: null
-}
+// Shared in-process cache for the three M2M token types. See token-cache.js
+// for semantics (seconds→ms fix, early refresh, bounded retry, SWR).
+const tokenCache = createTokenCache({
+  onRefresh: (type, attempt) => {
+    console.info(`auth0-token-cache: refreshed "${type}" token (attempt ${attempt})`)
+  },
+  onError: (type, err) => {
+    console.error(`auth0-token-cache: background refresh failed for "${type}" token`, err)
+  }
+})
 
 // get token for standard Auth0 API
-async function getToken () {
-  await checkToken('standard', getNewToken)
-  return tokens.standard.access_token
+function getToken () {
+  return tokenCache.getAccessToken('standard', getNewToken)
 }
 
 // get token for Auth0 Authentication API
-async function getAuthToken () {
-  await checkToken('auth', getNewAuthToken)
-  return tokens.auth.access_token
+function getAuthToken () {
+  return tokenCache.getAccessToken('auth', getNewAuthToken)
 }
 
 // get token for internal machine-to-machine authentication
-async function getClientToken () {
-  await checkToken('client', getNewClientToken)
-  return tokens.client.access_token
-}
-
-async function checkToken (type, requestFunc) {
-  if (!tokens[type] || tokens[type].expires_at - Date.now() < 5000) { // it token is not defined or expires in next 5 seconds, request new one
-    try {
-      const token = await requestFunc()
-      if (!token || !token.access_token) {
-        throw new Error(`Unable to get Auth0 "${type}" token`)
-      }
-      token.expires_at = Date.now() + token.expires_in
-      tokens[type] = { ...token }
-    } catch (e) {
-      throw new Error(`Unable to get Auth0 "${type}" token`, e.message)
-    }
-  }
+function getClientToken () {
+  return tokenCache.getAccessToken('client', getNewClientToken)
 }
 
 function requestTokenFromAuth0 (audience) {
