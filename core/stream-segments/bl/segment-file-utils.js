@@ -483,8 +483,54 @@ function combineStandardFilename (attrs, req) {
   return filename
 }
 
+/**
+ * Is this asset ALREADY in the result cache? (rfcx-local, 2026-08-21)
+ *
+ * WHY THIS EXISTS
+ * ---------------
+ * This route had NO `HEAD` handler, so Express routed HEAD requests to the GET
+ * handler: a "cheap existence probe" therefore ran the FULL render pipeline and
+ * cached the result, discarding only the body. Proven by artefact -- a single
+ * HEAD on an uncached-but-renderable ROI created the cache object (cache prefix
+ * 7 -> 8 objects; repeated on a second window 8 -> 9; and an A/B with an
+ * untouched sibling arm excluded coincidence).
+ *
+ * The ROI pre-warm consumer relies on that probe to decide whether to warm, so
+ * it was reporting ~98% "already warm" for ROIs that merely EXISTED-as-
+ * renderable, skipping warm() for them -- while the probe itself did the
+ * warming. Cheap to fix, but the fix MUST NOT silently stop that warming; see
+ * runbooks/FINDINGS-roi-png-writer-retirement-2026-08-21.md in rfcx-local.
+ *
+ * CONTRACT: this must derive the cache key EXACTLY as getFile() does, or a HEAD
+ * would answer about a different object than a GET would serve. Both call
+ * combineStandardFilename() + the same bucket selection, deliberately sharing
+ * the code rather than re-deriving it -- the request-vs-stored key ordering is
+ * subtle (`_mtrue` is appended LAST) and duplicating it is how the two drift.
+ *
+ * Returns { cached: boolean, filename, storageFilePath, cacheBucket }.
+ */
+async function isCached (req, attrs) {
+  const filename = combineStandardFilename(attrs, req)
+  const extension = attrs.fileType === 'spec' ? 'wav' : attrs.fileType
+  const storageFilePath = attrs.fileType === 'spec'
+    ? `${attrs.streamId}/image/${filename}.png`
+    : `${attrs.streamId}/audio/${filename}.${extension}`
+  const cacheBucket = attrs.fileType === 'spec'
+    ? storageService.buckets.mediaCacheSpec
+    : storageService.buckets.mediaCacheAudio
+
+  // Fail SAFE: if the cache is disabled or the backend errors, report "not
+  // cached" so a caller re-warms rather than wrongly believing it is warm.
+  // storageService.exists() already swallows errors into `false`.
+  const cached = MEDIA_CACHE_ENABLED
+    ? await storageService.exists(cacheBucket, storageFilePath)
+    : false
+  return { cached, filename, storageFilePath, cacheBucket }
+}
+
 module.exports = {
   getFile,
+  isCached,
   deleteFilesForStream,
   convertAudio,
   calcSegmentDirname,
