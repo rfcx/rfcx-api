@@ -118,7 +118,17 @@ function matchSegmentToRecording (sfParams, segment) {
     datetime: moment.utc(segment.start).format('YYYY-MM-DD HH:mm:ss.SSS'),
     duration: (segment.end - segment.start) / 1000,
     samples: segment.sample_count,
-    file_size: 0,
+    // Regression fix (2026-08-21): this was `segment.file_size` until
+    // fc6049135 (2023-07-22, "create and update files in batches"), which
+    // switched segment creation to bulkCreate with a narrow `returning` set.
+    // file_size is not a stream_segments column, so it stopped surviving the
+    // round trip and was hardcoded to 0 -- meaning EVERY Arbimon recording
+    // created through the ingest endpoint since that date carries file_size=0
+    // (verified live: a site uploading continuously across the commit date
+    // flips from 0/6661 zero-byte rows the week before to 6659/6659 the week
+    // after). The caller now carries the validated value across the
+    // bulkCreate, so honour it again, defaulting to 0 when genuinely absent.
+    file_size: segment.file_size || 0,
     bit_rate: sfParams.bit_rate,
     sample_rate: sfParams.sample_rate,
     sample_encoding: sfParams.audio_codec,
