@@ -116,9 +116,27 @@ module.exports = function (req, res) {
               returning: ['id', 'stream_id', 'start', 'path', 'sample_count']
             })).map(s => {
               const fileExtension = fileExtensionObjects.find(e => e.id === s.file_extension_id)
+              // `file_size` is validated on the request but is NOT a column on
+              // stream_segments, so it is absent from the bulkCreate `returning`
+              // set and from s.toJSON(). Carry it across from the validated
+              // payload (matched on start, which is what dedups segments above)
+              // so Arbimon recordings get a real byte size -- see the comment on
+              // matchSegmentToRecording(). Without this, every Arbimon recording
+              // created through this endpoint is written with file_size = 0.
+              //
+              // Matched on `start` rather than by array index because bulkCreate
+              // gives no ordering guarantee, and index matching would silently
+              // attribute one segment's size to another. `ts()` is defensive on
+              // purpose: carrying a byte count is a metadata nicety, so it must
+              // never be able to throw and take the whole ingest endpoint --
+              // and therefore every incoming upload -- down with it.
+              const ts = (v) => (v instanceof Date ? v.getTime() : new Date(v).getTime())
+              const target = ts(s.start)
+              const source = Number.isNaN(target) ? undefined : dataToCreate.find(d => ts(d.start) === target)
               return {
                 ...s.toJSON(),
-                file_extension: fileExtension.value
+                file_extension: fileExtension.value,
+                file_size: source ? source.file_size : 0
               }
             })
           }

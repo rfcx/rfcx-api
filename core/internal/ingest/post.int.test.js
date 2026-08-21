@@ -101,6 +101,14 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
     expect(arbimonService.createRecordingsFromSegments).toHaveBeenCalledTimes(1)
     const arbimonData = arbimonService.createRecordingsFromSegments.mock.calls[0][1]
     expect(arbimonData[0].path).toBe(streamSegments[0].path)
+    // Half 1 of the regression guard: file_size must survive the bulkCreate
+    // round trip and reach the Arbimon service. It is validated on the request
+    // but is NOT a stream_segments column, so it is absent from the `returning`
+    // set and from toJSON(). NOTE: this assertion alone is NOT sufficient --
+    // createRecordingsFromSegments is mocked here, so it cannot see
+    // matchSegmentToRecording(), which is where the value was actually dropped.
+    // Half 2 lives in core/_services/arbimon/index.int.test.js.
+    expect(arbimonData[0].file_size).toBe(testPayload.stream_segments[0].file_size)
     expect(console.error).toHaveBeenCalledTimes(0)
   })
 
