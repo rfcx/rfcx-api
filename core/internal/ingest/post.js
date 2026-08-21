@@ -123,7 +123,16 @@ module.exports = function (req, res) {
               // so Arbimon recordings get a real byte size -- see the comment on
               // matchSegmentToRecording(). Without this, every Arbimon recording
               // created through this endpoint is written with file_size = 0.
-              const source = dataToCreate.find(d => d.start.toISOString() === s.start.toISOString())
+              //
+              // Matched on `start` rather than by array index because bulkCreate
+              // gives no ordering guarantee, and index matching would silently
+              // attribute one segment's size to another. `ts()` is defensive on
+              // purpose: carrying a byte count is a metadata nicety, so it must
+              // never be able to throw and take the whole ingest endpoint --
+              // and therefore every incoming upload -- down with it.
+              const ts = (v) => (v instanceof Date ? v.getTime() : new Date(v).getTime())
+              const target = ts(s.start)
+              const source = Number.isNaN(target) ? undefined : dataToCreate.find(d => ts(d.start) === target)
               return {
                 ...s.toJSON(),
                 file_extension: fileExtension.value,
