@@ -197,6 +197,60 @@ function acquire () {
   return inFlight
 }
 
+/**
+ * Reserve a slot that is released EXACTLY ONCE, whichever happens first:
+ * the caller's own `finally`, or the request/response terminating.
+ *
+ * 🔴 WHY THIS EXISTS -- A MEASURED PRODUCTION LEAK (2026-08-23)
+ * Wrapping `generateFile()` in try/finally is NOT sufficient on its own,
+ * because `generateFile()` can never settle. It awaits
+ * `audioUtils.serveAudioFromFile()`, whose promise resolves ONLY on the read
+ * stream's `end` event (noncore/_utils/rfcx-audio/audio-serve.js) -- there is
+ * no `error` handler and no abort handling. If the client goes away
+ * mid-response (socket closed, timeout, page navigation, a pre-warm consumer
+ * hitting its own timeout), `end` never fires, the promise never settles, the
+ * `finally` never runs, and the slot is held FOREVER.
+ *
+ * Observed live on media-api pod .219: after ~10 aborted renders the counter
+ * sat at `inFlight=4/2` and the pod shed EVERY pre-warm request indefinitely --
+ * still shedding 65+ seconds after all load stopped, with an otherwise idle
+ * pod. A controlled A/B against a sibling pod (identical requests, bodies
+ * fully drained) returned cleanly to 0 and served 200s. That is the proof the
+ * leak is caused by client disconnect, not by render failure.
+ *
+ * The failure mode is silent and permanent-until-restart, and it degrades
+ * exactly the thing this gate exists to protect: it does NOT hurt users (they
+ * are never shed) but it silently stops all pre-warming on that pod, which
+ * would look like "pre-warm is mysteriously slow" long after the cause.
+ *
+ * Idempotence is the whole contract here: `res` may emit both `close` and
+ * `finish`, and the caller's `finally` may also fire, so a naive listener
+ * would double-release and drive the counter negative -- which silently RAISES
+ * the effective limit (the mirror-image bug).
+ */
+function acquireForRequest (req, res) {
+  acquire()
+  let released = false
+  const releaseOnce = () => {
+    if (released) {
+      return
+    }
+    released = true
+    if (res && typeof res.removeListener === 'function') {
+      res.removeListener('close', releaseOnce)
+      res.removeListener('finish', releaseOnce)
+    }
+    release()
+  }
+  // 'close' fires on abort AND on normal completion in modern Node; 'finish'
+  // covers a fully-flushed response. Both are guarded by `released`.
+  if (res && typeof res.on === 'function') {
+    res.on('close', releaseOnce)
+    res.on('finish', releaseOnce)
+  }
+  return releaseOnce
+}
+
 function release () {
   inFlight -= 1
   // Defensive: a double-release would drive this negative and silently raise
@@ -245,6 +299,7 @@ module.exports = {
   shouldShed,
   shedIfBusy,
   acquire,
+  acquireForRequest,
   release,
   stats,
   resetForTest,
