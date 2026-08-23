@@ -94,15 +94,21 @@ async function getFile (req, res, attrs, fileExtension, segments, nextTimestamp)
       return
     }
     // The counter must mean RENDERS in flight, so it is released when
-    // generateFile() resolves -- NOT when the response ends. The cache
-    // writeback below is deliberately fire-and-forget after the response has
-    // streamed, and counting that would over-count work that is not competing
-    // for render CPU.
-    renderGate.acquire()
+    // generateFile() resolves -- NOT when the cache writeback finishes (that is
+    // deliberately fire-and-forget after the response has streamed, and
+    // counting it would over-count work that is not competing for render CPU).
+    //
+    // 🔴 BUT generateFile() CAN NEVER SETTLE, so the `finally` alone leaks.
+    // It awaits serveAudioFromFile(), which resolves only on the read stream's
+    // `end` event -- if the client disconnects mid-response, `end` never fires.
+    // Measured live 2026-08-23: a pod wedged at inFlight=4/2 and shed EVERY
+    // pre-warm request indefinitely. acquireForRequest() releases exactly once,
+    // on whichever comes first -- this `finally` or the response terminating.
+    const releaseSlot = renderGate.acquireForRequest(req, res)
     try {
       return await generateFile(req, res, attrs, fileExtension, segments, additionalHeaders)
     } finally {
-      renderGate.release()
+      releaseSlot()
     }
   }
 }
