@@ -7,6 +7,7 @@ const assetUtils = require('../../../noncore/_utils/internal-rfcx/asset-utils').
 const mathUtil = require('./math')
 const random = require('../../../common/crypto/random')
 const storageService = require('../../_services/storage')
+const renderGate = require('./render-gate')
 
 const MEDIA_CACHE_ENABLED = `${process.env.MEDIA_CACHE_ENABLED}` === 'true'
 const CACHE_DIRECTORY = process.env.CACHE_DIRECTORY
@@ -79,7 +80,30 @@ async function getFile (req, res, attrs, fileExtension, segments, nextTimestamp)
     cacheStream.on('error', (err) => { console.error('streams-cache read error', err && err.message) })
     return cacheStream.pipe(res)
   } else {
-    return generateFile(req, res, attrs, fileExtension, segments, additionalHeaders)
+    // PRE-WARM SHEDDING (rfcx-local, 2026-08-23) -- the server half of 429
+    // backpressure. Only the cache-MISS path is gated, because only a miss
+    // renders; a HIT is a cheap proxied read and is the outcome pre-warming
+    // exists to produce.
+    //
+    // Requests marked `RFCx-Prewarm: 1` are shed with 429 + Retry-After when
+    // this pod already has too many renders in flight. User traffic carries no
+    // such marker and is admitted unconditionally -- see render-gate.js for why
+    // this keys on a header rather than on the `systemUser` role (which also
+    // gates the audio UPLOAD path, so shedding on it would shed ingest).
+    if (renderGate.shedIfBusy(req, res)) {
+      return
+    }
+    // The counter must mean RENDERS in flight, so it is released when
+    // generateFile() resolves -- NOT when the response ends. The cache
+    // writeback below is deliberately fire-and-forget after the response has
+    // streamed, and counting that would over-count work that is not competing
+    // for render CPU.
+    renderGate.acquire()
+    try {
+      return await generateFile(req, res, attrs, fileExtension, segments, additionalHeaders)
+    } finally {
+      renderGate.release()
+    }
   }
 }
 
