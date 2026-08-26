@@ -63,3 +63,42 @@ describe('matchSegmentToRecording', () => {
     expect(recording.site_external_id).toBe('abcdefghijk0')
   })
 })
+
+// Retry-decision guard for the transport-only retry added 2026-08-26.
+//
+// The dangerous mutation is WIDENING this set: a timeout retry would re-send
+// an INSERT whose first attempt may have committed after the client gave up,
+// and arbimon2's `recordings` table has no unique key (PK only, verified
+// live), so the duplicate would land silently. These tests pin the boundary.
+describe('isRetryableTransportError', () => {
+  const { isRetryableTransportError } = require('./index')
+
+  const codeErr = (code) => { const e = new Error(code); e.code = code; return e }
+
+  test.each(['ECONNRESET', 'ECONNREFUSED', 'EPIPE'])('%s is retryable (request never reached the server)', (code) => {
+    expect(isRetryableTransportError(codeErr(code))).toBe(true)
+  })
+
+  test('"socket hang up" by message alone is retryable (request wraps the code away)', () => {
+    expect(isRetryableTransportError(new Error('Error: socket hang up'))).toBe(true)
+  })
+
+  test.each(['ESOCKETTIMEDOUT', 'ETIMEDOUT'])('%s is NOT retryable (ambiguous: the insert may have committed)', (code) => {
+    expect(isRetryableTransportError(codeErr(code))).toBe(false)
+  })
+
+  test('an HTTP-level error (StatusCodeError shape) is NOT retryable', () => {
+    const e = new Error('500 - "Internal Server Error"')
+    e.statusCode = 500
+    expect(isRetryableTransportError(e)).toBe(false)
+  })
+
+  test('a plain application Error is NOT retryable', () => {
+    expect(isRetryableTransportError(new Error('Unable to create recordings in Arbimon'))).toBe(false)
+  })
+
+  test('null/undefined do not throw and are not retryable', () => {
+    expect(isRetryableTransportError(null)).toBe(false)
+    expect(isRetryableTransportError(undefined)).toBe(false)
+  })
+})
