@@ -23,7 +23,7 @@ function createProject (project, idToken) {
     body,
     json: true
   }
-  return rp(options).catch(rpErrorHandler)
+  return rp(options).catch(rpErrorHandler())
 }
 
 function updateProject (opts, idToken) {
@@ -40,7 +40,7 @@ function updateProject (opts, idToken) {
     json: true
   }
 
-  return rp(options).catch(rpErrorHandler)
+  return rp(options).catch(rpErrorHandler())
 }
 
 function createSite (stream, idToken) {
@@ -64,7 +64,7 @@ function createSite (stream, idToken) {
     json: true
   }
 
-  return rp(options).catch(rpErrorHandler)
+  return rp(options).catch(rpErrorHandler())
 }
 
 function updateSite (opts, idToken) {
@@ -81,7 +81,7 @@ function updateSite (opts, idToken) {
     json: true
   }
 
-  return rp(options).catch(rpErrorHandler)
+  return rp(options).catch(rpErrorHandler())
 }
 
 function deleteSite (id, idToken) {
@@ -95,7 +95,7 @@ function deleteSite (id, idToken) {
     json: true
   }
 
-  return rp(options).catch(rpErrorHandler)
+  return rp(options).catch(rpErrorHandler())
 }
 
 function parseStreamSourceFileMeta (sfParams) {
@@ -137,7 +137,33 @@ function matchSegmentToRecording (sfParams, segment) {
   }
 }
 
-function createRecordings (body) {
+/**
+ * True only for failures where the request provably NEVER REACHED the server,
+ * so a retry cannot double-apply.
+ *
+ * Measured 2026-08-26: node >= 20 clients pool keep-alive sockets
+ * (globalAgent.keepAlive=true) while arbimon-legacy's bin/www uses Node's
+ * default 5s server keepAliveTimeout — so ~1% of calls hit the classic race
+ * where the server closes an idle socket exactly as we reuse it, surfacing as
+ * ECONNRESET on a reused socket. Reproduced deterministically in a live
+ * core-api pod (idle ~4.5s -> reuse -> ECONNRESET, while back-to-back calls
+ * all reused sockets happily).
+ *
+ * DELIBERATELY EXCLUDED: timeouts (ESOCKETTIMEDOUT/ETIMEDOUT). A timeout is
+ * AMBIGUOUS — the insert may have committed after we gave up, and arbimon2's
+ * `recordings` table has NO unique key (PK only, verified live), so a blind
+ * re-send would create a duplicate recording row rather than erroring.
+ */
+function isRetryableTransportError (err) {
+  if (!err) { return false }
+  const cause = err.cause || err
+  const code = cause.code || err.code
+  if (code === 'ECONNRESET' || code === 'ECONNREFUSED' || code === 'EPIPE') { return true }
+  return /socket hang up|ECONNRESET|ECONNREFUSED/.test(`${err.message}`)
+}
+
+/** The bare HTTP call: resolves with the response body, no retry logic. */
+function postRecordingsOnce (body) {
   const options = {
     method: 'POST',
     url: `${arbimonBaseUrl}${arbimonAPIPrefix}ingest/recordings/create`,
@@ -148,12 +174,27 @@ function createRecordings (body) {
     json: true,
     timeout: 59000
   }
-
   return getClientToken()
     .then((token) => {
       options.headers.authorization = `Bearer ${token}`
-      return rp(options).catch(rpErrorHandler)
+      return rp(options)
     })
+}
+
+function createRecordings (body) {
+  return postRecordingsOnce(body)
+    .catch((err) => {
+      // One retry, connection-level failures only (see the guard above for why
+      // timeouts must NOT be retried). The retry opens a FRESH socket — the
+      // agent discards a socket that just RST — so it cannot hit the same
+      // race twice.
+      if (isRetryableTransportError(err)) {
+        console.warn(`arbimon createRecordings: transport error (${err.code || err.message}); retrying once on a fresh connection`)
+        return postRecordingsOnce(body)
+      }
+      throw err
+    })
+    .catch(rpErrorHandler())
     .then((response) => {
       if (response !== 'Created') {
         console.error(`arbimon createRecordings: req: ${JSON.stringify(body)} res: ${JSON.stringify(response)}`)
@@ -190,7 +231,7 @@ async function deleteRecordingsFromSegments (streamId, segments) {
   return getClientToken()
     .then((token) => {
       options.headers.authorization = `Bearer ${token}`
-      return rp(options).catch(rpErrorHandler)
+      return rp(options).catch(rpErrorHandler())
     })
     .then((response) => {
       if (response) {
@@ -216,7 +257,7 @@ function createUser (user, idToken) {
   return getClientToken()
     .then((token) => {
       options.headers.authorization = `Bearer ${token}`
-      return rp(options).catch(rpErrorHandler)
+      return rp(options).catch(rpErrorHandler())
     })
 }
 
@@ -231,5 +272,8 @@ module.exports = {
   createRecordingsFromSegments,
   deleteRecordingsFromSegments,
   createRecordings,
-  createUser
+  createUser,
+  // exported for unit tests: the retry decision must stay pinned to
+  // connection-level-only failures (never timeouts -- see its docblock)
+  isRetryableTransportError
 }
