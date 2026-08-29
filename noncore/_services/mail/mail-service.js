@@ -44,29 +44,50 @@ function sendEmail (serviceRequest) {
     })
 }
 
-function renderTemplate (tmplPath, opts) {
+function readTemplate (tmplPath) {
   return new Promise((resolve, reject) => {
     try {
-      const source = fs.readFileSync(path.join(__dirname, tmplPath), 'utf8')
-      const template = handlebars.compile(source)
-      resolve(template(opts))
+      resolve(fs.readFileSync(path.join(__dirname, tmplPath), 'utf8'))
     } catch (e) {
       reject(e)
     }
   })
 }
 
+function renderTemplate (tmplPath, opts) {
+  return readTemplate(tmplPath)
+    .then((source) => handlebars.compile(source)(opts))
+}
+
 function renderContactFormEmail (opts) {
   return renderTemplate('../../views/email/contact-form.handlebars', opts)
 }
 
-function getEventAlertHtml (opts) {
-  return renderTemplate('../../views/email/event-alert.handlebars', opts)
+/**
+ * Read the event-alert template WITHOUT rendering it.
+ *
+ * Callers cache this source at boot and render it per send via
+ * `renderEventAlert`. Compiling it here (as `getEventAlertHtml` did) would
+ * substitute every `{{ }}` placeholder with an empty string, because the event
+ * data is not known until an event fires.
+ */
+function getEventAlertSource () {
+  return readTemplate('../../views/email/event-alert.handlebars')
+}
+
+/**
+ * Render a cached event-alert template source with the event data.
+ * @param {string} source raw handlebars source, from `getEventAlertSource`
+ * @param {*} opts { streamName, classificationName, time }
+ */
+function renderEventAlert (source, opts) {
+  return handlebars.compile(source)(opts)
 }
 
 module.exports = {
   sendMessage,
   sendEmail,
   renderContactFormEmail,
-  getEventAlertHtml
+  getEventAlertSource,
+  renderEventAlert
 }
