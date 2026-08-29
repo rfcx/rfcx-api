@@ -8,11 +8,16 @@ let emailTemplate
 
 /**
  * Define html template for email notifications on app initialization
+ *
+ * The template is compiled per send (see `renderEventAlert`), not here: this
+ * only caches the raw source so we do not re-read the file for every email.
+ * Rendering it at boot would substitute the `{{ }}` placeholders with empty
+ * strings, because there is no event data available yet.
  */
 (function () {
-  mailService.getEventAlertHtml()
-    .then((html) => {
-      emailTemplate = html
+  mailService.getEventAlertSource()
+    .then((source) => {
+      emailTemplate = source
     })
     .catch((err) => {
       console.error('Failed fetching email template for Event notification.', err)
@@ -92,16 +97,13 @@ function sendEmails (emails, data) {
   return mailService.sendEmail({
     from_email: 'noreply@rfcx.org',
     from_name: 'Rainforest Connection',
-    merge_language: 'handlebars',
     to,
-    global_merge_vars: [
-      { name: 'streamName', content: data.streamName },
-      { name: 'classificationName', content: data.classificationName },
-      { name: 'time', content: data.time }
-    ],
-    merge_vars: [],
     subject,
-    html: emailTemplate
+    html: mailService.renderEventAlert(emailTemplate, {
+      streamName: data.streamName,
+      classificationName: data.classificationName,
+      time: data.time
+    })
   })
 }
 
