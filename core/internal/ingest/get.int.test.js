@@ -43,7 +43,10 @@ describe('GET stream-source-file/:id', () => {
     expect(response.statusCode).toBe(404)
     expect(response.body.message).toBe('stream with given id doesn\'t exist.')
   })
-  test('returns 403 when there is another segment with same timestamp', async () => {
+  // 409 not 403: the caller is authorised, the DATA collides. The previous 403
+  // made the web uploader retry one file 801 times (2026-09-01) because it
+  // classifies 403 as retryable auth/congestion; 409 it treats as permanent.
+  test('returns 409 (Conflict) when there is another segment with same timestamp', async () => {
     const { audioFileFormat, audioCodec, fileExtension, stream } = await commonSetup()
     const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, filename: '20210726_101010.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: audioCodec.id, audio_file_format_id: audioFileFormat.id, sha1_checksum: 'b37530881c7ffd9edfd8f7feb131ae4563e3759f' })
     const segment1 = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
@@ -51,8 +54,25 @@ describe('GET stream-source-file/:id', () => {
 
     const response = await request(app).get(`/streams/${stream.id}/stream-source-file`).query({ sha1_checksum: 'b37530881c7ffd9edfd8f7feb131ae4563e3759d', start: segment1.start })
 
-    expect(response.statusCode).toBe(403)
+    expect(response.statusCode).toBe(409)
     expect(response.body.message).toBe('There is another file with the same timestamp in the stream.')
+  })
+  // The PERMISSION 403 (line 62) must be untouched by the collision change:
+  // an unauthorised caller still gets 403, never 409.
+  test('still returns 403 for a caller WITHOUT read permission on the stream (unchanged)', async () => {
+    const { audioFileFormat, audioCodec, fileExtension, stream } = await commonSetup()
+    const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, filename: '20210726_101010.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: audioCodec.id, audio_file_format_id: audioFileFormat.id, sha1_checksum: 'b37530881c7ffd9edfd8f7feb131ae4563e3759f' })
+    const segment1 = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
+    // drop the caller's role so hasPermission(READ) fails BEFORE the collision
+    // check. Both levels: the roles DAO walks stream -> project, and the stream
+    // model's attribute is `projectId` (camelCase), not `project_id`.
+    await models.UserStreamRole.destroy({ where: { stream_id: stream.id } })
+    await models.UserProjectRole.destroy({ where: { project_id: stream.projectId } })
+
+    const response = await request(app).get(`/streams/${stream.id}/stream-source-file`).query({ sha1_checksum: 'b37530881c7ffd9edfd8f7feb131ae4563e3759d', start: segment1.start })
+
+    expect(response.statusCode).toBe(403)
+    expect(response.body.message).toBe('You do not have permission to access this stream.')
   })
   test('receives stream source with 1 available stream segment assigned', async () => {
     const { audioFileFormat, audioCodec, fileExtension, stream } = await commonSetup()

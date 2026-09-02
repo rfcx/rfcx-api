@@ -4,7 +4,7 @@ const streamSegmentDao = require('../../stream-segments/dao')
 const Converter = require('../../../common/converter')
 const rolesService = require('../../roles/dao')
 const moment = require('moment-timezone')
-const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
+const { ForbiddenError, EmptyResultError, ConflictError } = require('../../../common/error-handling/errors')
 
 /**
  * @swagger
@@ -79,7 +79,14 @@ module.exports = function (req, res) {
           end: params.start.clone().add('1', 'minute')
         }, { fields: ['start'], strict: true })).results
         if (segments.length && moment.utc(segments[0].start).valueOf() === params.start.valueOf()) {
-          throw new ForbiddenError('There is another file with the same timestamp in the stream.')
+          // 409, not 403: the caller IS authorised (the permission check above
+          // passed); the DATA collides. Signalling this as 403 (until 2026-09-02)
+          // made the web uploader treat it as retryable auth/congestion and
+          // retry one file 801 times, while misdirecting diagnosis toward
+          // permissions. The uploader treats 409 as permanent and stops.
+          // ingest-service maps 409 -> ConflictError (its PR ships FIRST;
+          // before that a 409 would render there as a 500).
+          throw new ConflictError('There is another file with the same timestamp in the stream.')
         } else {
           throw new EmptyResultError('Stream source file not found')
         }
