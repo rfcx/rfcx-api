@@ -44,6 +44,19 @@ jobs:
       repo: rfcx-api
       dockerfile: build/Dockerfile
       targets: '["core-api","core-tasks","noncore-api","noncore-mqtt"]'
+      # BuildKit registry layer cache (rfcx/cicd#10, 2026-09-04). All FOUR
+      # targets derive from one shared `build` stage (apt sox/ffmpeg/imagemagick
+      # + `yarn --production --frozen-lockfile`), and the CD matrix runs
+      # SERIALLY on the single-replica rfcx-local-deployment-runner -- so that
+      # stage was recomputed four times per merge (last run: 174/141/129/154s,
+      # 20.8 min wall clock).
+      #
+      # Measured on the CD runner before enabling: core-api cold 142s exporting
+      # cache; core-tasks on a FRESH builder importing it = 36s with apt + yarn
+      # both CACHED. A core/ source change keeps apt + yarn cached and re-runs
+      # only the COPY layers. Fails safe: a missing/GC'd cache tag is a miss,
+      # not a failure. Same pattern proven on rfcx/arbimon (14.6 -> 2.5 min).
+      build-cache: true
       deployments: |
         [
           {"name": "core-api",     "image": "core-api"},
