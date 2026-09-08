@@ -1,4 +1,4 @@
-FROM node:20.9.0 as base
+FROM node:22-bookworm as base
 
 RUN apt update && apt install -y sox libsox-fmt-mp3 pngcrush imagemagick ffmpeg
 
