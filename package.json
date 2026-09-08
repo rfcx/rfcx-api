@@ -68,7 +68,6 @@
     "moment-timezone": "0.5.44",
     "mqtt": "5.3.4",
     "multer": "^1.4.5-lts.1",
-    "newrelic": "11.7.0",
     "node-cache": "^5.1.2",
     "node-unzip-2": "0.2.8",
     "parallel-download": "1.1.1",
