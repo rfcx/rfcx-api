@@ -1239,9 +1239,9 @@
   dependencies:
     which-polygon "^2.2.1"
 
-"@rfcx/message-queue@github:rfcx/message-queue#1.1.0":
+"@rfcx/message-queue@github:rfcx/message-queue#1.1.1":
   version "1.1.0"
-  resolved "https://codeload.github.com/rfcx/message-queue/tar.gz/9e94964bc761ae4ca144fbb5da73bb3812bbbe06"
+  resolved "https://codeload.github.com/rfcx/message-queue/tar.gz/eed168b2c50ef496769e6ded745df5a74dff5eff"
   dependencies:
     amqplib "^0.10.4"
     aws-sdk "^2.988.0"
