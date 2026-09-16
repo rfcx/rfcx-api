@@ -293,7 +293,30 @@ async function remove (id, options = {}) {
   if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, STREAM))) {
     throw new ForbiddenError()
   }
-  return Stream.destroy({ where: { id }, force: options.force, individualHooks: true })
+  // Distinguish "deleted" from "there was nothing to delete".
+  //
+  // `destroy()` returns the affected ROW COUNT and does not throw on a miss, so
+  // ignoring it made this route answer 204 for an id that does not exist. That
+  // is not hypothetical: for a super/system-role caller `deletableBy` is
+  // undefined, which SKIPS the permission pre-check above, so a bogus id went
+  // straight to a 0-row destroy and reported success. Measured 2026-09-16 on
+  // prod logs: 3 of 12 `DELETE /projects/undefined` requests answered **204**,
+  // not 404 -- the status was encoding the CALLER'S PRIVILEGE, not the outcome.
+  //
+  // This matters beyond tidiness because bio-api's project-delete verifies the
+  // core leg with `if (response.status !== 204) throw` -- the one guard in the
+  // cross-plane delete chain that can fail loudly was validating against a
+  // status that could not distinguish success from a no-op. See rfcx-local
+  // OPEN-ITEMS 330 items (4)/(6) and
+  // runbooks/evidence/project-delete-caller-enumeration-2026-09-16.md.
+  //
+  // `EmptyResultError` is the idiom already used by this file's own get/update
+  // paths and maps to 404 in common/error-handling/http.js.
+  const deletedCount = await Stream.destroy({ where: { id }, force: options.force, individualHooks: true })
+  if (deletedCount === 0) {
+    throw new EmptyResultError('Stream not found')
+  }
+  return deletedCount
 }
 
 /**
