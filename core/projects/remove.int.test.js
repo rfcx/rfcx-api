@@ -85,4 +85,29 @@ describe('DELETE /projects/:id', () => {
 
     expect(response.statusCode).toBe(204)
   })
+
+  // REGRESSION GUARD (2026-09-16): a SUPER deleting a nonexistent id must get
+  // 404, not 204.
+  //
+  // The 'not found' test above runs as a NORMAL user, so `deletableBy` is set
+  // and the permission pre-check produces the 404 -- it passes on the broken
+  // code too. A super/system-role caller has `deletableBy === undefined`, which
+  // SKIPS that check, so before this fix the request fell through to a 0-row
+  // `destroy()` that does not throw and the route answered **204**.
+  //
+  // Not hypothetical: measured on prod logs 2026-09-16, 3 of 12
+  // `DELETE /projects/undefined` requests returned 204. It matters because
+  // bio-api verifies its core delete with `if (response.status !== 204) throw`,
+  // so the one guard in the cross-plane delete chain that can fail loudly was
+  // validating against a status that could not distinguish success from a
+  // no-op. rfcx-local OPEN-ITEMS 330 items (4)/(6).
+  test('super deleting a nonexistent id gets 404, not 204', async () => {
+    const superApp = expressApp({ is_super: true })
+    superApp.use('/', routes)
+    console.warn = jest.fn()
+
+    const response = await request(superApp).delete('/ft1000')
+
+    expect(response.statusCode).toBe(404)
+  })
 })
