@@ -205,6 +205,21 @@ async function restore (id, options = {}) {
   if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, PROJECT))) {
     throw new ForbiddenError()
   }
+  // Distinguish "restored / already live" from "no such project at all".
+  //
+  // `restore()` affects only rows where deleted_at IS SET, so it cannot tell
+  // "was not deleted" (a fine end state for a compensation call) from "does
+  // not exist" (a caller error) — both return 0. The delete route learned the
+  // same lesson the hard way (#685): a status that cannot distinguish success
+  // from a no-op ends up encoding the CALLER'S PRIVILEGE for super/system
+  // callers, who skip the permission pre-check above.
+  //
+  // So: nonexistent => 404 (EmptyResultError, same idiom as remove/get/update);
+  // exists-but-live => 204 no-op (the compensation call's desired end state).
+  const project = await Project.findByPk(id, { paranoid: false })
+  if (project === null) {
+    throw new EmptyResultError('Project not found')
+  }
   return Project.restore({ where: { id } })
 }
 
