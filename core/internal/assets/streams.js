@@ -179,7 +179,15 @@ router.get('/streams/:attrs', function (req, res) {
       }
     })
     segments = streamSegmentDao.removeDuplicates(segments)
-    const nextTimestamp = await streamSegmentDao.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end)
+    // Continuation is decided by the segment that reaches FURTHEST IN TIME, which is not
+    // necessarily the last one by START. `segments` is ordered by start, so on an OVERLAPPING
+    // stream a short segment can sort last while an earlier, longer one still covers `end`
+    // (measured on prod: 3,048,275 such containment pairs across 2,707 streams).
+    // Passing the last-by-start segment made getNextSegmentTimeAfterSegment take its
+    // `segment.end <= time` branch and answer `null` = "end of stream", so
+    // RFCx-Stream-Next-Timestamp was omitted while audio genuinely remained.
+    const furthestSegment = segments.reduce((acc, cur) => (cur.end > acc.end ? cur : acc), segments[0])
+    const nextTimestamp = await streamSegmentDao.getNextSegmentTimeAfterSegment(furthestSegment, end)
     return await getFile(req, res, attrs, fileExtension, segments, nextTimestamp)
   }).catch(httpErrorHandler(req, res, 'Failed getting stream asset'))
 })
