@@ -170,10 +170,69 @@ function downloadSegments (segments) {
   return Promise.all(downloadProms)
 }
 
+/**
+ * Work out what each segment actually contributes to the requested window.
+ *
+ * Every segment's slice is the INTERSECTION of the segment with the requested
+ * window, with a later segment taking over at its own start (the pre-existing
+ * overlap policy). A segment whose intersection is empty is OMITTED entirely.
+ *
+ * WHY THIS EXISTS (rfcx-local, 2026-09-17): the previous implementation only
+ * ever computed a seek/duration for the FIRST and LAST elements of the list.
+ * `core/internal/assets/streams.js` selects segments with `strict: false` (all
+ * segments OVERLAPPING the window) and `removeDuplicates()` only collapses
+ * segments whose `start` is IDENTICAL -- so on a stream carrying near-duplicate
+ * overlapping captures (measured: two 90.3 s segments starting 1.171 s apart,
+ * an 89.124 s overlap) an INTERIOR segment got no `-t` at all and ffmpeg
+ * concatenated it WHOLE. Measured on prod before this fix: an 8.980 s
+ * spectrogram tile returned 98.102 s of audio (~11x), so visualizer composites
+ * showed ~9 s of the selected recording followed by ~89 s of its neighbour.
+ *
+ * NOTE a segment with an empty intersection must be OMITTED, never emitted with
+ * `-t 0ms`: ffmpeg IGNORES a zero duration and writes the rest of the file
+ * (measured in the production container, ffmpeg 5.1.9-0+deb12u1: 79.978 s
+ * instead of 0). That is also why the old `if (durationMs < 0) durationMs = 0`
+ * clamp was never a guard -- it was a no-op.
+ *
+ * @param {Array<{start: number, end: number}>} segments ordered by start
+ * @param {number} starts requested window start (epoch ms)
+ * @param {number} ends requested window end (epoch ms)
+ * @returns {Array<{segment: object, seekMs: number, durationMs: number|undefined}>}
+ */
+function planSegmentSlices (segments, starts, ends) {
+  const planned = []
+  segments.forEach((segment, ind) => {
+    const nextSegment = segments[ind + 1]
+    const effectiveStart = Math.max(segment.start, starts)
+    let effectiveEnd = Math.min(segment.end, ends)
+    if (nextSegment) {
+      // the next segment takes over from its own start; never rewind past where
+      // this slice begins (a next segment starting before `effectiveStart`
+      // means this segment is fully covered and drops out below)
+      effectiveEnd = Math.min(effectiveEnd, Math.max(nextSegment.start, effectiveStart))
+    }
+    if (effectiveEnd <= effectiveStart) {
+      return // contributes nothing to the requested window
+    }
+    const seekMs = effectiveStart - segment.start
+    const sliceMs = effectiveEnd - effectiveStart
+    const remainingMs = (segment.end - segment.start) - seekMs
+    planned.push({
+      segment,
+      seekMs,
+      // only emit `-t` when we need less than what remains after the seek
+      durationMs: sliceMs < remainingMs ? sliceMs : undefined
+    })
+  })
+  return planned
+}
+
 async function convertAudio (segments, starts, ends, attrs, outputPath, extension) {
   let command = `${FFMPEG_PATH} `
   const complexFilter = []
-  segments.forEach((segment, ind) => {
+  const planned = planSegmentSlices(segments, starts, ends)
+  planned.forEach((plan, ind) => {
+    const segment = plan.segment
     let startSilsenceMs
     if (ind === 0 && starts < segment.start) {
       // when requested time range starts earlier than first segment
@@ -181,43 +240,21 @@ async function convertAudio (segments, starts, ends, attrs, outputPath, extensio
       startSilsenceMs = segment.start - starts
     }
     let endSilenceMs = 0
-    const nextSegment = segments[ind + 1]
-    if (ind < (segments.length - 1) && nextSegment && (nextSegment.start - segment.end) > 0) {
+    const nextSegment = planned[ind + 1] ? planned[ind + 1].segment : undefined
+    if (ind < (planned.length - 1) && nextSegment && (nextSegment.start - segment.end) > 0) {
       // when there is a gap between current and next segment
       // add empty sound at the end of current segment
       endSilenceMs = nextSegment.start - segment.end
     }
-    if (ind === (segments.length - 1) && ends > segment.end) {
+    if (ind === (planned.length - 1) && ends > segment.end) {
       // when requested time range ends later than last segment
       // add empty sound at the end
       endSilenceMs = ends - segment.end
     }
-    let seekMs = 0
-    if (ind === 0 && starts > segment.start) {
-      // when requested time range starts later than first segment
-      // cut first segment at the start
-      seekMs = starts - segment.start
-    }
-    let durationMs
-    const segmentDuration = segment.end - segment.start
-    if (ind < (segments.length - 1) && nextSegment && (nextSegment.start - segment.end) < 0) {
-      // when there is an overlap between current and next segment
-      // trim current segment
-      durationMs = segmentDuration - seekMs - (segment.end - nextSegment.start)
-    }
-    if (ind === (segments.length - 1) && ends < segment.end) {
-      // when requested time range ends earlier than last segment
-      // cut last segment at the end
-      durationMs = segmentDuration - seekMs - (segment.end - ends)
-    }
+    const seekMs = plan.seekMs
+    const durationMs = plan.durationMs
     if (seekMs) {
-      if (seekMs > segmentDuration) {
-        seekMs = segmentDuration
-      }
       command += `-ss ${seekMs}ms ` // how many ms we should skip
-    }
-    if (durationMs < 0) {
-      durationMs = 0
     }
     if (durationMs !== undefined) {
       command += `-t ${durationMs}ms ` // how much time in duration we should have
@@ -254,7 +291,7 @@ async function convertAudio (segments, starts, ends, attrs, outputPath, extensio
     segment.filterOutputId = filterOutputId // this id will be used in "concat" filter
   })
   // see https://ffmpeg.org/ffmpeg-filters.html#Filtergraph-description to learn filter syntax
-  command += `-filter_complex "${complexFilter.length ? complexFilter.join(';') + ';' : ''}${segments.map(s => s.filterOutputId).join('')}concat=n=${segments.length}:v=0:a=1`
+  command += `-filter_complex "${complexFilter.length ? complexFilter.join(';') + ';' : ''}${planned.map(p => p.segment.filterOutputId).join('')}concat=n=${planned.length}:v=0:a=1`
   if (attrs.gain !== undefined && parseFloat(attrs.gain) !== 1) {
     command += `,volume=${attrs.gain}`
   }
@@ -563,6 +600,7 @@ module.exports = {
   isCached,
   deleteFilesForStream,
   convertAudio,
+  planSegmentSlices,
   calcSegmentDirname,
   calcSegmentPath
 }
