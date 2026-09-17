@@ -392,5 +392,58 @@ describe('convertAudio', () => {
         expect(runExec).toHaveBeenCalledWith(command)
       })
     })
+
+    describe('Overlapping near-duplicate segments (rfcx-local 2026-09-17 regression)', () => {
+      // Real prod shape, stream fg2p32nf7sm8, offsets relative to 2015-01-01T00:05:00.000Z:
+      //   A 00:05:31.672 -> 00:07:01.967   (31672 -> 121967)
+      //   B 00:05:32.843 -> 00:07:03.138   (32843 -> 123138)  <- the recording the user selected
+      // overlap = 89.124 s. Before the fix an INTERIOR segment got no `-t` at all, so ffmpeg
+      // concatenated it WHOLE: a 8.980 s tile returned 98.102 s of audio (measured on prod).
+      const segA = { start: 31672, end: 121967, sourceFilePath: '/tmp/A.opus' }
+      const segB = { start: 32843, end: 123138, sourceFilePath: '/tmp/B.opus' }
+
+      test('A tile INSIDE the overlap emits ONLY the covering slice, not a whole extra segment', async () => {
+        // the tile that measured 98.102 s on prod (window 41989 -> 50969 = 8980 ms)
+        const command = '/usr/local/bin/ffmpeg -ss 9146ms -t 8980ms -i /tmp/B.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
+        await segmentFileUtils.convertAudio([segA, segB], 41989, 50969, {}, '/tmp/destination.opus', 'opus')
+        expect(runExec).toHaveBeenCalledTimes(1)
+        expect(runExec).toHaveBeenCalledWith(command)
+      })
+
+      test('The emitted slices sum to the requested window, not to ~11x it', () => {
+        const planned = segmentFileUtils.planSegmentSlices([segA, segB], 41989, 50969)
+        const total = planned.reduce((acc, p) => {
+          const remaining = (p.segment.end - p.segment.start) - p.seekMs
+          return acc + (p.durationMs !== undefined ? p.durationMs : remaining)
+        }, 0)
+        expect(total).toBe(8980)
+      })
+
+      test('A segment fully covered by a later one is OMITTED, never emitted with -t 0ms', () => {
+        // `-t 0ms` is IGNORED by ffmpeg (measured in the prod container: it writes the rest of
+        // the file), so a zero-length contribution must not reach the command line at all.
+        const planned = segmentFileUtils.planSegmentSlices([segA, segB], 41989, 50969)
+        expect(planned).toHaveLength(1)
+        expect(planned[0].segment.sourceFilePath).toBe('/tmp/B.opus')
+        planned.forEach((p) => { expect(p.durationMs === undefined || p.durationMs > 0).toBe(true) })
+      })
+
+      test('A window spanning BOTH segments still hands over at the later segment start', async () => {
+        // A contributes from the WINDOW start (32000) until B takes over at its own start
+        // (32843) => 843 ms, seeking 328 ms into A. This case was already correct before the
+        // fix, so this test guards that the rewrite PRESERVES it rather than proving a bug.
+        const command = '/usr/local/bin/ffmpeg -ss 328ms -t 843ms -i /tmp/A.opus -i /tmp/B.opus -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
+        await segmentFileUtils.convertAudio([segA, segB], 32000, 123138, {}, '/tmp/destination.opus', 'opus')
+        expect(runExec).toHaveBeenCalledTimes(1)
+        expect(runExec).toHaveBeenCalledWith(command)
+      })
+
+      test('Three overlapping near-duplicates collapse to the covering slices only', () => {
+        const segC = { start: 34000, end: 124000, sourceFilePath: '/tmp/C.opus' }
+        const planned = segmentFileUtils.planSegmentSlices([segA, segB, segC], 41989, 50969)
+        expect(planned).toHaveLength(1)
+        expect(planned[0].segment.sourceFilePath).toBe('/tmp/C.opus')
+      })
+    })
   })
 })
