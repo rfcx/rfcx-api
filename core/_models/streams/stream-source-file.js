@@ -79,6 +79,15 @@ module.exports = function (sequelize, DataTypes) {
     audio_file_format_id: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    // 2026-09-22 (rfcx-local OPEN-ITEMS 375, user attribution): the uploading
+    // user (users.id), carried from ingest.stream_uploads.user_id by the ingest
+    // worker. NULL = pre-column, unresolved identity (bulk/service ingest), or a
+    // path with no acting user. Never a sentinel. Column added to live PG under
+    // a named operator GO; no backfill by design.
+    uploaded_by_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     timestamps: true
@@ -90,7 +99,7 @@ module.exports = function (sequelize, DataTypes) {
   }
   StreamSourceFile.attributes = {
     full: ['id', 'filename', 'duration', 'sample_count', 'channels_count', 'bit_rate', 'meta', 'sha1_checksum', 'stream_id',
-      'audio_codec_id', 'audio_file_format_id', 'sample_rate', 'created_at', 'updated_at'],
+      'audio_codec_id', 'audio_file_format_id', 'sample_rate', 'created_at', 'updated_at', 'uploaded_by_id'],
     lite: ['id', 'filename', 'duration', 'sample_rate']
   }
   StreamSourceFile.include = includeBuilder(StreamSourceFile, 'stream_source_file', StreamSourceFile.attributes.lite)

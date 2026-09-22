@@ -54,10 +54,12 @@ async function create (data, minStart, opts = {}) {
     throw new ValidationError('Cannot create source file with empty object.')
   }
   const { stream_id, filename, duration, sample_count, sample_rate, channels_count, bit_rate, sha1_checksum, meta } = data
+  // uploaded_by_id: nullable actor (rfcx-local OPEN-ITEMS 375). Absent/unresolved => null.
+  const uploaded_by_id = (data.uploaded_by_id === undefined || data.uploaded_by_id === null) ? null : Number(data.uploaded_by_id)
   const { hasUnavailable } = await checkForDuplicates(stream_id, sha1_checksum, minStart, opts)
   const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data, opts)
   const where = { stream_id, sha1_checksum }
-  const defaults = { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta }
+  const defaults = { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta, uploaded_by_id }
   const transaction = opts.transaction || null
   return StreamSourceFile.findOrCreate({ where, defaults, transaction })
     .spread((item, created) => {

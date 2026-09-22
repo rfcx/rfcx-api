@@ -133,7 +133,11 @@ function matchSegmentToRecording (sfParams, segment) {
     sample_rate: sfParams.sample_rate,
     sample_encoding: sfParams.audio_codec,
     meta: parseStreamSourceFileMeta(sfParams),
-    precision: 0
+    precision: 0,
+    // Uploader email (rfcx-local OPEN-ITEMS 375): arbimon resolves it to its own
+    // users.user_id for recordings.uploaded_by. Null when unresolved -- the
+    // legacy route treats absent/null as NULL, never a sentinel.
+    uploaded_by_email: sfParams.uploaded_by_email || null
   }
 }
 

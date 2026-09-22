@@ -102,3 +102,30 @@ describe('isRetryableTransportError', () => {
     expect(isRetryableTransportError(undefined)).toBe(false)
   })
 })
+
+// rfcx-local OPEN-ITEMS 375 (user attribution): the uploader's email rides the
+// arbimon payload so recordings.uploaded_by can be resolved on arbimon's own
+// user table. This is the same drop-point class as file_size above -- a value
+// that exists on the request and must survive the mapping.
+describe('matchSegmentToRecording carries the uploader email', () => {
+  const base = { bit_rate: 1, sample_rate: 1, audio_codec: 'flac', filename: 'x.flac', meta: null }
+  const segment = {
+    stream_id: 'abcdefghijk0',
+    start: new Date('2024-05-14T10:00:00.000Z'),
+    end: new Date('2024-05-14T10:01:00.000Z'),
+    sample_count: 1,
+    file_extension: '.flac',
+    file_size: 1
+  }
+
+  test('uploaded_by_email is forwarded when the resolver found a user', () => {
+    const r = matchSegmentToRecording({ ...base, uploaded_by_email: 'someone@example.org' }, segment)
+    expect(r.uploaded_by_email).toBe('someone@example.org')
+  })
+
+  test('an unresolved uploader is null, never undefined and never a sentinel', () => {
+    expect(matchSegmentToRecording({ ...base, uploaded_by_email: null }, segment).uploaded_by_email).toBeNull()
+    expect(matchSegmentToRecording(base, segment).uploaded_by_email).toBeNull()
+    expect(matchSegmentToRecording({ ...base, uploaded_by_email: '' }, segment).uploaded_by_email).toBeNull()
+  })
+})
