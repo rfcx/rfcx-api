@@ -10,6 +10,31 @@ const Converter = require('../../../common/converter')
 const ArrayConverter = require('../../../common/converter/array')
 const moment = require('moment')
 const arbimonService = require('../../_services/arbimon')
+const usersService = require('../../../common/users')
+const { Sequelize } = require('../../_models')
+
+/**
+ * Resolve the uploader the ingest worker forwards (ingest.stream_uploads.user_id)
+ * to a core user. That id is a MIXED space measured live 2026-09-22: 46 of 57
+ * distinct uploaders are users.guid, 3 are `auth0|...` subs stored in
+ * users.username, and 8 are bulk/service identities with no users row at all.
+ * Returns { id, email } or null. FAIL-OPEN: attribution must never fail an
+ * ingest, so any lookup error resolves to null (stored as NULL, never invented).
+ * rfcx-local OPEN-ITEMS 375.
+ */
+async function resolveUploader (uploaderId, transaction) {
+  if (typeof uploaderId !== 'string' || !uploaderId.length) { return null }
+  try {
+    const user = await usersService.getUserByParams({
+      [Sequelize.Op.or]: { guid: uploaderId, username: uploaderId }
+    }, true, { transaction })
+    if (!user) { return null }
+    return { id: user.id, email: user.email || null }
+  } catch (e) {
+    console.warn(`[ingest] uploader resolution failed for ${uploaderId} (storing NULL): ${e && e.message}`)
+    return null
+  }
+}
 
 /**
  * @swagger
@@ -60,6 +85,9 @@ module.exports = function (req, res) {
   sfConverter.convert('audio_codec').toString()
   sfConverter.convert('sha1_checksum').toString()
   sfConverter.convert('meta').optional()
+  // The uploader as the ingest worker knows it (stream_uploads.user_id, TEXT).
+  // Optional so older workers keep working; resolved below.
+  sfConverter.convert('uploaded_by').optional().toString()
 
   const segConverter = new ArrayConverter(req.body.stream_segments)
   segConverter.convert('start').toMomentUtc()
@@ -76,6 +104,14 @@ module.exports = function (req, res) {
           const transformedArray = await segConverter.validate() // validate stream_segment[] attributes
 
           const stream = await streamDao.get(streamId, { transaction })
+          // Resolve WHO uploaded this file, once per request, before the row is
+          // born: the id lands on stream_source_files.uploaded_by_id here and the
+          // email rides the arbimon call so recordings.uploaded_by can resolve
+          // it on its own user table (email is the bridge the two share).
+          const uploader = await resolveUploader(sfParams.uploaded_by, transaction)
+          delete sfParams.uploaded_by
+          sfParams.uploaded_by_id = uploader ? uploader.id : null
+          sfParams.uploaded_by_email = uploader ? uploader.email : null
           // Set missing stream_source_file attributes and create a db row
           sfParams.stream_id = streamId
           streamSourceFileDao.transformMetaAttr(sfParams)
