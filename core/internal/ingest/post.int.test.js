@@ -196,6 +196,53 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
     expect(extension.value).toBe('.wav')
   })
 
+  describe('uploader attribution (rfcx-local OPEN-ITEMS 375)', () => {
+    // The uploader id the worker forwards is a MIXED space (measured
+    // 2026-09-22): users.guid (uuid), `auth0|...` subs stored in
+    // users.username, and service identities with no users row. A non-uuid
+    // id must never reach the uuid `guid` predicate: it aborts the request
+    // transaction and 500s the whole ingest (2026-09-24: 687 uploads lost to
+    // this for one user in 15 min).
+    test('a uuid uploader resolves by guid', async () => {
+      await models.Stream.create(stream)
+      testPayload.stream_source_file.uploaded_by = seedValues.primaryUserGuid
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+
+      expect(response.statusCode).toBe(201)
+      const sf = await models.StreamSourceFile.findOne({ where: { stream_id: stream.id } })
+      expect(sf.uploaded_by_id).toBe(seedValues.primaryUserId)
+    })
+
+    test('an auth0|sub uploader stored in username resolves, and the ingest succeeds', async () => {
+      // User is a base-seed table (NOT truncated between tests) and guid /
+      // username / email / id are unique (the seed sets explicit ids without
+      // advancing the sequence, so an explicit id avoids a pk collision).
+      const sub = 'auth0|6aa81eaccc9a49d2c9062596'
+      const [user] = await models.User.findOrCreate({ where: { username: sub }, defaults: { id: 9901, guid: '4b1d6f0e-7a2c-4d3e-9f10-2a3b4c5d6e7f', firstname: 'A', lastname: 'Z', email: 'auth0sub@test.org' } })
+      await models.Stream.create(stream)
+      testPayload.stream_source_file.uploaded_by = sub
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+
+      expect(response.statusCode).toBe(201)
+      const sf = await models.StreamSourceFile.findOne({ where: { stream_id: stream.id } })
+      expect(sf.uploaded_by_id).toBe(user.id)
+      expect(await models.StreamSegment.count({ where: { stream_id: stream.id } })).toBe(1)
+    })
+
+    test('an unknown non-uuid uploader stores NULL and the ingest still succeeds', async () => {
+      await models.Stream.create(stream)
+      testPayload.stream_source_file.uploaded_by = 'service|bulk-importer'
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+
+      expect(response.statusCode).toBe(201)
+      const sf = await models.StreamSourceFile.findOne({ where: { stream_id: stream.id } })
+      expect(sf.uploaded_by_id).toBeNull()
+    })
+  })
+
   describe('request body validation', () => {
     test('validation error is returned if stream_source_file is not set', async () => {
       await commonSetup()
