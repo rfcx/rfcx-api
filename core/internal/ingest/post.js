@@ -22,12 +22,21 @@ const { Sequelize } = require('../../_models')
  * ingest, so any lookup error resolves to null (stored as NULL, never invented).
  * rfcx-local OPEN-ITEMS 375.
  */
+// users.guid is a PG `uuid` column. Comparing it to a non-uuid string (the
+// `auth0|...` subs above) raises 22P02 INSIDE the request transaction; the
+// catch below cannot un-abort it, so every later statement 25P02s and the
+// whole ingest 500s (rfcx-local FINDING-2026-09-22 ingest-500-nonuuid; live
+// again 2026-09-24: 687 uploads for one auth0 user in 15 min). Only query the
+// guid leg for uuid-shaped ids -- a non-uuid can never equal a uuid anyway.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 async function resolveUploader (uploaderId, transaction) {
   if (typeof uploaderId !== 'string' || !uploaderId.length) { return null }
+  const where = UUID_RE.test(uploaderId)
+    ? { [Sequelize.Op.or]: { guid: uploaderId, username: uploaderId } }
+    : { username: uploaderId }
   try {
-    const user = await usersService.getUserByParams({
-      [Sequelize.Op.or]: { guid: uploaderId, username: uploaderId }
-    }, true, { transaction })
+    const user = await usersService.getUserByParams(where, true, { transaction })
     if (!user) { return null }
     return { id: user.id, email: user.email || null }
   } catch (e) {
