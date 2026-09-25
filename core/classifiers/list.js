@@ -26,6 +26,11 @@ const Converter = require('../../common/converter')
  *         in: query
  *         type: string
  *         default: 'name,-version'
+ *       - name: latest
+ *         description: Only the newest listed version of each model name (for choosing a model for a new job)
+ *         in: query
+ *         type: boolean
+ *         default: false
  *       - name: fields
  *         description: Customize included fields
  *         in: query
@@ -48,13 +53,15 @@ module.exports = (req, res) => {
   converter.convert('offset').default(0).toInt()
   converter.convert('sort').default('name,-version').toString()
   converter.convert('fields').default(['id', 'name', 'version']).toArray()
+  converter.convert('latest').default(false).toBoolean()
 
   return converter.validate().then(async params => {
     const user = req.rfcx.auth_token_info
     const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
 
-    const options = { ...params, readableBy }
-    const { results } = await dao.query({}, options)
+    const { latest, ...rest } = params
+    const options = { ...rest, readableBy }
+    const { results } = await dao.query({ latest }, options)
 
     return res.json(results)
   }).catch(httpErrorHandler(req, res))
