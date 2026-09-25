@@ -38,7 +38,7 @@ describe('GET /classifiers', () => {
       const names = response.body.map(c => c.name)
       expect(new Set(names).size).toBe(names.length)
       const aeroplane = response.body.filter(c => c.name === 'aeroplane')
-      expect(aeroplane.map(c => c.version)).toEqual([6])
+      expect(aeroplane.map(c => c.version)).toEqual([999]) // RED-TEST PROBE
     })
 
     test('an unlisted newest version surfaces the previous listed one', async () => {
