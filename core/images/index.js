@@ -12,6 +12,7 @@ const {
   DIMENSION_STEP,
   MAX_SOURCE_BYTES
 } = require('../_services/images/resize')
+const { checkImageAccess } = require('../_services/images/private-image')
 
 // Dynamic image resize endpoint (rfcx-local, 2026-08-17).
 //
@@ -67,6 +68,10 @@ const SOURCE_BUCKETS = {
 // `public` is correct (unlike the spectrogram route's `private`): these are
 // unauthenticated public profile images, so shared/CDN caching is desirable.
 const CACHE_CONTROL = 'public, max-age=604800, s-maxage=604800, immutable'
+// HIDDEN projects' covers (2026-09-25): signed per viewer, so they must NEVER be
+// shared/CDN-cached. `private` + no s-maxage; short browser lifetime (the
+// signature itself expires). See _services/images/private-image.js.
+const CACHE_CONTROL_PRIVATE = 'private, max-age=3600'
 
 // Cache key. Quantised dimensions are what make this bounded: `w=141`, `w=142`
 // and `w=144` all resolve to the same key, so the key-space per source object
@@ -169,6 +174,17 @@ router.get('/:bucket/*', function (req, res) {
       throw new ValidationError('Invalid object key')
     }
 
+    // HIDDEN-project covers require an arbimon-api-minted signature (2026-09-25).
+    // Checked BEFORE any storage read, so an unauthorised probe costs one cached
+    // status lookup and reveals nothing (403 whether or not the object exists).
+    const access = await checkImageAccess(bucketAlias, objectKey, query)
+    if (!access.authorized) {
+      res.status(403)
+      res.setHeader('Cache-Control', 'private, no-store')
+      return res.json({ message: 'Forbidden', error: { status: 403 } })
+    }
+    const cacheControl = access.needsSignature ? CACHE_CONTROL_PRIVATE : CACHE_CONTROL
+
     // `w` is required; `h` defaults to `w`, giving the common square bounding
     // box with one parameter. Both are snapped onto the grid.
     const width = normaliseDimension(query.w)
@@ -208,7 +224,7 @@ router.get('/:bucket/*', function (req, res) {
 
     if (cacheStream) {
       res.setHeader('Content-Type', spec.contentType)
-      res.setHeader('Cache-Control', CACHE_CONTROL)
+      res.setHeader('Cache-Control', cacheControl)
       res.setHeader('X-Rfcx-Image-Cache', 'HIT')
       // If the cache read errors mid-stream after headers are sent we cannot
       // recover the response; log and let the socket close.
@@ -234,7 +250,7 @@ router.get('/:bucket/*', function (req, res) {
     const output = await resizeImageBuffer(sourceBuffer, { width, height, format })
 
     res.setHeader('Content-Type', spec.contentType)
-    res.setHeader('Cache-Control', CACHE_CONTROL)
+    res.setHeader('Cache-Control', cacheControl)
     res.setHeader('Content-Length', output.length)
     res.setHeader('X-Rfcx-Image-Cache', 'MISS')
     res.send(output)
