@@ -31,6 +31,35 @@ async function commonSetup () {
 }
 
 describe('GET /classifiers', () => {
+  describe('latest=true', () => {
+    test('returns only the newest version per name', async () => {
+      const response = await request(app).get('/').query({ latest: true })
+      expect(response.statusCode).toBe(200)
+      const names = response.body.map(c => c.name)
+      expect(new Set(names).size).toBe(names.length)
+      const aeroplane = response.body.filter(c => c.name === 'aeroplane')
+      expect(aeroplane.map(c => c.version)).toEqual([6])
+    })
+
+    test('an unlisted newest version surfaces the previous listed one', async () => {
+      await models.Classifier.update({ listed: false }, { where: { id: CLASSIFIER_6.id } })
+      const response = await request(app).get('/').query({ latest: true })
+      expect(response.body.filter(c => c.name === 'aeroplane').map(c => c.version)).toEqual([1])
+    })
+
+    test('a private newer version does not hide a public older one from another user', async () => {
+      await models.Classifier.create({ id: 7, name: 'pr-parrot', externalId: '843cb81d-03b9-07e1-5184-931c95265218', version: 9, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://t/p.tar.gz', lastExecutedAt: null, isPublic: false })
+      const response = await request(app).get('/').query({ latest: true })
+      const parrot = response.body.filter(c => c.name === 'pr-parrot')
+      expect(parrot.map(c => c.version)).toEqual([1])
+    })
+
+    test('without latest, all readable versions are still returned (unchanged behaviour)', async () => {
+      const response = await request(app).get('/')
+      expect(response.body.filter(c => c.name === 'aeroplane').map(c => c.version).sort()).toEqual([1, 6])
+    })
+  })
+
   test('response is an array', async () => {
     const response = await request(app).get('/')
 

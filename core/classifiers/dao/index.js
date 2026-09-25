@@ -97,6 +97,8 @@ async function get (id, options = {}) {
  * @param {*} options Query options
  * @param {string[]} options.fields Attributes and relations to include in results
  * @param {number} options.readableBy Include only classifiers readable by the given user id
+ * @param {boolean} filters.latest Only the newest LISTED version of each model name among the classifiers the caller
+ *   can read (computed AFTER readableBy, so a private newer version never hides a public older one from other users)
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
  */
@@ -124,6 +126,18 @@ async function query (filters, options = {}) {
       isPublic: true,
       createdById: options.readableBy
     }
+  }
+
+  if (filters.latest) {
+    // DISTINCT ON over the SAME readable + listed set, then restrict the page query to those ids.
+    const readable = options.readableBy
+      ? 'AND (is_public = true OR created_by_id = :readableBy)'
+      : ''
+    const rows = await models.sequelize.query(
+      `SELECT DISTINCT ON (name) id FROM classifiers WHERE listed = true ${readable} ORDER BY name, version DESC, id DESC`,
+      { replacements: { readableBy: options.readableBy }, type: models.Sequelize.QueryTypes.SELECT, transaction }
+    )
+    where.id = filters.ids ? filters.ids.filter(id => rows.some(r => r.id === id)) : rows.map(r => r.id)
   }
 
   const attributes = options.fields && options.fields.length > 0 ? models.Classifier.attributes.full.filter(a => options.fields.includes(a)) : models.Classifier.attributes.lite

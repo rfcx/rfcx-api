@@ -39,6 +39,13 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
       allowNull: false
     },
+    // Offered when choosing a model for a NEW job (see GET /classifiers?latest=true). false = retired version or an
+    // unusable model; nothing is deleted and existing jobs/detections are unaffected.
+    listed: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      allowNull: false
+    },
     parameters: {
       type: DataTypes.STRING(255)
     }
